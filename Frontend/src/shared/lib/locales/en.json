@@ -1,0 +1,1116 @@
+{
+  "app": {
+    "name": "MPPR system",
+    "hello": "Welcome to MPPR system",
+    "dashboard": "Dashboard",
+    "theme": "Theme",
+    "language": "Language",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "layout": {
+    "openMenu": "Open menu"
+  },
+  "api": {
+    "errors": {
+      "title": "Error",
+      "whatToDo": "What to do",
+      "generic": "An unknown error occurred. Please try again.",
+      "categories": {
+        "user": "Input or permission error",
+        "system": "System error"
+      },
+      "VALIDATION_FAILED": "The submitted data is invalid or incomplete",
+      "INTERNAL_SERVER_ERROR": "An unexpected server error occurred. Please try again later",
+      "INVALID_CREDENTIALS": "Invalid phone number or password",
+      "INVALID_REFRESH_TOKEN": "Session expired. Please sign in again",
+      "USER_NOT_FOUND": "User not found",
+      "USER_INACTIVE": "Your account is inactive. Contact the administrator",
+      "USER_CANNOT_DEACTIVATE_SELF": "You cannot deactivate your own account",
+      "PHONE_ALREADY_REGISTERED": "This phone number is already registered",
+      "PHONE_ALREADY_IN_USE": "This phone number is already in use",
+      "TABEL_NUMBER_ALREADY_REGISTERED": "This personnel number is already registered",
+      "TABEL_NUMBER_ALREADY_IN_USE": "This personnel number is already in use",
+      "APP_ROLE_NOT_FOUND": "Role not found",
+      "STRUCTURAL_UNIT_NOT_FOUND": "Structural unit not found",
+      "STRUCTURAL_UNIT_IN_USE": "This structural unit has assigned users",
+      "REGISTERED_OBJECT_NOT_FOUND": "Object not found",
+      "PPR_TYPE_NOT_FOUND": "PPR type not found",
+      "NOTIFICATION_NOT_FOUND": "Notification not found",
+      "APPLICATION_NOT_FOUND": "Application not found",
+      "APPLICATION_WORKFLOW_FORBIDDEN": "You do not have permission to process this application",
+      "APPLICATION_WORKFLOW_CONFIRMATION_FILES_REQUIRED": "Attach at least one confirmation file",
+      "APPLICATION_WORKFLOW_FINALIZED": "Confirmed or finalized applications cannot be edited",
+      "PPR_CALENDAR_MONTH_NOT_FOUND": "PPR calendar month not found",
+      "PPR_CALENDAR_ENTRY_NOT_FOUND": "PPR calendar entry not found",
+      "PPR_CALENDAR_FORBIDDEN": "You do not have permission to access or edit this PPR calendar",
+      "DASHBOARD_FORBIDDEN": "You do not have permission to view dashboard data",
+      "PPR_CALENDAR_MONTH_NOT_EDITABLE": "This calendar month can no longer be edited",
+      "PPR_CALENDAR_MONTH_NOT_SUBMITTABLE": "This calendar month cannot be submitted now",
+      "PPR_CALENDAR_HEAD_NOT_FOUND": "Structural unit head was not found",
+      "PPR_CALENDAR_MONTH_EMPTY": "The calendar must contain at least one entry",
+      "FORBIDDEN": "You do not have permission to perform this action",
+      "NOT_FOUND": "The requested data was not found",
+      "RESOURCE_ALREADY_EXISTS": "This record already exists",
+      "DATABASE_ERROR": "A database error occurred",
+      "DATABASE_SCHEMA_OUT_OF_DATE": "The app and database versions do not match",
+      "ERROR_LOG_FORBIDDEN": "You do not have permission to view the error log",
+      "CLIENT_RUNTIME_ERROR": "An unexpected client-side error occurred",
+      "CLIENT_UNHANDLED_REJECTION": "An unhandled promise rejection occurred",
+      "ROUTE_ERROR": "An error occurred while loading the page",
+      "FIRST_NAME_REQUIRED": "Enter first name",
+      "LAST_NAME_REQUIRED": "Enter last name",
+      "BIRTH_DATE_REQUIRED": "Select date of birth",
+      "PHONE_REQUIRED": "Enter phone number",
+      "TABEL_NUMBER_FORMAT": "Personnel number must contain exactly 5 digits",
+      "POSITION_REQUIRED": "Enter position",
+      "ROLE_ID_REQUIRED": "Select role",
+      "STRUCTURAL_UNIT_ID_REQUIRED": "Select structural unit",
+      "PASSWORD_MIN_LENGTH": "Password must be at least 4 characters",
+      "PAYLOAD_TOO_LARGE": "The uploaded file is too large",
+      "TOO_MANY_REQUESTS": "Too many requests. Please wait a moment and try again",
+      "LOGIN_TEMPORARILY_LOCKED": "Too many incorrect password attempts. Wait {{seconds}} seconds",
+      "network": "Unable to reach the server",
+      "timeout": "The request timed out",
+      "hints": {
+        "VALIDATION_FAILED": "Check the fields and fill in all required information",
+        "INVALID_CREDENTIALS": "Verify the phone number and password",
+        "INVALID_REFRESH_TOKEN": "Sign out and sign in again",
+        "PHONE_ALREADY_IN_USE": "Use another phone number or edit the existing user",
+        "TABEL_NUMBER_ALREADY_IN_USE": "Use another personnel number",
+        "STRUCTURAL_UNIT_IN_USE": "Reassign users to another structural unit before deleting",
+        "APPLICATION_WORKFLOW_FORBIDDEN": "The application is outside your scope or your role lacks permission",
+        "APPLICATION_WORKFLOW_CONFIRMATION_FILES_REQUIRED": "Upload a confirmation file and save again",
+        "APPLICATION_WORKFLOW_FINALIZED": "This application is already confirmed or cancelled",
+        "PPR_CALENDAR_FORBIDDEN": "Ask an administrator or the structural unit head for access",
+        "PPR_CALENDAR_MONTH_NOT_EDITABLE": "Only draft months can be edited",
+        "PPR_CALENDAR_MONTH_NOT_SUBMITTABLE": "Complete the calendar or check the month status",
+        "PPR_CALENDAR_HEAD_NOT_FOUND": "Register a head for the structural unit",
+        "PPR_CALENDAR_MONTH_EMPTY": "Add at least one PPR entry",
+        "FORBIDDEN": "Ask your administrator for the required permission",
+        "NOT_FOUND": "The data may have been deleted or changed. Refresh the page",
+        "RESOURCE_ALREADY_EXISTS": "Enter a different value or edit the existing record",
+        "PAYLOAD_TOO_LARGE": "Choose a smaller file or a compressed image",
+        "TOO_MANY_REQUESTS": "Wait 10-20 seconds and try again",
+        "INTERNAL_SERVER_ERROR": "If the issue continues, contact an administrator or developer",
+        "DATABASE_ERROR": "Refresh the page. If it continues, contact an administrator",
+        "DATABASE_SCHEMA_OUT_OF_DATE": "An administrator must run `npx prisma migrate deploy`",
+        "ERROR_LOG_FORBIDDEN": "Ask an administrator for access to the Errors page",
+        "CLIENT_RUNTIME_ERROR": "Refresh the page. If it repeats, notify an administrator",
+        "CLIENT_UNHANDLED_REJECTION": "Retry the action or navigate to another page",
+        "ROUTE_ERROR": "Go back or return to the home page",
+        "network": "Check your internet connection and whether the backend is running",
+        "timeout": "Check your connection and try again"
+      }
+    }
+  },
+  "auth": {
+    "subtitle": "Enter your credentials to sign in",
+    "login": "Sign in",
+    "logout": "Sign out",
+    "logoutConfirm": "Are you sure you want to sign out?",
+    "profile": "My profile",
+    "fields": {
+      "phone": "Phone number",
+      "password": "Password"
+    },
+    "placeholders": {
+      "password": "Enter your password"
+    },
+    "validation": {
+      "phoneFormat": "Phone number is incomplete (+998 and 9 digits)",
+      "passwordRequired": "Enter your password"
+    },
+    "notifications": {
+      "errorTitle": "Error",
+      "invalidCredentials": "Invalid phone number or password",
+      "accountInactive": "Your account is inactive. Contact the administrator"
+    },
+    "lockout": {
+      "title": "Login temporarily blocked",
+      "description": "5 incorrect password attempts. Try again in {{seconds}} seconds",
+      "button": "Wait {{seconds}}s"
+    }
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "view": "View",
+    "loading": "Loading...",
+    "yes": "Yes",
+    "no": "No",
+    "refresh": "Refresh"
+  },
+  "errors": {
+    "unauthorized": "Your session has expired or you are not signed in. Please sign in again.",
+    "forbidden": "You do not have permission to perform this action.",
+    "notFound": "The page was not found or the address is incorrect.",
+    "unexpectedTitle": "Unexpected error",
+    "unexpected": "An unexpected error occurred in the app. Please try again.",
+    "backHome": "Home",
+    "goBack": "Go back"
+  },
+  "network": {
+    "offline": {
+      "title": "No internet connection",
+      "description": "The app cannot reach the internet or server. Please check your connection settings.",
+      "hint": "Make sure Wi-Fi or mobile data is enabled, then try again.",
+      "retry": "Try again"
+    }
+  },
+  "settingsPage": {
+    "placeholder": "This section will be filled soon",
+    "tabs": {
+      "tab1": "Main",
+      "tab2": "Settings 2",
+      "tab3": "Settings 3",
+      "tab4": "Settings 4",
+      "programUi": "Program UI"
+    },
+    "programUi": {
+      "title": "Program interface",
+      "sidebarPosition": "Sidebar position",
+      "sidebarPositions": {
+        "left": "Left",
+        "right": "Right"
+      },
+      "componentSize": "Ant Design component size",
+      "sizes": {
+        "small": "Small",
+        "middle": "Medium",
+        "large": "Large"
+      },
+      "theme": "Theme",
+      "themes": {
+        "light": "Light",
+        "dark": "Dark"
+      }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "browser": "Browser notifications",
+      "description": "Show browser notifications when new messages arrive",
+      "unsupported": "Your browser does not support notifications",
+      "denied": "Notifications are blocked in browser settings",
+      "permissionRequired": "Allow notifications in your browser to enable this setting",
+      "enabled": "Browser notifications enabled",
+      "autoMark": "Mark as read automatically",
+      "autoMarkDescription": "New notifications are saved as read as soon as they arrive",
+      "autoMarkEnabled": "Automatic mark as read enabled",
+      "autoMarkDisabled": "Automatic mark as read disabled"
+    }
+  },
+  "menu": {
+    "home": "Home",
+    "guide": "Guide",
+    "settings": "Settings",
+    "profile": "Profile",
+    "applications": "Applications",
+    "applications.submit": "Submit application",
+    "applications.incoming": "Incoming applications",
+    "applications.calendar": "Applications calendar",
+    "pprCalendar": "PPR calendar",
+    "registration": "Registration",
+    "registration.pprType": "PPR type",
+    "registration.structuralUnits": "Structural units",
+    "registration.objects": "Objects",
+    "registration.monitoring": "Monitoring",
+    "registration.monitoring1": "Monitoring-1",
+    "registration.monitoring2": "Monitoring-2",
+    "management": "Management",
+    "management.hub": "Management",
+    "management.ppr": "PPR management",
+    "management.users": "User",
+    "management.roles": "Roles",
+    "management.employees": "Employee management",
+    "management.programs": "Program management",
+    "management.errors": "Errors",
+    "management.changes": "Changes"
+  },
+  "users": {
+    "add": "Add",
+    "edit": "Edit",
+    "listTitle": "Users",
+    "emptyList": "No users yet",
+    "emptySearch": "No users match your search",
+    "searchPlaceholder": "Search users",
+    "selectUser": "Select a user",
+    "uploadAvatar": "Upload photo",
+    "viewAvatar": "View larger",
+    "drawer": {
+      "title": "Register user",
+      "editTitle": "Edit user"
+    },
+    "fields": {
+      "avatar": "Profile photo",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "birthDate": "Date of birth",
+      "phone": "Phone number",
+      "tabelNumber": "Personnel number",
+      "position": "Position",
+      "role": "Role",
+      "structuralUnit": "Structural unit",
+      "section": "Section",
+      "isActive": "Active status"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "placeholders": {
+      "firstName": "e.g. Vali",
+      "lastName": "e.g. Aliyev",
+      "birthDate": "Select date",
+      "phone": "90 123 45 67",
+      "tabelNumber": "e.g. 12345",
+      "position": "e.g. Senior specialist",
+      "role": "Select role",
+      "structuralUnit": "Select structural unit",
+      "section": "Select a section or work without section"
+    },
+    "sectionAssignment": {
+      "sectionless": "Work without section",
+      "unknown": "Section not set"
+    },
+    "roles": {
+      "admin": "Admin",
+      "boshliq_monitoring": "Monitoring chief",
+      "xodim": "Employee"
+    },
+    "validation": {
+      "firstNameMin": "First name must be at least 2 characters",
+      "lastNameMin": "Last name must be at least 2 characters",
+      "birthDateRequired": "Select date of birth",
+      "phoneFormat": "Phone number is incomplete (+998 and 9 digits)",
+      "tabelNumberFormat": "Personnel number must contain exactly 5 digits",
+      "positionMin": "Enter position",
+      "roleRequired": "Select role",
+      "structuralUnitRequired": "Select structural unit",
+      "sectionRequired": "Select a section or choose work without section"
+    },
+    "notifications": {
+      "savedTitle": "Saved",
+      "savedDescription": "User registered successfully"
+    },
+    "messages": {
+      "error": "Failed to save user",
+      "avatarError": "Could not process the image. Choose another image",
+      "activated": "User activated",
+      "deactivated": "User deactivated",
+      "cannotDeactivateSelf": "You cannot deactivate your own account"
+    }
+  },
+  "applicationCalendar": {
+    "today": "Today",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "weekdays": {
+      "sunday": "Sun",
+      "monday": "Mon",
+      "tuesday": "Tue",
+      "wednesday": "Wed",
+      "thursday": "Thu",
+      "friday": "Fri",
+      "saturday": "Sat"
+    },
+    "months": {
+      "0": "January",
+      "1": "February",
+      "2": "March",
+      "3": "April",
+      "4": "May",
+      "5": "June",
+      "6": "July",
+      "7": "August",
+      "8": "September",
+      "9": "October",
+      "10": "November",
+      "11": "December"
+    },
+    "moreEvents": "+{{count}} more",
+    "modal": {
+      "title": "Application details",
+      "viewDetails": "View application",
+      "createdAt": "Submitted at",
+      "attachments": "Attachments",
+      "attachmentsValue": "{{images}} images, {{files}} files"
+    }
+  },
+  "pprCalendar": {
+    "today": "Today",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "moreEvents": "+{{count}} more",
+    "weekdays": {
+      "sunday": "Sun",
+      "monday": "Mon",
+      "tuesday": "Tue",
+      "wednesday": "Wed",
+      "thursday": "Thu",
+      "friday": "Fri",
+      "saturday": "Sat"
+    },
+    "months": {
+      "0": "January",
+      "1": "February",
+      "2": "March",
+      "3": "April",
+      "4": "May",
+      "5": "June",
+      "6": "July",
+      "7": "August",
+      "8": "September",
+      "9": "October",
+      "10": "November",
+      "11": "December"
+    },
+    "status": {
+      "draft": "Draft",
+      "pending_approval": "Pending approval",
+      "approved": "Approved"
+    },
+    "scope": {
+      "structure": "By structure",
+      "section": "By section"
+    },
+    "filters": {
+      "structuralUnit": "Select structural unit"
+    },
+    "fields": {
+      "date": "Date",
+      "pprType": "PPR type",
+      "pprTypePlaceholder": "Select PPR type",
+      "objects": "Objects",
+      "objectsPlaceholder": "Select objects",
+      "scope": "Scope",
+      "section": "Section",
+      "sectionPlaceholder": "Select section",
+      "comment": "Comment",
+      "commentPlaceholder": "Write a comment (optional)"
+    },
+    "validation": {
+      "pprTypeRequired": "Select PPR type",
+      "objectsRequired": "Select at least one object",
+      "sectionRequired": "Select a section"
+    },
+    "actions": {
+      "add": "Add",
+      "submitMonth": "Submit month",
+      "clearMonth": "Clear",
+      "executePpr": "Execute PPR",
+      "approve": "Approve",
+      "reject": "Reject",
+      "review": "View",
+      "incomingApprovals": "Incoming approvals"
+    },
+    "dayDrawer": {
+      "title": "{{date}}",
+      "empty": "No entries on this day"
+    },
+    "entryDrawer": {
+      "addTitle": "{{date}} — new entry",
+      "editTitle": "{{date}} — edit",
+      "activeScope": "Selected scope: {{scope}}"
+    },
+    "entryModal": {
+      "title": "PPR entry",
+      "deleteConfirm": "Delete this entry?"
+    },
+    "entryDetail": {
+      "title": "PPR details",
+      "status": "Execution status",
+      "completion": "Completion percentage",
+      "objectCompleted": "Completed",
+      "objectPending": "Not completed"
+    },
+    "executionStatus": {
+      "pending": "Pending",
+      "in_progress": "In progress",
+      "completed": "Completed"
+    },
+    "executionDrawer": {
+      "title": "Execute PPR",
+      "objects": "Completed objects",
+      "objectsPlaceholder": "Select objects",
+      "objectsRequired": "Select at least one object",
+      "images": "Images",
+      "files": "Files",
+      "uploadImages": "Upload images",
+      "uploadFiles": "Upload files",
+      "commentPlaceholder": "Write a comment (optional)"
+    },
+    "submitModal": {
+      "title": "Submit month for approval",
+      "message": "{{headName}} must approve it. Do you agree?",
+      "hint": "After you click Yes, the request will be sent to the head.",
+      "yes": "Yes, I agree",
+      "no": "No"
+    },
+    "clearModal": {
+      "title": "Clear month",
+      "message": "All entries in the PPR calendar for {{monthLabel}} will be deleted. Continue?",
+      "hint": "After clearing, the month will be empty and you can enter entries from scratch.",
+      "yes": "Yes, clear",
+      "no": "No"
+    },
+    "approveModal": {
+      "title": "Approve PPR calendar",
+      "message": "Have you reviewed the PPR calendar for {{monthLabel}} and is it correct? Do you confirm approval?",
+      "hint": "After you click Yes, I confirm, the month will be marked as finally approved.",
+      "yes": "Yes, I confirm",
+      "no": "No"
+    },
+    "incomingApprovalsModal": {
+      "title": "Incoming approvals",
+      "empty": "No calendars submitted for approval yet",
+      "rejectConfirm": "Return this PPR calendar for editing?",
+      "submitter": "Submitted by: {{name}}",
+      "entries": "{{count}} entries"
+    },
+    "approvalDrawer": {
+      "title": "Months pending approval",
+      "empty": "No months to approve",
+      "approveConfirm": "Approve this month?",
+      "submitter": "Submitted by: {{name}}",
+      "entries": "{{count}} entries"
+    },
+    "messages": {
+      "notAvailable": "No approved PPR calendar is available for this month",
+      "selectPendingMonth": "Select a month from incoming approvals and review it",
+      "reviewHint": "Review the PPR calendar submitted by the employee. Click days to check entries, then press Approve.",
+      "revisionHint": "Fix errors or use Clear to wipe the month and start over. When ready, submit again for approval.",
+      "noPendingApproval": "No months submitted for approval yet",
+      "createSuccess": "Entry saved",
+      "updateSuccess": "Entry updated",
+      "deleteSuccess": "Entry deleted",
+      "deleteError": "Failed to delete entry",
+      "submitSuccess": "Month submitted for approval",
+      "clearSuccess": "Month cleared",
+      "clearError": "Failed to clear month",
+      "approveSuccess": "Month approved",
+      "approveError": "Failed to approve",
+      "rejectSuccess": "Approval rejected",
+      "rejectError": "Failed to reject",
+      "executionSuccess": "PPR execution saved",
+      "executeLocked": "You cannot execute this PPR today",
+      "executeLockedDetail": "Only PPRs from the last 3 days and today can be executed. You can still view the details."
+    }
+  },
+  "homePage": {
+    "title": "Welcome, {{name}}",
+    "subtitle": "Key metrics, deadlines, and recent activity across the system",
+    "filters": {
+      "scopeAll": "All scopes",
+      "periodFrom": "From",
+      "periodTo": "To",
+      "reset": "Clear filters",
+      "refresh": "Refresh",
+      "applicationScope": {
+        "all": "All applications",
+        "submitted": "Submitted",
+        "incoming": "Incoming"
+      }
+    },
+    "kpis": {
+      "applicationsTotal": "Total applications",
+      "applicationsInProgress": "In progress",
+      "applicationsOverdue": "Overdue",
+      "applicationsIncoming": "Incoming applications",
+      "pprExecution": "PPR execution",
+      "pprPendingApproval": "Pending approval",
+      "notificationsUnread": "Unread notifications"
+    },
+    "ppr": {
+      "title": "PPR calendar status",
+      "executionTitle": "Execution in approved months",
+      "monthStatusTitle": "Months by status",
+      "statusDraft": "Draft",
+      "statusPending": "Pending approval",
+      "statusApproved": "Approved",
+      "plannedExecutions": "Planned",
+      "completedExecutions": "Completed"
+    },
+    "summary": {
+      "submittedApplications": "Submitted applications",
+      "completedApplications": "Completed applications",
+      "cancelledApplications": "Cancelled",
+      "approvedPprMonths": "Approved PPR months"
+    },
+    "tables": {
+      "upcomingDeadlines": "Upcoming deadlines",
+      "recentApplications": "Recent applications",
+      "recentNotifications": "Recent notifications",
+      "status": "Status",
+      "updatedAt": "Updated",
+      "daysRemaining": "Days left",
+      "overdue": "Overdue",
+      "daysLeft": "{{count}} days",
+      "emptyDeadlines": "No upcoming deadlines",
+      "emptyApplications": "No applications found",
+      "emptyNotifications": "No notifications"
+    },
+    "alerts": {
+      "overdueApplications": "{{count}} application(s) are overdue. Check incoming applications.",
+      "pendingPprMonths": "{{count}} PPR calendar month(s) are waiting for approval."
+    },
+    "errors": {
+      "loadFailed": "Failed to load dashboard data"
+    }
+  },
+  "managementPage": {
+    "title": "Management",
+    "subtitle": "Select and manage system sections"
+  },
+  "errorLogsPage": {
+    "title": "Errors",
+    "subtitle": "System errors with cause, solution, actor, and source page",
+    "forbiddenTitle": "Access denied",
+    "forbiddenDescription": "Ask an administrator for permission to view the error log",
+    "resolved": "Resolved",
+    "source": {
+      "api": "API",
+      "frontend": "Frontend",
+      "route": "Page"
+    },
+    "severity": {
+      "user": "User",
+      "system": "System"
+    },
+    "filters": {
+      "search": "Search by code, message, link, or user",
+      "allSources": "All sources",
+      "allSeverities": "All severities",
+      "allStatuses": "All statuses",
+      "open": "Open",
+      "resolved": "Resolved"
+    },
+    "columns": {
+      "time": "Time",
+      "source": "Source",
+      "severity": "Severity",
+      "code": "Code",
+      "message": "Error",
+      "actor": "Caused by",
+      "route": "Link",
+      "solution": "Solution",
+      "actions": "Actions"
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "resolve": "Resolve"
+    },
+    "messages": {
+      "resolved": "Error marked as resolved"
+    },
+    "detail": {
+      "title": "Error details",
+      "code": "Error code",
+      "message": "Error message",
+      "solution": "Solution",
+      "actor": "Caused by",
+      "unknownActor": "Unknown",
+      "route": "Source page",
+      "apiPath": "API request",
+      "time": "Time",
+      "userAgent": "Browser",
+      "validationErrors": "Validation errors",
+      "stack": "Technical stack",
+      "metadata": "Additional data",
+      "noSolution": "No automatic solution is available for this error"
+    }
+  },
+  "pprManagement": {
+    "monthDetail": "PPR calendar",
+    "backToList": "Back to list",
+    "search": "Search by month or unit",
+    "empty": "No approved PPR calendars found",
+    "filters": {
+      "structuralUnit": "Structural unit",
+      "scopeAll": "All scopes",
+      "anySection": "By section",
+      "periodFrom": "From month",
+      "periodTo": "To month",
+      "reset": "Clear filters"
+    },
+    "deleteEntryConfirm": "Are you sure you want to delete this PPR entry?",
+    "columns": {
+      "period": "Month",
+      "unit": "Unit",
+      "scope": "Scope",
+      "entries": "Entries",
+      "approvedAt": "Approved at",
+      "actions": "Actions"
+    },
+    "actions": {
+      "clearMonth": "Clear month"
+    },
+    "clearModal": {
+      "title": "Clear month",
+      "message": "Delete all PPR entries for {{monthLabel}}?",
+      "hint": "This action cannot be undone. The month returns to draft and employees can rebuild the calendar.",
+      "yes": "Yes, clear"
+    },
+    "messages": {
+      "entryDeleted": "PPR entry deleted",
+      "monthCleared": "Month cleared. Users can rebuild the calendar from scratch"
+    }
+  },
+  "applicationSubmit": {
+    "listTitle": "Sent applications",
+    "detailTitle": "Application details",
+    "send": "Send application",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirm": "Are you sure you want to delete this application?",
+    "selectItem": "Select an application",
+    "emptyList": "No applications sent yet",
+    "emptySearch": "No applications match your search",
+    "uploadImages": "Upload images",
+    "uploadFiles": "Upload files",
+    "drawer": {
+      "title": "Send application",
+      "editTitle": "Edit application"
+    },
+    "fields": {
+      "submittedBy": "Application submitter",
+      "submitterStructuralUnit": "Submitter structural unit",
+      "structuralUnits": "Structural units",
+      "type": "Application type",
+      "deadline": "Deadline",
+      "images": "Images",
+      "files": "Files",
+      "comment": "General comment"
+    },
+    "placeholders": {
+      "structuralUnits": "Select one or more structural units",
+      "type": "Select application type",
+      "deadline": "Select deadline",
+      "comment": "Write a general comment about the application"
+    },
+    "types": {
+      "execution": "For execution",
+      "information": "For information"
+    },
+    "status": {
+      "in_progress": "In progress",
+      "completed": "Confirmed",
+      "cancelled": "Cancelled"
+    },
+    "filters": {
+      "search": "Search applications",
+      "type": "Filter by type"
+    },
+    "validation": {
+      "structuralUnitsRequired": "Select at least one structural unit",
+      "deadlineRequired": "Select a deadline for execution applications",
+      "commentMin": "Comment must be at least 3 characters"
+    },
+    "messages": {
+      "saved": "Application sent successfully",
+      "updated": "Application updated successfully",
+      "deleted": "Application deleted successfully",
+      "error": "Failed to send application",
+      "finalizedHint": "Application confirmed",
+      "cancelledLockedHint": "Cancelled applications cannot be edited or deleted"
+    },
+    "attachments": {
+      "view": "View",
+      "download": "Download",
+      "empty": "No files uploaded",
+      "previewUnavailable": "File content is missing",
+      "downloadUnavailable": "Cannot download file"
+    },
+    "specialMessage": {
+      "title": "Special message",
+      "prompt": "Do you want to send a special message?",
+      "hint": "Write a separate message for any selected unit. At least one message is required.",
+      "placeholder": "Special message for this unit",
+      "atLeastOne": "Write a special message for at least one unit"
+    }
+  },
+  "applicationIncoming": {
+    "listTitle": "Incoming applications",
+    "detailTitle": "Application details",
+    "selectItem": "Select an application",
+    "emptyList": "No incoming applications yet",
+    "emptySearch": "No applications match your search",
+    "specialMessage": {
+      "badge": "Special message",
+      "highlightTitle": "Special message for you"
+    }
+  },
+  "applicationWorkflow": {
+    "title": "Workflow",
+    "open": "Workflow",
+    "back": "Back",
+    "statusLabel": "Status",
+    "messagePlaceholder": "Write a message...",
+    "emptyMessages": "No messages yet",
+    "notFound": "Application not found",
+    "forbidden": "You do not have access to this workflow",
+    "status": {
+      "returned": "Return",
+      "in_progress_work": "In progress",
+      "pending_confirmation": "Pending confirmation",
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled"
+    },
+    "actions": {
+      "confirm": "Confirm",
+      "cancel": "Cancel"
+    },
+    "finalizeModal": {
+      "no": "No",
+      "confirm": {
+        "title": "Confirm application",
+        "yes": "Yes, confirm",
+        "message": "All structural units have responded. Do you want to finally confirm this application?",
+        "hint": "After confirmation, no new information can be added to the application."
+      },
+      "cancel": {
+        "title": "Cancel application",
+        "yes": "Yes, cancel",
+        "message": "All structural units have responded. Do you want to cancel this application?",
+        "hint": "After cancellation, no new information can be added to the application."
+      }
+    },
+    "unitStatuses": {
+      "title": "Current statuses by structural unit"
+    },
+    "confirmationFiles": {
+      "title": "Upload confirmation files",
+      "hint": "Upload at least one file to switch to Pending confirmation status.",
+      "upload": "Upload files",
+      "confirm": "Save and change status",
+      "required": "At least one file is required"
+    },
+    "messages": {
+      "loadError": "Failed to load workflow",
+      "sendError": "Failed to send message",
+      "statusUpdated": "Status updated successfully",
+      "statusError": "Failed to update status",
+      "confirmSuccess": "Application confirmed successfully",
+      "confirmError": "Failed to confirm application",
+      "cancelSuccess": "Application cancelled",
+      "cancelError": "Failed to cancel application"
+    }
+  },
+  "pprType": {
+    "add": "Add",
+    "edit": "Edit",
+    "upload": "Upload file",
+    "drawer": {
+      "createTitle": "Register PPR type",
+      "editTitle": "Edit PPR type"
+    },
+    "fields": {
+      "originalName": "PPR original name",
+      "shortName": "Short name",
+      "description": "Detailed information",
+      "files": "PPR files",
+      "createdAt": "Created at",
+      "updatedAt": "Updated at"
+    },
+    "placeholders": {
+      "originalName": "e.g. PPR based on presidential decree",
+      "shortName": "Select PPR type",
+      "description": "Enter detailed information about the PPR type"
+    },
+    "columns": {
+      "originalName": "PPR original name",
+      "shortName": "Short name",
+      "description": "Detailed information",
+      "owner": "Author",
+      "files": "Files",
+      "actions": "Actions"
+    },
+    "filters": {
+      "search": "Search",
+      "shortName": "Filter by short name",
+      "originalName": "Filter by original name",
+      "reset": "Clear filters"
+    },
+    "owner": {
+      "self": "Me",
+      "unknown": "Unknown"
+    },
+    "validation": {
+      "originalNameMin": "PPR original name must be at least 2 characters",
+      "shortNameRequired": "Select a short name",
+      "descriptionMin": "Detailed information must be at least 10 characters",
+      "filesMax": "Maximum 100 files allowed"
+    },
+    "messages": {
+      "saving": "Saving...",
+      "saved": "PPR type saved successfully",
+      "error": "Failed to save PPR type"
+    },
+    "detail": {
+      "title": "PPR type details",
+      "close": "Close",
+      "emptyFiles": "No files"
+    },
+    "fileActions": {
+      "view": "View",
+      "download": "Download",
+      "previewUnavailable": "File content is unavailable. Please upload again.",
+      "previewUnsupported": "This file type cannot be previewed on screen. Please download it.",
+      "downloadUnavailable": "File content is unavailable for download",
+      "downloadUnavailableHint": "Re-upload the file or refresh the page if it was saved in this browser"
+    }
+  },
+  "structuralUnit": {
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirm": "Are you sure you want to delete this structural unit?",
+    "upload": "Upload file",
+    "drawer": {
+      "createTitle": "Register structural unit",
+      "editTitle": "Edit structural unit"
+    },
+    "fields": {
+      "originalName": "Service full name",
+      "shortName": "Short name",
+      "headFullName": "Head full name",
+      "headUser": "Head",
+      "documents": "Service documents"
+    },
+    "placeholders": {
+      "originalName": "For example: Information technology service",
+      "shortName": "For example: ITS",
+      "headFullName": "For example: Karimov Vali Aliyevich",
+      "headUser": "Search and select a user"
+    },
+    "filters": {
+      "search": "Search (full name, short name, head name)",
+      "shortName": "By short name",
+      "originalName": "By full name",
+      "reset": "Reset filters"
+    },
+    "selectItem": "Select a structural unit",
+    "emptyDocuments": "No documents uploaded",
+    "documents": {
+      "view": "View",
+      "download": "Download",
+      "previewUnavailable": "File content is missing. Please upload the file again.",
+      "previewUnsupported": "This file type cannot be previewed on screen. Please download it.",
+      "downloadUnavailable": "Cannot download a file without content"
+    },
+    "columns": {
+      "originalName": "Service full name",
+      "shortName": "Short name",
+      "headFullName": "Head full name",
+      "documents": "Documents",
+      "sections": "Sections",
+      "actions": "Actions"
+    },
+    "validation": {
+      "originalNameMin": "Service full name must be at least 2 characters",
+      "shortNameMin": "Short name must be at least 2 characters",
+      "headFullNameMin": "Head full name must be at least 5 characters",
+      "headRequired": "Select a head"
+    },
+    "messages": {
+      "saved": "Structural unit saved successfully",
+      "error": "Failed to save",
+      "deleted": "Structural unit deleted successfully",
+      "deleteError": "Failed to delete structural unit"
+    },
+    "section": {
+      "title": "Sections",
+      "add": "Add section",
+      "edit": "Edit",
+      "empty": "No sections yet",
+      "drawer": {
+        "createTitle": "Create section",
+        "editTitle": "Edit section"
+      },
+      "fields": {
+        "originalName": "Section full name",
+        "shortName": "Short name",
+        "documents": "Files"
+      },
+      "placeholders": {
+        "originalName": "For example: Information security section",
+        "shortName": "For example: ISS"
+      },
+      "validation": {
+        "originalNameMin": "Section full name must be at least 2 characters",
+        "shortNameMin": "Short name must be at least 2 characters"
+      },
+      "messages": {
+        "saved": "Section saved successfully",
+        "error": "Failed to save section"
+      }
+    }
+  },
+  "object": {
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirm": "Are you sure you want to delete this object?",
+    "upload": "Upload file",
+    "openInMaps": "Open in maps",
+    "drawer": {
+      "createTitle": "Register object",
+      "editTitle": "Edit object"
+    },
+    "fields": {
+      "originalName": "Object full name",
+      "shortName": "Short name",
+      "location": "Location",
+      "address": "Address",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
+      "documents": "Documents"
+    },
+    "placeholders": {
+      "originalName": "e.g. Central Hospital",
+      "shortName": "e.g. CH",
+      "address": "Enter address"
+    },
+    "filters": {
+      "search": "Search (name, short name, address)",
+      "shortName": "By short name",
+      "originalName": "By full name",
+      "reset": "Reset filters"
+    },
+    "selectItem": "Select an object",
+    "emptyDocuments": "No documents uploaded",
+    "documents": {
+      "view": "View",
+      "download": "Download",
+      "previewUnavailable": "File content is unavailable. Re-upload the file.",
+      "previewUnsupported": "This file type cannot be previewed. Download it instead.",
+      "downloadUnavailable": "File content is unavailable for download"
+    },
+    "columns": {
+      "originalName": "Full name",
+      "shortName": "Short name",
+      "address": "Address",
+      "documents": "Documents"
+    },
+    "map": {
+      "search": "Search",
+      "searchPlaceholder": "Enter address or place name",
+      "clickToSelect": "Click on the map to select a location",
+      "selectedPoint": "Selected point",
+      "noAddress": "No address provided",
+      "loadError": "Failed to load Yandex Maps. Enter the address manually.",
+      "searchNotFound": "Address not found",
+      "searchError": "Search failed"
+    },
+    "validation": {
+      "originalNameMin": "Full name must be at least 2 characters",
+      "shortNameMin": "Short name must be at least 2 characters",
+      "addressMin": "Address must be at least 5 characters"
+    },
+    "messages": {
+      "saved": "Object saved successfully",
+      "error": "Failed to save"
+    }
+  },
+  "profile": {
+    "changePassword": "Change password",
+    "notifications": {
+      "title": "Notifications"
+    },
+    "drawer": {
+      "editTitle": "Edit profile"
+    },
+    "password": {
+      "drawerTitle": "Change password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password",
+      "placeholders": {
+        "newPassword": "Enter new password",
+        "confirmPassword": "Re-enter password"
+      },
+      "confirmTitle": "Change password?",
+      "confirmDescription": "Are you sure you want to confirm this new password?",
+      "saved": "Password updated successfully",
+      "error": "Failed to update password",
+      "validation": {
+        "minLength": "Password must be at least 4 characters",
+        "confirmRequired": "Re-enter password",
+        "mismatch": "Passwords do not match"
+      }
+    },
+    "messages": {
+      "saved": "Profile updated successfully",
+      "error": "Failed to save profile"
+    }
+  },
+  "roles": {
+    "add": "Add",
+    "edit": "Edit",
+    "upload": "Upload file",
+    "deleteConfirm": "Delete this role?",
+    "drawer": {
+      "createTitle": "Add role",
+      "editTitle": "Edit role"
+    },
+    "fields": {
+      "name": "Role name",
+      "description": "Description",
+      "documents": "Role documents",
+      "permissions": "Page permissions",
+      "canViewAllStructuralUnits": "View all structural units"
+    },
+    "placeholders": {
+      "name": "For example: Senior specialist",
+      "description": "Enter role description"
+    },
+    "filters": {
+      "search": "Search roles"
+    },
+    "columns": {
+      "name": "Role name",
+      "description": "Description",
+      "documents": "Documents",
+      "users": "Users",
+      "actions": "Actions"
+    },
+    "permissions": {
+      "page": "Page",
+      "view": "View",
+      "create": "Create",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "validation": {
+      "nameMin": "Role name must be at least 2 characters",
+      "descriptionMin": "Description must be at least 2 characters"
+    },
+    "messages": {
+      "saved": "Role saved successfully",
+      "error": "Failed to save",
+      "deleted": "Role deleted",
+      "deleteSystem": "System role cannot be deleted",
+      "deleteAssigned": "This role is assigned to {{count}} users"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications",
+    "markAll": "All",
+    "total": "Total: {{count}}",
+    "types": {
+      "ppr_calendar_submitted": "PPR calendar",
+      "ppr_calendar_approved": "PPR approved",
+      "ppr_calendar_rejected": "PPR rejected",
+      "application_created": "New application",
+      "application_workflow_message": "Application message",
+      "application_workflow_status": "Application status",
+      "role_permissions_updated": "Role permissions",
+      "user_role_changed": "Role changed",
+      "user_access_changed": "Access changed",
+      "system": "System"
+    }
+  }
+}

@@ -1,0 +1,1115 @@
+{
+  "app": {
+    "name": "MPPR tizimi",
+    "hello": "MPPR tizimiga xush kelibsiz",
+    "dashboard": "Bosh sahifa",
+    "theme": "Mavzu",
+    "language": "Til",
+    "light": "Yorug'",
+    "dark": "Qorong'u"
+  },
+  "layout": {
+    "openMenu": "Menyuni ochish"
+  },
+  "api": {
+    "errors": {
+      "title": "Xatolik",
+      "whatToDo": "Nima qilish kerak",
+      "generic": "Noma'lum xatolik yuz berdi. Qayta urinib ko'ring.",
+      "categories": {
+        "user": "Ma'lumot yoki ruxsat xatosi",
+        "system": "Tizim xatosi"
+      },
+      "VALIDATION_FAILED": "Kiritilgan ma'lumotlar noto'g'ri yoki to'liq emas",
+      "INTERNAL_SERVER_ERROR": "Serverda kutilmagan xatolik yuz berdi. Keyinroq urinib ko'ring",
+      "INVALID_CREDENTIALS": "Telefon raqami yoki parol noto'g'ri",
+      "INVALID_REFRESH_TOKEN": "Sessiya tugagan. Qayta tizimga kiring",
+      "USER_NOT_FOUND": "Foydalanuvchi topilmadi",
+      "USER_INACTIVE": "Hisobingiz faolsiz. Administrator bilan bog'laning",
+      "USER_CANNOT_DEACTIVATE_SELF": "O'zingizni faolsiz qila olmaysiz",
+      "PHONE_ALREADY_REGISTERED": "Bu telefon raqami allaqachon ro'yxatdan o'tgan",
+      "PHONE_ALREADY_IN_USE": "Bu telefon raqami boshqa foydalanuvchida mavjud",
+      "TABEL_NUMBER_ALREADY_REGISTERED": "Bu tabel raqami allaqachon ro'yxatdan o'tgan",
+      "TABEL_NUMBER_ALREADY_IN_USE": "Bu tabel raqami boshqa foydalanuvchida mavjud",
+      "APP_ROLE_NOT_FOUND": "Rol topilmadi",
+      "STRUCTURAL_UNIT_NOT_FOUND": "Tarkibiy tuzilma topilmadi",
+      "STRUCTURAL_UNIT_IN_USE": "Bu tarkibiy tuzilmaga biriktirilgan foydalanuvchilar mavjud",
+      "REGISTERED_OBJECT_NOT_FOUND": "Obyekt topilmadi",
+      "PPR_TYPE_NOT_FOUND": "PPR turi topilmadi",
+      "NOTIFICATION_NOT_FOUND": "Bildirishnoma topilmadi",
+      "APPLICATION_NOT_FOUND": "Ariza topilmadi",
+      "APPLICATION_WORKFLOW_FORBIDDEN": "Bu ariza bo'yicha ishlov berishga ruxsatingiz yo'q",
+      "APPLICATION_WORKFLOW_CONFIRMATION_FILES_REQUIRED": "Tasdiqlash uchun kamida bitta fayl biriktiring",
+      "APPLICATION_WORKFLOW_FINALIZED": "Tasdiqlangan yoki yakunlangan arizani tahrirlab bo'lmaydi",
+      "PPR_CALENDAR_MONTH_NOT_FOUND": "PPR taqvim oyi topilmadi",
+      "PPR_CALENDAR_ENTRY_NOT_FOUND": "PPR taqvim yozuvi topilmadi",
+      "PPR_CALENDAR_FORBIDDEN": "PPR taqvimiga kirish yoki tahrirlashga ruxsat yo'q",
+      "DASHBOARD_FORBIDDEN": "Bosh sahifa ma'lumotlarini ko'rishga ruxsat yo'q",
+      "PPR_CALENDAR_MONTH_NOT_EDITABLE": "Bu oy taqvimi endi tahrirlab bo'lmaydi",
+      "PPR_CALENDAR_MONTH_NOT_SUBMITTABLE": "Bu oy taqvimini hozir yuborib bo'lmaydi",
+      "PPR_CALENDAR_HEAD_NOT_FOUND": "Tarkibiy tuzilma boshlig'i topilmadi",
+      "PPR_CALENDAR_MONTH_EMPTY": "Taqvimda kamida bitta yozuv bo'lishi kerak",
+      "FORBIDDEN": "Bu amalni bajarishga ruxsatingiz yo'q",
+      "NOT_FOUND": "So'ralgan ma'lumot topilmadi",
+      "RESOURCE_ALREADY_EXISTS": "Bu ma'lumot allaqachon mavjud",
+      "DATABASE_ERROR": "Ma'lumotlar bazasida xatolik yuz berdi",
+      "DATABASE_SCHEMA_OUT_OF_DATE": "Dastur va ma'lumotlar bazasi versiyasi mos kelmayapti",
+      "ERROR_LOG_FORBIDDEN": "Xatolar jurnalini ko'rishga ruxsat yo'q",
+      "CLIENT_RUNTIME_ERROR": "Dasturda kutilmagan xatolik yuz berdi",
+      "CLIENT_UNHANDLED_REJECTION": "Bajarilmagan va'da (promise) xatosi yuz berdi",
+      "ROUTE_ERROR": "Sahifa yuklanayotganda xatolik yuz berdi",
+      "FIRST_NAME_REQUIRED": "Ismni kiriting",
+      "LAST_NAME_REQUIRED": "Familyani kiriting",
+      "BIRTH_DATE_REQUIRED": "Tug'ilgan sanani tanlang",
+      "PHONE_REQUIRED": "Telefon raqamini kiriting",
+      "TABEL_NUMBER_FORMAT": "Tabel raqami 5 ta raqamdan iborat bo'lishi kerak",
+      "POSITION_REQUIRED": "Lavozimni kiriting",
+      "ROLE_ID_REQUIRED": "Rolni tanlang",
+      "STRUCTURAL_UNIT_ID_REQUIRED": "Tarkibiy tuzilmani tanlang",
+      "PASSWORD_MIN_LENGTH": "Parol kamida 4 ta belgidan iborat bo'lishi kerak",
+      "PAYLOAD_TOO_LARGE": "Yuklangan fayl juda katta",
+      "TOO_MANY_REQUESTS": "Juda ko'p so'rov yuborildi. Biroz kutib, qayta urinib ko'ring",
+      "LOGIN_TEMPORARILY_LOCKED": "Juda ko'p marta noto'g'ri parol kiritildi. {{seconds}} soniya kuting",
+      "network": "Server bilan aloqa yo'q",
+      "timeout": "So'rov vaqti tugadi",
+      "hints": {
+        "VALIDATION_FAILED": "Maydonlarni tekshirib, barcha majburiy ma'lumotlarni to'ldiring",
+        "INVALID_CREDENTIALS": "Telefon raqami va parolni qayta tekshiring",
+        "INVALID_REFRESH_TOKEN": "Chiqib, qayta tizimga kiring",
+        "PHONE_ALREADY_IN_USE": "Boshqa telefon raqamidan foydalaning yoki mavjud foydalanuvchini tahrirlang",
+        "TABEL_NUMBER_ALREADY_IN_USE": "Boshqa tabel raqamidan foydalaning",
+        "STRUCTURAL_UNIT_IN_USE": "Avval foydalanuvchilarni boshqa tarkibiy tuzilmaga o'tkazing, keyin o'chiring",
+        "APPLICATION_WORKFLOW_FORBIDDEN": "Ariza sizning tarkibiy tuzilmangizga tegishli emas yoki ruxsat yetarli emas",
+        "APPLICATION_WORKFLOW_CONFIRMATION_FILES_REQUIRED": "Tasdiqlash faylini yuklang va qayta saqlang",
+        "APPLICATION_WORKFLOW_FINALIZED": "Bu ariza allaqachon tasdiqlangan yoki bekor qilingan",
+        "PPR_CALENDAR_FORBIDDEN": "Administrator yoki tegishli tarkibiy tuzilma boshlig'idan ruxsat so'rang",
+        "PPR_CALENDAR_MONTH_NOT_EDITABLE": "Faqat qoralama holatidagi oyni tahrirlash mumkin",
+        "PPR_CALENDAR_MONTH_NOT_SUBMITTABLE": "Avval taqvimni to'ldiring yoki oy holatini tekshiring",
+        "PPR_CALENDAR_HEAD_NOT_FOUND": "Tarkibiy tuzilma boshlig'ini ro'yxatdan o'tkazing",
+        "PPR_CALENDAR_MONTH_EMPTY": "Kamida bitta PPR yozuvini qo'shing",
+        "FORBIDDEN": "Administratoringizdan kerakli ruxsatni so'rang",
+        "NOT_FOUND": "Ma'lumot o'chirilgan yoki boshqa foydalanuvchi tahrirlagan bo'lishi mumkin. Sahifani yangilang",
+        "RESOURCE_ALREADY_EXISTS": "Boshqa qiymat kiriting yoki mavjud yozuvni tahrirlang",
+        "PAYLOAD_TOO_LARGE": "Kichikroq fayl tanlang yoki siqilgan rasm yuklang",
+        "TOO_MANY_REQUESTS": "10-20 soniya kutib, keyin qayta urinib ko'ring",
+        "INTERNAL_SERVER_ERROR": "Muammo davom etsa, administrator yoki dasturchiga xabar bering",
+        "DATABASE_ERROR": "Sahifani yangilang. Muammo davom etsa, administratorga murojaat qiling",
+        "DATABASE_SCHEMA_OUT_OF_DATE": "Administrator `npx prisma migrate deploy` buyrug'ini ishga tushirishi kerak",
+        "ERROR_LOG_FORBIDDEN": "Administratordan Xatolar sahifasiga ruxsat so'rang",
+        "CLIENT_RUNTIME_ERROR": "Sahifani yangilang. Muammo takrorlansa, administratorga xabar bering",
+        "CLIENT_UNHANDLED_REJECTION": "Amalni qayta bajaring yoki boshqa sahifaga o'ting",
+        "ROUTE_ERROR": "Orqaga qayting yoki bosh sahifaga o'ting",
+        "network": "Internet aloqasini va backend server ishlayotganini tekshiring",
+        "timeout": "Internet tezligini tekshirib, qayta urinib ko'ring"
+      }
+    }
+  },
+  "auth": {
+    "subtitle": "Tizimga kirish uchun ma'lumotlaringizni kiriting",
+    "login": "Kirish",
+    "logout": "Chiqish",
+    "logoutConfirm": "Rostdan ham tizimdan chiqmoqchimisiz?",
+    "profile": "Mening profilim",
+    "fields": {
+      "phone": "Telefon raqami",
+      "password": "Parol"
+    },
+    "placeholders": {
+      "password": "Parolingizni kiriting"
+    },
+    "validation": {
+      "phoneFormat": "Telefon raqami to'liq emas (+998 va 9 ta raqam)",
+      "passwordRequired": "Parolni kiriting"
+    },
+    "notifications": {
+      "errorTitle": "Xatolik",
+      "invalidCredentials": "Telefon raqami yoki parol noto'g'ri",
+      "accountInactive": "Hisobingiz faolsiz. Administrator bilan bog'laning"
+    },
+    "lockout": {
+      "title": "Kirish vaqtincha bloklandi",
+      "description": "5 marta noto'g'ri parol kiritildi. {{seconds}} soniyadan keyin qayta urinib ko'ring",
+      "button": "{{seconds}} soniya kuting"
+    }
+  },
+  "common": {
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "delete": "O'chirish",
+    "edit": "Tahrirlash",
+    "close": "Yopish",
+    "view": "Ko'rish",
+    "loading": "Yuklanmoqda...",
+    "yes": "Ha",
+    "no": "Yo'q",
+    "refresh": "Yangilash"
+  },
+  "errors": {
+    "unauthorized": "Sessiya tugagan yoki tizimga kirmagansiz. Qayta kiring.",
+    "forbidden": "Sizda bu amalni bajarish uchun ruxsat yo'q.",
+    "notFound": "Sahifa topilmadi yoki manzil noto'g'ri.",
+    "unexpectedTitle": "Kutilmagan xatolik",
+    "unexpected": "Ilovada kutilmagan xatolik yuz berdi. Qayta urinib ko'ring.",
+    "backHome": "Bosh sahifa",
+    "goBack": "Orqaga"
+  },
+  "network": {
+    "offline": {
+      "title": "Internet aloqasi yo'q",
+      "description": "Tizim internet yoki serverga ulanolmayapti. Iltimos, internet sozlamalarini tekshiring.",
+      "hint": "Wi-Fi yoki mobil internet yoqilganiga ishonch hosil qiling, so'ng qayta urinib ko'ring.",
+      "retry": "Qayta urinish"
+    }
+  },
+  "settingsPage": {
+    "placeholder": "Bu bo'lim tez orada to'ldiriladi",
+    "tabs": {
+      "tab1": "Asosiy",
+      "tab2": "Sozlamalar 2",
+      "tab3": "Sozlamalar 3",
+      "tab4": "Sozlamalar 4",
+      "programUi": "Dastur UI"
+    },
+    "programUi": {
+      "title": "Dastur interfeysi",
+      "sidebarPosition": "Sidebar joylashuvi",
+      "sidebarPositions": {
+        "left": "Chap",
+        "right": "O'ng"
+      },
+      "componentSize": "Ant Design komponent o'lchami",
+      "sizes": {
+        "small": "Small",
+        "middle": "Medium",
+        "large": "Large"
+      },
+      "theme": "Mavzu",
+      "themes": {
+        "light": "Yorug'",
+        "dark": "Qorong'u"
+      }
+    },
+    "notifications": {
+      "title": "Bildirishnomalar",
+      "browser": "Brauzer bildirishnomalari",
+      "description": "Yangi xabarlar kelganda brauzer orqali bildirishnoma ko'rsatiladi",
+      "unsupported": "Brauzeringiz bildirishnomalarni qo'llab-quvvatlamaydi",
+      "denied": "Brauzer sozlamalarida bildirishnomalar bloklangan",
+      "permissionRequired": "Bildirishnomalarni yoqish uchun brauzer ruxsatini bering",
+      "enabled": "Brauzer bildirishnomalari yoqildi",
+      "autoMark": "Avtomatik o'qilgan deb belgilash",
+      "autoMarkDescription": "Yangi bildirishnomalar kelishi bilanoq o'qilgan sifatida saqlanadi",
+      "autoMarkEnabled": "Avtomatik o'qilgan deb belgilash yoqildi",
+      "autoMarkDisabled": "Avtomatik o'qilgan deb belgilash o'chirildi"
+    }
+  },
+  "menu": {
+    "home": "Bosh sahifa",
+    "guide": "Yo'riqnoma",
+    "settings": "Sozlamalar",
+    "profile": "Profil",
+    "applications": "Arizalar",
+    "applications.submit": "Ariza yuborish",
+    "applications.incoming": "Kelgan ariza",
+    "applications.calendar": "Arizalar taqvimi",
+    "pprCalendar": "PPR taqvimi",
+    "registration": "Ro'yxatga olish",
+    "registration.pprType": "PPR turi",
+    "registration.structuralUnits": "Tarkibiy tuzilmalar",
+    "registration.objects": "Obyektlar",
+    "registration.monitoring": "Monitoring",
+    "registration.monitoring1": "Monitoring-1",
+    "registration.monitoring2": "Monitoring-2",
+    "management": "Boshqaruv",
+    "management.hub": "Boshqaruv",
+    "management.ppr": "PPR boshqaruvi",
+    "management.users": "Foydalanuvchi",
+    "management.roles": "Rollar",
+    "management.employees": "Xodimlar boshqaruvi",
+    "management.programs": "Dastur boshqaruvi",
+    "management.errors": "Xatolar",
+    "management.changes": "O'zgarishlar"
+  },
+  "users": {
+    "add": "Qo'shish",
+    "edit": "Tahrirlash",
+    "listTitle": "Foydalanuvchilar",
+    "emptyList": "Foydalanuvchilar yo'q",
+    "emptySearch": "Qidiruv bo'yicha natija topilmadi",
+    "searchPlaceholder": "Foydalanuvchi qidirish",
+    "selectUser": "Foydalanuvchini tanlang",
+    "uploadAvatar": "Rasm yuklash",
+    "viewAvatar": "Kattaroq ko'rish",
+    "drawer": {
+      "title": "Foydalanuvchini ro'yxatga olish",
+      "editTitle": "Foydalanuvchini tahrirlash"
+    },
+    "fields": {
+      "avatar": "Profil rasmi",
+      "firstName": "Ismi",
+      "lastName": "Familyasi",
+      "birthDate": "Tug'ilgan sanasi",
+      "phone": "Telefon raqami",
+      "tabelNumber": "Tabel raqami",
+      "position": "Lavozimi",
+      "role": "Roli",
+      "structuralUnit": "Tarkibiy tuzilma",
+      "section": "Bo'lim",
+      "isActive": "Faollik"
+    },
+    "status": {
+      "active": "Faol",
+      "inactive": "Faolsiz"
+    },
+    "placeholders": {
+      "firstName": "Masalan: Vali",
+      "lastName": "Masalan: Aliyev",
+      "birthDate": "Sanani tanlang",
+      "phone": "90 123 45 67",
+      "tabelNumber": "Masalan: 12345",
+      "position": "Masalan: Bosh mutaxassis",
+      "role": "Rolni tanlang",
+      "structuralUnit": "Tarkibiy tuzilmani tanlang",
+      "section": "Bo'limni tanlang yoki bo'limsiz harakatlanish"
+    },
+    "sectionAssignment": {
+      "sectionless": "Bo'limsiz harakatlanish",
+      "unknown": "Bo'lim aniqlanmagan"
+    },
+    "roles": {
+      "admin": "Admin",
+      "boshliq_monitoring": "Boshliq monitoring",
+      "xodim": "Xodim"
+    },
+    "validation": {
+      "firstNameMin": "Ism kamida 2 ta belgidan iborat bo'lishi kerak",
+      "lastNameMin": "Familya kamida 2 ta belgidan iborat bo'lishi kerak",
+      "birthDateRequired": "Tug'ilgan sanasini tanlang",
+      "phoneFormat": "Telefon raqami to'liq emas (+998 va 9 ta raqam)",
+      "tabelNumberFormat": "Tabel raqami 5 ta raqamdan iborat bo'lishi kerak",
+      "positionMin": "Lavozimni kiriting",
+      "roleRequired": "Rolni tanlang",
+      "structuralUnitRequired": "Tarkibiy tuzilmani tanlang",
+      "sectionRequired": "Bo'limni tanlang yoki bo'limsiz harakatlanishni belgilang"
+    },
+    "notifications": {
+      "savedTitle": "Saqlandi",
+      "savedDescription": "Foydalanuvchi muvaffaqiyatli ro'yxatga olindi"
+    },
+    "messages": {
+      "error": "Foydalanuvchini saqlashda xatolik yuz berdi",
+      "avatarError": "Rasmni yuklab bo'lmadi. Boshqa rasm tanlang",
+      "activated": "Foydalanuvchi faollashtirildi",
+      "deactivated": "Foydalanuvchi faolsizlashtirildi",
+      "cannotDeactivateSelf": "O'zingizni faolsiz qila olmaysiz"
+    }
+  },
+  "applicationCalendar": {
+    "today": "Bugun",
+    "previousMonth": "Oldingi oy",
+    "nextMonth": "Keyingi oy",
+    "weekdays": {
+      "sunday": "Yak",
+      "monday": "Dush",
+      "tuesday": "Sesh",
+      "wednesday": "Chor",
+      "thursday": "Pay",
+      "friday": "Jum",
+      "saturday": "Shan"
+    },
+    "months": {
+      "0": "Yanvar",
+      "1": "Fevral",
+      "2": "Mart",
+      "3": "Aprel",
+      "4": "May",
+      "5": "Iyun",
+      "6": "Iyul",
+      "7": "Avgust",
+      "8": "Sentabr",
+      "9": "Oktabr",
+      "10": "Noyabr",
+      "11": "Dekabr"
+    },
+    "moreEvents": "+{{count}} ta yana",
+    "modal": {
+      "title": "Ariza ma'lumotlari",
+      "viewDetails": "Arizani batafsil",
+      "createdAt": "Yuborilgan vaqt",
+      "attachments": "Biriktirmalar",
+      "attachmentsValue": "{{images}} ta rasm, {{files}} ta fayl"
+    }
+  },
+  "pprCalendar": {
+    "today": "Bugun",
+    "previousMonth": "Oldingi oy",
+    "nextMonth": "Keyingi oy",
+    "moreEvents": "+{{count}} ta yana",
+    "weekdays": {
+      "sunday": "Yak",
+      "monday": "Dush",
+      "tuesday": "Sesh",
+      "wednesday": "Chor",
+      "thursday": "Pay",
+      "friday": "Jum",
+      "saturday": "Shan"
+    },
+    "months": {
+      "0": "Yanvar",
+      "1": "Fevral",
+      "2": "Mart",
+      "3": "Aprel",
+      "4": "May",
+      "5": "Iyun",
+      "6": "Iyul",
+      "7": "Avgust",
+      "8": "Sentabr",
+      "9": "Oktabr",
+      "10": "Noyabr",
+      "11": "Dekabr"
+    },
+    "status": {
+      "draft": "Qoralama",
+      "pending_approval": "Tasdiqlanmoqda",
+      "approved": "Tasdiqlangan"
+    },
+    "scope": {
+      "structure": "Tuzilma bo'yicha",
+      "section": "Bo'lim bo'yicha"
+    },
+    "filters": {
+      "structuralUnit": "Tarkibiy tuzilmani tanlang"
+    },
+    "fields": {
+      "date": "Sana",
+      "pprType": "PPR turi",
+      "pprTypePlaceholder": "PPR turini tanlang",
+      "objects": "Obyektlar",
+      "objectsPlaceholder": "Obyektlarni tanlang",
+      "scope": "Doira",
+      "section": "Bo'lim",
+      "sectionPlaceholder": "Bo'limni tanlang",
+      "comment": "Izoh",
+      "commentPlaceholder": "Izoh yozing (ixtiyoriy)"
+    },
+    "validation": {
+      "pprTypeRequired": "PPR turini tanlang",
+      "objectsRequired": "Kamida bitta obyekt tanlang",
+      "sectionRequired": "Bo'limni tanlang"
+    },
+    "actions": {
+      "add": "Qo'shish",
+      "submitMonth": "Oyni tasdiqlash",
+      "clearMonth": "Tozalash",
+      "executePpr": "PPRni bajarish",
+      "approve": "Tasdiqlash",
+      "reject": "Bekor qilish",
+      "review": "Ko'rish",
+      "incomingApprovals": "Kelgan tasviqlar"
+    },
+    "dayDrawer": {
+      "title": "{{date}} sanasi",
+      "empty": "Bu kunda yozuvlar yo'q"
+    },
+    "entryDrawer": {
+      "addTitle": "{{date}} — yangi yozuv",
+      "editTitle": "{{date}} — tahrirlash",
+      "activeScope": "Tanlangan doira: {{scope}}"
+    },
+    "entryModal": {
+      "title": "PPR yozuvi",
+      "deleteConfirm": "Ushbu yozuvni o'chirasizmi?"
+    },
+    "entryDetail": {
+      "title": "PPR tafsilotlari",
+      "status": "Bajarilish holati",
+      "completion": "Bajarilish foizi",
+      "objectCompleted": "Bajarildi",
+      "objectPending": "Bajarilmagan",
+      "timelineTitle": "Bajarish tarixi",
+      "timelineEmpty": "Hali bajarish yozuvlari yo'q",
+      "timelineStep": "{{index}}-qadam",
+      "timelineObjects": "Bajarilgan obyektlar",
+      "timelineComment": "Izoh",
+      "timelineCompleted": "100% bajarildi"
+    },
+    "executionStatus": {
+      "pending": "Kutilmoqda",
+      "in_progress": "Jarayonda",
+      "completed": "Bajarildi"
+    },
+    "executionDrawer": {
+      "title": "PPRni bajarish",
+      "objects": "Bajarilgan obyektlar",
+      "objectsPlaceholder": "Obyektlarni tanlang",
+      "objectsRequired": "Kamida bitta obyekt tanlang",
+      "images": "Rasmlar",
+      "files": "Fayllar",
+      "uploadImages": "Rasm yuklash",
+      "uploadFiles": "Fayl yuklash",
+      "commentPlaceholder": "Izoh yozing (ixtiyoriy)"
+    },
+    "submitModal": {
+      "title": "Oyni tasdiqlashga yuborish",
+      "message": "{{headName}} tasdiqlab berishi zarur. Rozimisiz?",
+      "hint": "Ha, roziman tugmasini bosganingizdan so'ng so'rov boshliqqa yuboriladi.",
+      "yes": "Ha, roziman",
+      "no": "Yo'q"
+    },
+    "clearModal": {
+      "title": "Oyni tozalash",
+      "message": "{{monthLabel}} oyi PPR taqvimidagi barcha yozuvlar o'chiriladi. Davom etasizmi?",
+      "hint": "Tozalangandan keyin oy bo'sh bo'ladi va yozuvlarni boshidan kiritishingiz mumkin.",
+      "yes": "Ha, tozalash",
+      "no": "Yo'q"
+    },
+    "approveModal": {
+      "title": "PPR taqvimini tasdiqlash",
+      "message": "{{monthLabel}} oyi PPR taqvimini ko'rib chiqdingizmi va u to'g'rimi? Rostdan tasdiqlaysizmi?",
+      "hint": "Ha, tasdiqlayman tugmasini bosganingizdan so'ng oy yakuniy tasdiqlangan hisoblanadi.",
+      "yes": "Ha, tasdiqlayman",
+      "no": "Yo'q"
+    },
+    "incomingApprovalsModal": {
+      "title": "Kelgan tasviqlar",
+      "empty": "Hozircha tasdiqlash uchun yuborilgan taqvimlar yo'q",
+      "rejectConfirm": "PPR taqvimini qayta tahrirga qaytarasizmi?",
+      "submitter": "Yuboruvchi: {{name}}",
+      "entries": "{{count}} ta yozuv"
+    },
+    "messages": {
+      "notAvailable": "Ushbu oy uchun tasdiqlangan PPR taqvimi mavjud emas",
+      "selectPendingMonth": "Kelgan tasviqlardan oyni tanlang va ko'rib chiqing",
+      "reviewHint": "Xodim yuborgan PPR taqvimini ko'rib chiqing. Kunlarga bosib yozuvlarni tekshiring, so'ng Tasdiqlash tugmasini bosing.",
+      "revisionHint": "Xatolarni tuzating yoki Tozalash tugmasi orqali oyni butunlay tozalab, boshidan yozing. Tayyor bo'lgach qayta tasdiqlashga yuboring.",
+      "noPendingApproval": "Hozircha tasdiqlash uchun yuborilgan oylar yo'q",
+      "createSuccess": "Yozuv saqlandi",
+      "updateSuccess": "Yozuv yangilandi",
+      "deleteSuccess": "Yozuv o'chirildi",
+      "deleteError": "Yozuvni o'chirib bo'lmadi",
+      "submitSuccess": "Oy tasdiqlashga yuborildi",
+      "clearSuccess": "Oy tozalandi",
+      "clearError": "Oyni tozalab bo'lmadi",
+      "approveSuccess": "Oy tasdiqlandi",
+      "approveError": "Tasdiqlashda xatolik yuz berdi",
+      "rejectSuccess": "Tasdiqlash bekor qilindi",
+      "rejectError": "Bekor qilishda xatolik yuz berdi",
+      "executionSuccess": "PPR bajarilishi saqlandi",
+      "executeLocked": "Ushbu PPRni bugun bajara olmaysiz",
+      "executeLockedDetail": "Faqat oxirgi 3 kun va bugungi sanadagi PPRlarni bajarish mumkin. Ma'lumotlarni ko'rish mumkin."
+    }
+  },
+  "homePage": {
+    "title": "Xush kelibsiz, {{name}}",
+    "subtitle": "Tizim bo'yicha asosiy ko'rsatkichlar, muddatlar va so'nggi voqealar",
+    "filters": {
+      "scopeAll": "Barcha doiralar",
+      "periodFrom": "Boshlanish",
+      "periodTo": "Tugash",
+      "reset": "Filtrlarni tozalash",
+      "refresh": "Yangilash",
+      "applicationScope": {
+        "all": "Barcha arizalar",
+        "submitted": "Yuborilgan",
+        "incoming": "Kiruvchi"
+      }
+    },
+    "kpis": {
+      "applicationsTotal": "Jami arizalar",
+      "applicationsInProgress": "Jarayondagi arizalar",
+      "applicationsOverdue": "Muddati o'tgan",
+      "applicationsIncoming": "Kiruvchi arizalar",
+      "pprExecution": "PPR bajarilishi",
+      "pprPendingApproval": "Tasdiqlash kutilmoqda",
+      "notificationsUnread": "O'qilmagan bildirishnomalar"
+    },
+    "ppr": {
+      "title": "PPR taqvimi holati",
+      "executionTitle": "Tasdiqlangan oylardagi bajarilish",
+      "monthStatusTitle": "Oylar holati bo'yicha",
+      "statusDraft": "Qoralama",
+      "statusPending": "Tasdiqlash kutilmoqda",
+      "statusApproved": "Tasdiqlangan",
+      "plannedExecutions": "Rejalashtirilgan",
+      "completedExecutions": "Bajarilgan"
+    },
+    "summary": {
+      "submittedApplications": "Yuborilgan arizalar",
+      "completedApplications": "Yakunlangan arizalar",
+      "cancelledApplications": "Bekor qilingan",
+      "approvedPprMonths": "Tasdiqlangan PPR oylari"
+    },
+    "tables": {
+      "upcomingDeadlines": "Yaqinlashayotgan muddatlar",
+      "recentApplications": "So'nggi arizalar",
+      "recentNotifications": "So'nggi bildirishnomalar",
+      "status": "Holat",
+      "updatedAt": "Yangilangan",
+      "daysRemaining": "Qolgan kun",
+      "overdue": "Muddati o'tgan",
+      "daysLeft": "{{count}} kun",
+      "emptyDeadlines": "Yaqin muddatli ariza yo'q",
+      "emptyApplications": "Arizalar topilmadi",
+      "emptyNotifications": "Bildirishnomalar yo'q"
+    },
+    "alerts": {
+      "overdueApplications": "{{count}} ta arizaning muddati o'tgan. Kiruvchi arizalar bo'limini tekshiring.",
+      "pendingPprMonths": "{{count}} ta PPR taqvim oyi tasdiqlashni kutmoqda."
+    },
+    "errors": {
+      "loadFailed": "Bosh sahifa ma'lumotlarini yuklab bo'lmadi"
+    }
+  },
+  "managementPage": {
+    "title": "Boshqaruv",
+    "subtitle": "Tizim bo'limlarini tanlang va boshqaring"
+  },
+  "errorLogsPage": {
+    "title": "Xatolar",
+    "subtitle": "Tizimda yuz bergan xatoliklar, ularning sababi, yechimi va kim tomonidan keltirilgani",
+    "forbiddenTitle": "Ruxsat yo'q",
+    "forbiddenDescription": "Xatolar jurnalini ko'rish uchun administratordan ruxsat so'rang",
+    "resolved": "Hal qilingan",
+    "source": {
+      "api": "API",
+      "frontend": "Frontend",
+      "route": "Sahifa"
+    },
+    "severity": {
+      "user": "Foydalanuvchi",
+      "system": "Tizim"
+    },
+    "filters": {
+      "search": "Kod, xabar, link yoki foydalanuvchi bo'yicha qidirish",
+      "allSources": "Barcha manbalar",
+      "allSeverities": "Barcha darajalar",
+      "allStatuses": "Barcha holatlar",
+      "open": "Ochiq",
+      "resolved": "Hal qilingan"
+    },
+    "columns": {
+      "time": "Vaqt",
+      "source": "Manba",
+      "severity": "Daraja",
+      "code": "Kod",
+      "message": "Xato",
+      "actor": "Kim tomonidan",
+      "route": "Link",
+      "solution": "Yechim",
+      "actions": "Amallar"
+    },
+    "actions": {
+      "refresh": "Yangilash",
+      "resolve": "Hal qilindi"
+    },
+    "messages": {
+      "resolved": "Xato hal qilingan deb belgilandi"
+    },
+    "detail": {
+      "title": "Xato tafsilotlari",
+      "code": "Xato kodi",
+      "message": "Xato matni",
+      "solution": "Yechim",
+      "actor": "Kim tomonidan",
+      "unknownActor": "Aniqlanmagan",
+      "route": "Qaysi sahifadan",
+      "apiPath": "API so'rov",
+      "time": "Vaqt",
+      "userAgent": "Brauzer",
+      "validationErrors": "Validatsiya xatolari",
+      "stack": "Texnik stack",
+      "metadata": "Qo'shimcha ma'lumot",
+      "noSolution": "Ushbu xato uchun avtomatik yechim ko'rsatilmagan"
+    }
+  },
+  "pprManagement": {
+    "monthDetail": "PPR taqvimi",
+    "backToList": "Ro'yxatga qaytish",
+    "search": "Oy, yoki tuzilma bo'yicha qidirish",
+    "empty": "Tasdiqlangan PPR taqvimlari topilmadi",
+    "filters": {
+      "structuralUnit": "Tuzilma",
+      "scopeAll": "Barcha qamrovlar",
+      "anySection": "Bo'lim bo'yicha",
+      "periodFrom": "Qaysi oydan",
+      "periodTo": "Qaysi oyga",
+      "reset": "Filtrlarni tozalash"
+    },
+    "deleteEntryConfirm": "Rostdan bu PPR yozuvini o'chirasizmi?",
+    "columns": {
+      "period": "Oy",
+      "unit": "Tuzilma",
+      "scope": "Qamrov",
+      "entries": "Yozuvlar",
+      "approvedAt": "Tasdiqlangan vaqt",
+      "actions": "Amallar"
+    },
+    "actions": {
+      "clearMonth": "Oyni tozalash"
+    },
+    "clearModal": {
+      "title": "Oyni tozalash",
+      "message": "{{monthLabel}} oyidagi barcha PPR yozuvlarini o'chirasizmi?",
+      "hint": "Bu amalni qaytarib bo'lmaydi. Oy qoralama holatiga qaytadi va xodimlar jadvalni boshidan tuzishi mumkin bo'ladi.",
+      "yes": "Ha, tozalash"
+    },
+    "messages": {
+      "entryDeleted": "PPR yozuvi o'chirildi",
+      "monthCleared": "Oy tozalandi. Foydalanuvchilar jadvalni boshidan tuzishi mumkin"
+    }
+  },
+  "applicationSubmit": {
+    "listTitle": "Yuborilgan arizalar",
+    "detailTitle": "Ariza tafsilotlari",
+    "send": "Ariza yuborish",
+    "edit": "Tahrirlash",
+    "delete": "O'chirish",
+    "deleteConfirm": "Arizani o'chirishni tasdiqlaysizmi?",
+    "selectItem": "Arizani tanlang",
+    "emptyList": "Hali ariza yuborilmagan",
+    "emptySearch": "Qidiruv bo'yicha natija topilmadi",
+    "uploadImages": "Rasm yuklash",
+    "uploadFiles": "Fayl yuklash",
+    "drawer": {
+      "title": "Ariza yuborish",
+      "editTitle": "Arizani tahrirlash"
+    },
+    "fields": {
+      "submittedBy": "Ariza yuboruvchi",
+      "submitterStructuralUnit": "Ariza yuboruvchi tuzilma",
+      "structuralUnits": "Tarkibiy tuzilmalar",
+      "type": "Ariza turi",
+      "deadline": "Muddat",
+      "images": "Rasmlar",
+      "files": "Fayllar",
+      "comment": "Umumiy izoh"
+    },
+    "placeholders": {
+      "structuralUnits": "Bir yoki bir nechta tuzilmani tanlang",
+      "type": "Ariza turini tanlang",
+      "deadline": "Muddatni tanlang",
+      "comment": "Ariza bo'yicha umumiy izoh yozing"
+    },
+    "types": {
+      "execution": "Ijro uchun",
+      "information": "Ma'lumot uchun"
+    },
+    "status": {
+      "in_progress": "Jarayonda",
+      "completed": "Tasdiqlangan",
+      "cancelled": "Bekor qilingan"
+    },
+    "filters": {
+      "search": "Ariza qidirish",
+      "type": "Ariza turi bo'yicha"
+    },
+    "validation": {
+      "structuralUnitsRequired": "Kamida bitta tarkibiy tuzilmani tanlang",
+      "deadlineRequired": "Ijro uchun muddatni tanlang",
+      "commentMin": "Izoh kamida 3 ta belgidan iborat bo'lishi kerak"
+    },
+    "messages": {
+      "saved": "Ariza muvaffaqiyatli yuborildi",
+      "updated": "Ariza muvaffaqiyatli yangilandi",
+      "deleted": "Ariza muvaffaqiyatli o'chirildi",
+      "error": "Arizani yuborishda xatolik yuz berdi",
+      "finalizedHint": "Ariza tasdiqlangan",
+      "cancelledLockedHint": "Bekor qilingan arizani tahrirlab yoki o'chirib bo'lmaydi"
+    },
+    "attachments": {
+      "view": "Ko'rish",
+      "download": "Yuklab olish",
+      "empty": "Fayllar yuklanmagan",
+      "previewUnavailable": "Fayl mazmuni mavjud emas",
+      "downloadUnavailable": "Faylni yuklab bo'lmadi"
+    },
+    "specialMessage": {
+      "title": "Maxsus habar",
+      "prompt": "Maxsus habar yuborishni xohlaysizmi?",
+      "hint": "Tanlangan tuzilmalardan istagiga alohida habar yozing. Kamida bitta tuzilma uchun habar yozish shart.",
+      "placeholder": "Ushbu tuzilma uchun maxsus habar",
+      "atLeastOne": "Kamida bitta tuzilma uchun maxsus habar yozing"
+    }
+  },
+  "applicationIncoming": {
+    "listTitle": "Kelgan arizalar",
+    "detailTitle": "Ariza tafsilotlari",
+    "selectItem": "Arizani tanlang",
+    "emptyList": "Hali kelgan ariza yo'q",
+    "emptySearch": "Qidiruv bo'yicha natija topilmadi",
+    "specialMessage": {
+      "badge": "Maxsus habar",
+      "highlightTitle": "Siz uchun maxsus habar"
+    }
+  },
+  "applicationWorkflow": {
+    "title": "Ish jarayoni",
+    "open": "Ish jarayoni",
+    "back": "Orqaga",
+    "statusLabel": "Status",
+    "messagePlaceholder": "Xabar yozing...",
+    "emptyMessages": "Hali xabarlar yo'q",
+    "notFound": "Ariza topilmadi",
+    "forbidden": "Ushbu ish jarayoniga kirish huquqingiz yo'q",
+    "status": {
+      "returned": "Qaytarish",
+      "in_progress_work": "Bajarilmoqda",
+      "pending_confirmation": "Tasdiqlanmoqda",
+      "confirmed": "Tasdiqlandi",
+      "cancelled": "Bekor qilindi"
+    },
+    "actions": {
+      "confirm": "Tasdiqlash",
+      "cancel": "Bekor qilish"
+    },
+    "finalizeModal": {
+      "no": "Yo'q",
+      "confirm": {
+        "title": "Arizani tasdiqlash",
+        "yes": "Ha, tasdiqlash",
+        "message": "Barcha tarkibiy tuzilmalar javob berdi. Arizani yakuniy tasdiqlaysizmi?",
+        "hint": "Tasdiqlangandan keyin arizaga yangi ma'lumot qo'shib bo'lmaydi."
+      },
+      "cancel": {
+        "title": "Arizani bekor qilish",
+        "yes": "Ha, bekor qilish",
+        "message": "Barcha tarkibiy tuzilmalar javob berdi. Arizani bekor qilasizmi?",
+        "hint": "Bekor qilingandan keyin arizaga yangi ma'lumot qo'shib bo'lmaydi."
+      }
+    },
+    "unitStatuses": {
+      "title": "Tarkibiy tuzilmalar bo'yicha joriy statuslar"
+    },
+    "confirmationFiles": {
+      "title": "Tasdiqlash fayllarini yuklash",
+      "hint": "Tasdiqlanmoqda statusiga o'tish uchun kamida bitta fayl yuklang.",
+      "upload": "Fayllarni yuklash",
+      "confirm": "Saqlash va statusni o'zgartirish",
+      "required": "Kamida bitta fayl yuklash shart"
+    },
+    "messages": {
+      "loadError": "Ish jarayonini yuklab bo'lmadi",
+      "sendError": "Xabarni yuborib bo'lmadi",
+      "statusUpdated": "Status muvaffaqiyatli yangilandi",
+      "statusError": "Statusni yangilab bo'lmadi",
+      "confirmSuccess": "Ariza muvaffaqiyatli tasdiqlandi",
+      "confirmError": "Arizani tasdiqlab bo'lmadi",
+      "cancelSuccess": "Ariza bekor qilindi",
+      "cancelError": "Arizani bekor qilib bo'lmadi"
+    }
+  },
+  "pprType": {
+    "add": "Qo'shish",
+    "edit": "Tahrirlash",
+    "upload": "Fayl yuklash",
+    "drawer": {
+      "createTitle": "PPR turini ro'yxatga olish",
+      "editTitle": "PPR turini tahrirlash"
+    },
+    "fields": {
+      "originalName": "PPR asl nomi",
+      "shortName": "Qisqacha nomi",
+      "description": "Batafsil ma'lumot",
+      "files": "PPR fayllari",
+      "createdAt": "Yaratilgan sana",
+      "updatedAt": "Yangilangan sana"
+    },
+    "placeholders": {
+      "originalName": "Masalan: Prezident farmoni asosida PPR",
+      "shortName": "PPR turini tanlang",
+      "description": "PPR turi haqida batafsil ma'lumot kiriting"
+    },
+    "columns": {
+      "originalName": "PPR asl nomi",
+      "shortName": "Qisqacha nomi",
+      "description": "Batafsil ma'lumot",
+      "owner": "Muallif",
+      "files": "Fayllar",
+      "actions": "Amallar"
+    },
+    "filters": {
+      "search": "Qidiruv",
+      "shortName": "Qisqacha nomi bo'yicha",
+      "originalName": "PPR asl nomi bo'yicha",
+      "reset": "Filtrlarni tozalash"
+    },
+    "owner": {
+      "self": "O'zim",
+      "unknown": "Noma'lum"
+    },
+    "validation": {
+      "originalNameMin": "PPR asl nomi kamida 2 ta belgidan iborat bo'lishi kerak",
+      "shortNameRequired": "Qisqacha nomini tanlang",
+      "descriptionMin": "Batafsil ma'lumot kamida 10 ta belgidan iborat bo'lishi kerak",
+      "filesMax": "Fayllar soni 100 tadan oshmasligi kerak"
+    },
+    "messages": {
+      "saving": "Saqlanmoqda...",
+      "saved": "PPR turi muvaffaqiyatli saqlandi",
+      "error": "Saqlashda xatolik yuz berdi"
+    },
+    "detail": {
+      "title": "PPR turi ma'lumotlari",
+      "close": "Yopish",
+      "emptyFiles": "Fayllar yo'q"
+    },
+    "fileActions": {
+      "view": "Ko'rish",
+      "download": "Yuklab olish",
+      "previewUnavailable": "Fayl mazmuni mavjud emas. Qayta yuklang.",
+      "previewUnsupported": "Bu fayl turini ekranda ko'rish mumkin emas. Yuklab oling.",
+      "downloadUnavailable": "Faylni yuklab olish uchun mazmuni mavjud emas",
+      "downloadUnavailableHint": "Faylni qayta yuklang yoki shu brauzerda saqlangan bo'lsa, sahifani yangilab ko'ring"
+    }
+  },
+  "structuralUnit": {
+    "add": "Qo'shish",
+    "edit": "Tahrirlash",
+    "delete": "O'chirish",
+    "deleteConfirm": "Ushbu tarkibiy tuzilmani o'chirishni tasdiqlaysizmi?",
+    "upload": "Fayl yuklash",
+    "drawer": {
+      "createTitle": "Tarkibiy tuzilmani ro'yxatga olish",
+      "editTitle": "Tarkibiy tuzilmani tahrirlash"
+    },
+    "fields": {
+      "originalName": "Xizmatning asl nomi",
+      "shortName": "Qisqa nomi",
+      "headFullName": "Boshligining FIO",
+      "headUser": "Boshliq",
+      "documents": "Xizmat hujjatlari"
+    },
+    "placeholders": {
+      "originalName": "Masalan: Axborot texnologiyalari xizmati",
+      "shortName": "Masalan: ATX",
+      "headFullName": "Masalan: Karimov Vali Aliyevich",
+      "headUser": "Foydalanuvchini qidiring va tanlang"
+    },
+    "filters": {
+      "search": "Qidirish (asl nomi, qisqa nomi, FIO)",
+      "shortName": "Qisqa nomi bo'yicha",
+      "originalName": "Asl nomi bo'yicha",
+      "reset": "Filtrlarni tozalash"
+    },
+    "selectItem": "Tarkibiy tuzilmani tanlang",
+    "emptyDocuments": "Hujjatlar yuklanmagan",
+    "documents": {
+      "view": "Ko'rish",
+      "download": "Yuklab olish",
+      "previewUnavailable": "Fayl mazmuni mavjud emas. Qayta yuklang.",
+      "previewUnsupported": "Bu fayl turini ekranda ko'rish mumkin emas. Yuklab oling.",
+      "downloadUnavailable": "Faylni yuklab olish uchun mazmuni mavjud emas"
+    },
+    "columns": {
+      "originalName": "Xizmatning asl nomi",
+      "shortName": "Qisqa nomi",
+      "headFullName": "Boshligining FIO",
+      "documents": "Hujjatlar",
+      "sections": "Bo'limlar",
+      "actions": "Amallar"
+    },
+    "validation": {
+      "originalNameMin": "Xizmatning asl nomi kamida 2 ta belgidan iborat bo'lishi kerak",
+      "shortNameMin": "Qisqa nomi kamida 2 ta belgidan iborat bo'lishi kerak",
+      "headFullNameMin": "Boshligining FIO kamida 5 ta belgidan iborat bo'lishi kerak",
+      "headRequired": "Boshliqni tanlang"
+    },
+    "messages": {
+      "saved": "Tarkibiy tuzilma muvaffaqiyatli saqlandi",
+      "error": "Saqlashda xatolik yuz berdi",
+      "deleted": "Tarkibiy tuzilma muvaffaqiyatli o'chirildi",
+      "deleteError": "Tarkibiy tuzilmani o'chirishda xatolik yuz berdi"
+    },
+    "section": {
+      "title": "Bo'limlar",
+      "add": "Bo'lim qo'shish",
+      "edit": "Tahrirlash",
+      "empty": "Bo'limlar mavjud emas",
+      "drawer": {
+        "createTitle": "Bo'lim yaratish",
+        "editTitle": "Bo'limni tahrirlash"
+      },
+      "fields": {
+        "originalName": "Bo'limning asl nomi",
+        "shortName": "Qisqa nomi",
+        "documents": "Fayllar"
+      },
+      "placeholders": {
+        "originalName": "Masalan: Axborot xavfsizligi bo'limi",
+        "shortName": "Masalan: AXB"
+      },
+      "validation": {
+        "originalNameMin": "Bo'limning asl nomi kamida 2 ta belgidan iborat bo'lishi kerak",
+        "shortNameMin": "Qisqa nomi kamida 2 ta belgidan iborat bo'lishi kerak"
+      },
+      "messages": {
+        "saved": "Bo'lim muvaffaqiyatli saqlandi",
+        "error": "Bo'limni saqlashda xatolik yuz berdi"
+      }
+    }
+  },
+  "object": {
+    "add": "Qo'shish",
+    "edit": "Tahrirlash",
+    "delete": "O'chirish",
+    "deleteConfirm": "Ushbu obyektni o'chirishni tasdiqlaysizmi?",
+    "upload": "Fayl yuklash",
+    "openInMaps": "Xaritada ochish",
+    "drawer": {
+      "createTitle": "Obyektni ro'yxatga olish",
+      "editTitle": "Obyektni tahrirlash"
+    },
+    "fields": {
+      "originalName": "Obyektning asl nomi",
+      "shortName": "Qisqa nomi",
+      "location": "Joylashuv",
+      "address": "Manzil",
+      "latitude": "Kenglik",
+      "longitude": "Uzunlik",
+      "documents": "Hujjatlar"
+    },
+    "placeholders": {
+      "originalName": "Masalan: Markaziy shifoxona",
+      "shortName": "Masalan: MSh",
+      "address": "Manzilni kiriting"
+    },
+    "filters": {
+      "search": "Qidirish (asl nomi, qisqa nomi, manzil)",
+      "shortName": "Qisqa nomi bo'yicha",
+      "originalName": "Asl nomi bo'yicha",
+      "reset": "Filtrlarni tozalash"
+    },
+    "selectItem": "Obyektni tanlang",
+    "emptyDocuments": "Hujjatlar yuklanmagan",
+    "documents": {
+      "view": "Ko'rish",
+      "download": "Yuklab olish",
+      "previewUnavailable": "Fayl mazmuni mavjud emas. Qayta yuklang.",
+      "previewUnsupported": "Bu fayl turini ekranda ko'rish mumkin emas. Yuklab oling.",
+      "downloadUnavailable": "Faylni yuklab olish uchun mazmuni mavjud emas"
+    },
+    "columns": {
+      "originalName": "Asl nomi",
+      "shortName": "Qisqa nomi",
+      "address": "Manzil",
+      "documents": "Hujjatlar"
+    },
+    "map": {
+      "search": "Qidirish",
+      "searchPlaceholder": "Manzil yoki joy nomini kiriting",
+      "clickToSelect": "Xaritada joyni tanlash uchun bosing",
+      "selectedPoint": "Tanlangan joy",
+      "noAddress": "Manzil ko'rsatilmagan",
+      "loadError": "Yandex xaritasi yuklanmadi. Qo'lda manzil kiriting.",
+      "searchNotFound": "Manzil topilmadi",
+      "searchError": "Qidiruvda xatolik yuz berdi"
+    },
+    "validation": {
+      "originalNameMin": "Asl nomi kamida 2 ta belgidan iborat bo'lishi kerak",
+      "shortNameMin": "Qisqa nomi kamida 2 ta belgidan iborat bo'lishi kerak",
+      "addressMin": "Joylashuv manzili kamida 5 ta belgidan iborat bo'lishi kerak"
+    },
+    "messages": {
+      "saved": "Obyekt muvaffaqiyatli saqlandi",
+      "error": "Saqlashda xatolik yuz berdi"
+    }
+  },
+  "profile": {
+    "changePassword": "Parolni o'zgartirish",
+    "notifications": {
+      "title": "Bildirishnomalar"
+    },
+    "drawer": {
+      "editTitle": "Profilni tahrirlash"
+    },
+    "password": {
+      "drawerTitle": "Parolni o'zgartirish",
+      "newPassword": "Yangi parol",
+      "confirmPassword": "Yangi parolni qayta kiriting",
+      "placeholders": {
+        "newPassword": "Yangi parolni kiriting",
+        "confirmPassword": "Parolni qayta kiriting"
+      },
+      "confirmTitle": "Parolni o'zgartirasizmi?",
+      "confirmDescription": "Haqiqatan ham yangi parolni tasdiqlaysizmi?",
+      "saved": "Parol muvaffaqiyatli yangilandi",
+      "error": "Parolni yangilashda xatolik yuz berdi",
+      "validation": {
+        "minLength": "Parol kamida 4 ta belgidan iborat bo'lishi kerak",
+        "confirmRequired": "Parolni qayta kiriting",
+        "mismatch": "Parollar mos kelmadi"
+      }
+    },
+    "messages": {
+      "saved": "Profil muvaffaqiyatli yangilandi",
+      "error": "Profilni saqlashda xatolik yuz berdi"
+    }
+  },
+  "roles": {
+    "add": "Qo'shish",
+    "edit": "Tahrirlash",
+    "upload": "Fayl yuklash",
+    "deleteConfirm": "Rolni o'chirishni tasdiqlaysizmi?",
+    "drawer": {
+      "createTitle": "Rol qo'shish",
+      "editTitle": "Rolni tahrirlash"
+    },
+    "fields": {
+      "name": "Rol nomi",
+      "description": "Izoh",
+      "documents": "Rol hujjatlari",
+      "permissions": "Sahifa ruxsatlari",
+      "canViewAllStructuralUnits": "Barcha tarkibiy tuzilmalarni ko'rish"
+    },
+    "placeholders": {
+      "name": "Masalan: Bosh mutaxassis",
+      "description": "Rol haqida izoh kiriting"
+    },
+    "filters": {
+      "search": "Rol qidirish"
+    },
+    "columns": {
+      "name": "Rol nomi",
+      "description": "Izoh",
+      "documents": "Hujjatlar",
+      "users": "Foydalanuvchilar",
+      "actions": "Amallar"
+    },
+    "permissions": {
+      "page": "Sahifa",
+      "view": "Ko'rish",
+      "create": "Qo'shish",
+      "edit": "Tahrirlash",
+      "delete": "O'chirish"
+    },
+    "validation": {
+      "nameMin": "Rol nomi kamida 2 ta belgidan iborat bo'lishi kerak",
+      "descriptionMin": "Izoh kamida 2 ta belgidan iborat bo'lishi kerak"
+    },
+    "messages": {
+      "saved": "Rol muvaffaqiyatli saqlandi",
+      "error": "Saqlashda xatolik yuz berdi",
+      "deleted": "Rol o'chirildi",
+      "deleteSystem": "Tizim rolini o'chirib bo'lmaydi",
+      "deleteAssigned": "Bu rol {{count}} ta foydalanuvchiga biriktirilgan"
+    }
+  },
+  "notifications": {
+    "title": "Bildirishnomalar",
+    "empty": "Bildirishnomalar yo'q",
+    "markAll": "Hammasi",
+    "total": "Jami: {{count}} ta",
+    "types": {
+      "ppr_calendar_submitted": "PPR taqvimi",
+      "ppr_calendar_approved": "PPR tasdiqlandi",
+      "ppr_calendar_rejected": "PPR rad etildi",
+      "application_created": "Yangi dastur",
+      "application_workflow_message": "Dastur xabari",
+      "application_workflow_status": "Dastur statusi",
+      "role_permissions_updated": "Rol ruxsati",
+      "user_role_changed": "Rol o'zgarishi",
+      "user_access_changed": "Kirish huquqi",
+      "system": "Tizim"
+    }
+  }
+}

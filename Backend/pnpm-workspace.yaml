@@ -1,0 +1,17 @@
+packages:
+  - '.'
+
+allowBuilds:
+  '@prisma/client': true
+  '@prisma/engines': true
+  '@scarf/scarf': true
+  bcrypt: true
+  msgpackr-extract: true
+  prisma: true
+  unrs-resolver: true
+
+onlyBuiltDependencies:
+  - bcrypt
+  - prisma
+  - '@prisma/engines'
+  - msgpackr-extract

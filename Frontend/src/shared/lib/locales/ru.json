@@ -1,0 +1,1116 @@
+{
+  "app": {
+    "name": "MPPR tizimi",
+    "hello": "Добро пожаловать в систему MPPR",
+    "dashboard": "Главная",
+    "theme": "Тема",
+    "language": "Язык",
+    "light": "Светлая",
+    "dark": "Тёмная"
+  },
+  "layout": {
+    "openMenu": "Открыть меню"
+  },
+  "api": {
+    "errors": {
+      "title": "Ошибка",
+      "whatToDo": "Что делать",
+      "generic": "Произошла неизвестная ошибка. Попробуйте снова.",
+      "categories": {
+        "user": "Ошибка данных или доступа",
+        "system": "Системная ошибка"
+      },
+      "VALIDATION_FAILED": "Введенные данные неверны или неполны",
+      "INTERNAL_SERVER_ERROR": "На сервере произошла непредвиденная ошибка. Попробуйте позже",
+      "INVALID_CREDENTIALS": "Неверный номер телефона или пароль",
+      "INVALID_REFRESH_TOKEN": "Сессия истекла. Войдите снова",
+      "USER_NOT_FOUND": "Пользователь не найден",
+      "USER_INACTIVE": "Ваш аккаунт неактивен. Обратитесь к администратору",
+      "USER_CANNOT_DEACTIVATE_SELF": "Вы не можете деактивировать свой аккаунт",
+      "PHONE_ALREADY_REGISTERED": "Этот номер телефона уже зарегистрирован",
+      "PHONE_ALREADY_IN_USE": "Этот номер телефона уже используется",
+      "TABEL_NUMBER_ALREADY_REGISTERED": "Этот табельный номер уже зарегистрирован",
+      "TABEL_NUMBER_ALREADY_IN_USE": "Этот табельный номер уже используется",
+      "APP_ROLE_NOT_FOUND": "Роль не найдена",
+      "STRUCTURAL_UNIT_NOT_FOUND": "Структурное подразделение не найдено",
+      "STRUCTURAL_UNIT_IN_USE": "К этому подразделению привязаны пользователи",
+      "REGISTERED_OBJECT_NOT_FOUND": "Объект не найден",
+      "PPR_TYPE_NOT_FOUND": "Тип PPR не найден",
+      "NOTIFICATION_NOT_FOUND": "Уведомление не найдено",
+      "APPLICATION_NOT_FOUND": "Заявка не найдена",
+      "APPLICATION_WORKFLOW_FORBIDDEN": "У вас нет прав для обработки этой заявки",
+      "APPLICATION_WORKFLOW_CONFIRMATION_FILES_REQUIRED": "Прикрепите хотя бы один файл подтверждения",
+      "APPLICATION_WORKFLOW_FINALIZED": "Подтверждённую или завершённую заявку нельзя редактировать",
+      "PPR_CALENDAR_MONTH_NOT_FOUND": "Месяц PPR-календаря не найден",
+      "PPR_CALENDAR_ENTRY_NOT_FOUND": "Запись PPR-календаря не найдена",
+      "PPR_CALENDAR_FORBIDDEN": "Нет доступа к этому PPR-календарю",
+      "DASHBOARD_FORBIDDEN": "Нет доступа к данным главной страницы",
+      "PPR_CALENDAR_MONTH_NOT_EDITABLE": "Этот месяц календаря больше нельзя редактировать",
+      "PPR_CALENDAR_MONTH_NOT_SUBMITTABLE": "Этот месяц календаря сейчас нельзя отправить",
+      "PPR_CALENDAR_HEAD_NOT_FOUND": "Руководитель подразделения не найден",
+      "PPR_CALENDAR_MONTH_EMPTY": "В календаре должна быть хотя бы одна запись",
+      "FORBIDDEN": "У вас нет прав для этого действия",
+      "NOT_FOUND": "Запрошенные данные не найдены",
+      "RESOURCE_ALREADY_EXISTS": "Такая запись уже существует",
+      "DATABASE_ERROR": "Произошла ошибка базы данных",
+      "DATABASE_SCHEMA_OUT_OF_DATE": "Версии приложения и базы данных не совпадают",
+      "ERROR_LOG_FORBIDDEN": "Нет доступа к журналу ошибок",
+      "CLIENT_RUNTIME_ERROR": "Произошла непредвиденная ошибка в клиенте",
+      "CLIENT_UNHANDLED_REJECTION": "Произошла необработанная ошибка promise",
+      "ROUTE_ERROR": "Ошибка при загрузке страницы",
+      "FIRST_NAME_REQUIRED": "Введите имя",
+      "LAST_NAME_REQUIRED": "Введите фамилию",
+      "BIRTH_DATE_REQUIRED": "Выберите дату рождения",
+      "PHONE_REQUIRED": "Введите номер телефона",
+      "TABEL_NUMBER_FORMAT": "Табельный номер должен состоять из 5 цифр",
+      "POSITION_REQUIRED": "Введите должность",
+      "ROLE_ID_REQUIRED": "Выберите роль",
+      "STRUCTURAL_UNIT_ID_REQUIRED": "Выберите структурное подразделение",
+      "PASSWORD_MIN_LENGTH": "Пароль должен содержать минимум 4 символа",
+      "PAYLOAD_TOO_LARGE": "Загруженный файл слишком большой",
+      "TOO_MANY_REQUESTS": "Слишком много запросов. Подождите немного и попробуйте снова",
+      "LOGIN_TEMPORARILY_LOCKED": "Слишком много неверных попыток. Подождите {{seconds}} секунд",
+      "network": "Не удалось связаться с сервером",
+      "timeout": "Время ожидания запроса истекло",
+      "hints": {
+        "VALIDATION_FAILED": "Проверьте поля и заполните все обязательные данные",
+        "INVALID_CREDENTIALS": "Проверьте номер телефона и пароль",
+        "INVALID_REFRESH_TOKEN": "Выйдите и войдите снова",
+        "PHONE_ALREADY_IN_USE": "Используйте другой номер или отредактируйте существующего пользователя",
+        "TABEL_NUMBER_ALREADY_IN_USE": "Используйте другой табельный номер",
+        "STRUCTURAL_UNIT_IN_USE": "Сначала переведите пользователей в другое подразделение",
+        "APPLICATION_WORKFLOW_FORBIDDEN": "Заявка вне вашей зоны ответственности или недостаточно прав",
+        "APPLICATION_WORKFLOW_CONFIRMATION_FILES_REQUIRED": "Загрузите файл подтверждения и сохраните снова",
+        "APPLICATION_WORKFLOW_FINALIZED": "Эта заявка уже подтверждена или отменена",
+        "PPR_CALENDAR_FORBIDDEN": "Запросите доступ у администратора или руководителя подразделения",
+        "PPR_CALENDAR_MONTH_NOT_EDITABLE": "Редактировать можно только черновики",
+        "PPR_CALENDAR_MONTH_NOT_SUBMITTABLE": "Заполните календарь или проверьте статус месяца",
+        "PPR_CALENDAR_HEAD_NOT_FOUND": "Назначьте руководителя структурного подразделения",
+        "PPR_CALENDAR_MONTH_EMPTY": "Добавьте хотя бы одну запись PPR",
+        "FORBIDDEN": "Запросите необходимые права у администратора",
+        "NOT_FOUND": "Данные могли быть удалены или изменены. Обновите страницу",
+        "RESOURCE_ALREADY_EXISTS": "Введите другое значение или отредактируйте существующую запись",
+        "PAYLOAD_TOO_LARGE": "Выберите файл меньшего размера",
+        "TOO_MANY_REQUESTS": "Подождите 10-20 секунд и попробуйте снова",
+        "INTERNAL_SERVER_ERROR": "Если ошибка повторяется, сообщите администратору или разработчику",
+        "DATABASE_ERROR": "Обновите страницу. Если не поможет, обратитесь к администратору",
+        "DATABASE_SCHEMA_OUT_OF_DATE": "Администратору нужно выполнить `npx prisma migrate deploy`",
+        "ERROR_LOG_FORBIDDEN": "Запросите у администратора доступ к странице Ошибки",
+        "CLIENT_RUNTIME_ERROR": "Обновите страницу. Если повторится, сообщите администратору",
+        "CLIENT_UNHANDLED_REJECTION": "Повторите действие или перейдите на другую страницу",
+        "ROUTE_ERROR": "Вернитесь назад или на главную страницу",
+        "network": "Проверьте интернет и работу backend-сервера",
+        "timeout": "Проверьте соединение и попробуйте снова"
+      }
+    }
+  },
+  "auth": {
+    "subtitle": "Введите данные для входа в систему",
+    "login": "Войти",
+    "logout": "Выйти",
+    "logoutConfirm": "Вы действительно хотите выйти из системы?",
+    "profile": "Мой профиль",
+    "fields": {
+      "phone": "Номер телефона",
+      "password": "Пароль"
+    },
+    "placeholders": {
+      "password": "Введите пароль"
+    },
+    "validation": {
+      "phoneFormat": "Номер телефона неполный (+998 и 9 цифр)",
+      "passwordRequired": "Введите пароль"
+    },
+    "notifications": {
+      "errorTitle": "Ошибка",
+      "invalidCredentials": "Неверный номер телефона или пароль",
+      "accountInactive": "Ваш аккаунт неактивен. Обратитесь к администратору"
+    },
+    "lockout": {
+      "title": "Вход временно заблокирован",
+      "description": "5 неверных попыток пароля. Повторите через {{seconds}} секунд",
+      "button": "Подождите {{seconds}} сек"
+    }
+  },
+  "common": {
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "close": "Закрыть",
+    "view": "Просмотр",
+    "loading": "Загрузка...",
+    "yes": "Да",
+    "no": "Нет",
+    "refresh": "Обновить"
+  },
+  "errors": {
+    "unauthorized": "Сессия истекла или вы не вошли в систему. Войдите снова.",
+    "forbidden": "У вас нет прав для выполнения этого действия.",
+    "notFound": "Страница не найдена или адрес указан неверно.",
+    "unexpectedTitle": "Непредвиденная ошибка",
+    "unexpected": "В приложении произошла непредвиденная ошибка. Попробуйте снова.",
+    "backHome": "Главная",
+    "goBack": "Назад"
+  },
+  "network": {
+    "offline": {
+      "title": "Нет подключения к интернету",
+      "description": "Приложение не может подключиться к интернету или серверу. Проверьте настройки сети.",
+      "hint": "Убедитесь, что Wi-Fi или мобильный интернет включены, и попробуйте снова.",
+      "retry": "Повторить"
+    }
+  },
+  "settingsPage": {
+    "placeholder": "Этот раздел скоро будет заполнен",
+    "tabs": {
+      "tab1": "Основные",
+      "tab2": "Настройки 2",
+      "tab3": "Настройки 3",
+      "tab4": "Настройки 4",
+      "programUi": "UI программы"
+    },
+    "programUi": {
+      "title": "Интерфейс программы",
+      "sidebarPosition": "Расположение боковой панели",
+      "sidebarPositions": {
+        "left": "Слева",
+        "right": "Справа"
+      },
+      "componentSize": "Размер компонентов Ant Design",
+      "sizes": {
+        "small": "Small",
+        "middle": "Medium",
+        "large": "Large"
+      },
+      "theme": "Тема",
+      "themes": {
+        "light": "Светлая",
+        "dark": "Тёмная"
+      }
+    },
+    "notifications": {
+      "title": "Уведомления",
+      "browser": "Браузерные уведомления",
+      "description": "Показывать уведомления в браузере при поступлении новых сообщений",
+      "unsupported": "Ваш браузер не поддерживает уведомления",
+      "denied": "Уведомления заблокированы в настройках браузера",
+      "permissionRequired": "Разрешите уведомления в браузере, чтобы включить эту настройку",
+      "enabled": "Браузерные уведомления включены",
+      "autoMark": "Автоматически отмечать прочитанными",
+      "autoMarkDescription": "Новые уведомления сразу сохраняются как прочитанные",
+      "autoMarkEnabled": "Автоматическая отметка прочитанными включена",
+      "autoMarkDisabled": "Автоматическая отметка прочитанными отключена"
+    }
+  },
+  "menu": {
+    "home": "Главная",
+    "guide": "Руководство",
+    "settings": "Настройки",
+    "profile": "Профиль",
+    "applications": "Заявки",
+    "applications.submit": "Отправить заявку",
+    "applications.incoming": "Входящие заявки",
+    "applications.calendar": "Календарь заявок",
+    "pprCalendar": "Календарь PPR",
+    "registration": "Регистрация",
+    "registration.pprType": "Тип PPR",
+    "registration.structuralUnits": "Структурные подразделения",
+    "registration.objects": "Объекты",
+    "registration.monitoring": "Мониторинг",
+    "registration.monitoring1": "Мониторинг-1",
+    "registration.monitoring2": "Мониторинг-2",
+    "management": "Управление",
+    "management.hub": "Управление",
+    "management.ppr": "Управление PPR",
+    "management.users": "Пользователь",
+    "management.roles": "Роли",
+    "management.employees": "Управление сотрудниками",
+    "management.programs": "Управление программами",
+    "management.errors": "Ошибки",
+    "management.changes": "Изменения"
+  },
+  "users": {
+    "add": "Добавить",
+    "edit": "Редактировать",
+    "listTitle": "Пользователи",
+    "emptyList": "Пользователей нет",
+    "emptySearch": "По запросу ничего не найдено",
+    "searchPlaceholder": "Поиск пользователя",
+    "selectUser": "Выберите пользователя",
+    "uploadAvatar": "Загрузить фото",
+    "viewAvatar": "Увеличить",
+    "drawer": {
+      "title": "Регистрация пользователя",
+      "editTitle": "Редактирование пользователя"
+    },
+    "fields": {
+      "avatar": "Фото профиля",
+      "firstName": "Имя",
+      "lastName": "Фамилия",
+      "birthDate": "Дата рождения",
+      "phone": "Номер телефона",
+      "tabelNumber": "Табельный номер",
+      "position": "Должность",
+      "role": "Роль",
+      "structuralUnit": "Структурное подразделение",
+      "section": "Отдел",
+      "isActive": "Активность"
+    },
+    "status": {
+      "active": "Активен",
+      "inactive": "Неактивен"
+    },
+    "placeholders": {
+      "firstName": "Например: Вали",
+      "lastName": "Например: Алиев",
+      "birthDate": "Выберите дату",
+      "phone": "90 123 45 67",
+      "tabelNumber": "Например: 12345",
+      "position": "Например: Главный специалист",
+      "role": "Выберите роль",
+      "structuralUnit": "Выберите структурное подразделение",
+      "section": "Выберите отдел или работу без отдела"
+    },
+    "sectionAssignment": {
+      "sectionless": "Работа без отдела",
+      "unknown": "Отдел не указан"
+    },
+    "roles": {
+      "admin": "Админ",
+      "boshliq_monitoring": "Начальник мониторинга",
+      "xodim": "Сотрудник"
+    },
+    "validation": {
+      "firstNameMin": "Имя должно содержать минимум 2 символа",
+      "lastNameMin": "Фамилия должна содержать минимум 2 символа",
+      "birthDateRequired": "Выберите дату рождения",
+      "phoneFormat": "Номер телефона неполный (+998 и 9 цифр)",
+      "tabelNumberFormat": "Табельный номер должен состоять из 5 цифр",
+      "positionMin": "Введите должность",
+      "roleRequired": "Выберите роль",
+      "structuralUnitRequired": "Выберите структурное подразделение",
+      "sectionRequired": "Выберите отдел или укажите работу без отдела"
+    },
+    "notifications": {
+      "savedTitle": "Сохранено",
+      "savedDescription": "Пользователь успешно зарегистрирован"
+    },
+    "messages": {
+      "error": "Ошибка при сохранении пользователя",
+      "avatarError": "Не удалось обработать изображение. Выберите другое",
+      "activated": "Пользователь активирован",
+      "deactivated": "Пользователь деактивирован",
+      "cannotDeactivateSelf": "Вы не можете деактивировать свой аккаунт"
+    }
+  },
+  "applicationCalendar": {
+    "today": "Сегодня",
+    "previousMonth": "Предыдущий месяц",
+    "nextMonth": "Следующий месяц",
+    "weekdays": {
+      "sunday": "Вс",
+      "monday": "Пн",
+      "tuesday": "Вт",
+      "wednesday": "Ср",
+      "thursday": "Чт",
+      "friday": "Пт",
+      "saturday": "Сб"
+    },
+    "months": {
+      "0": "Январь",
+      "1": "Февраль",
+      "2": "Март",
+      "3": "Апрель",
+      "4": "Май",
+      "5": "Июнь",
+      "6": "Июль",
+      "7": "Август",
+      "8": "Сентябрь",
+      "9": "Октябрь",
+      "10": "Ноябрь",
+      "11": "Декабрь"
+    },
+    "moreEvents": "ещё {{count}}",
+    "modal": {
+      "title": "Сведения о заявке",
+      "viewDetails": "Подробнее о заявке",
+      "createdAt": "Дата отправки",
+      "attachments": "Вложения",
+      "attachmentsValue": "{{images}} изображений, {{files}} файлов"
+    }
+  },
+  "pprCalendar": {
+    "today": "Сегодня",
+    "previousMonth": "Предыдущий месяц",
+    "nextMonth": "Следующий месяц",
+    "moreEvents": "ещё {{count}}",
+    "weekdays": {
+      "sunday": "Вс",
+      "monday": "Пн",
+      "tuesday": "Вт",
+      "wednesday": "Ср",
+      "thursday": "Чт",
+      "friday": "Пт",
+      "saturday": "Сб"
+    },
+    "months": {
+      "0": "Январь",
+      "1": "Февраль",
+      "2": "Март",
+      "3": "Апрель",
+      "4": "Май",
+      "5": "Июнь",
+      "6": "Июль",
+      "7": "Август",
+      "8": "Сентябрь",
+      "9": "Октябрь",
+      "10": "Ноябрь",
+      "11": "Декабрь"
+    },
+    "status": {
+      "draft": "Черновик",
+      "pending_approval": "На согласовании",
+      "approved": "Согласован"
+    },
+    "scope": {
+      "structure": "По структуре",
+      "section": "По отделу"
+    },
+    "filters": {
+      "structuralUnit": "Выберите структурное подразделение"
+    },
+    "fields": {
+      "date": "Дата",
+      "pprType": "Тип PPR",
+      "pprTypePlaceholder": "Выберите тип PPR",
+      "objects": "Объекты",
+      "objectsPlaceholder": "Выберите объекты",
+      "scope": "Область",
+      "section": "Отдел",
+      "sectionPlaceholder": "Выберите отдел",
+      "comment": "Комментарий",
+      "commentPlaceholder": "Напишите комментарий (необязательно)"
+    },
+    "validation": {
+      "pprTypeRequired": "Выберите тип PPR",
+      "objectsRequired": "Выберите хотя бы один объект",
+      "sectionRequired": "Выберите отдел"
+    },
+    "actions": {
+      "add": "Добавить",
+      "submitMonth": "Отправить месяц",
+      "clearMonth": "Очистить",
+      "executePpr": "Выполнить PPR",
+      "approve": "Согласовать",
+      "reject": "Отклонить",
+      "review": "Просмотр",
+      "incomingApprovals": "Входящие согласования"
+    },
+    "dayDrawer": {
+      "title": "{{date}}",
+      "empty": "На этот день записей нет"
+    },
+    "entryDrawer": {
+      "addTitle": "{{date}} — новая запись",
+      "editTitle": "{{date}} — редактирование",
+      "activeScope": "Выбранная область: {{scope}}"
+    },
+    "entryModal": {
+      "title": "Запись PPR",
+      "deleteConfirm": "Удалить эту запись?"
+    },
+    "entryDetail": {
+      "title": "Детали PPR",
+      "status": "Статус выполнения",
+      "completion": "Процент выполнения",
+      "objectCompleted": "Выполнено",
+      "objectPending": "Не выполнено"
+    },
+    "executionStatus": {
+      "pending": "Ожидает",
+      "in_progress": "В процессе",
+      "completed": "Выполнено"
+    },
+    "executionDrawer": {
+      "title": "Выполнение PPR",
+      "objects": "Выполненные объекты",
+      "objectsPlaceholder": "Выберите объекты",
+      "objectsRequired": "Выберите хотя бы один объект",
+      "images": "Изображения",
+      "files": "Файлы",
+      "uploadImages": "Загрузить изображения",
+      "uploadFiles": "Загрузить файлы",
+      "commentPlaceholder": "Напишите комментарий (необязательно)"
+    },
+    "submitModal": {
+      "title": "Отправить месяц на согласование",
+      "message": "{{headName}} должен согласовать. Вы согласны?",
+      "hint": "После нажатия «Да» запрос будет отправлен руководителю.",
+      "yes": "Да, согласен",
+      "no": "Нет"
+    },
+    "clearModal": {
+      "title": "Очистить месяц",
+      "message": "Все записи PPR-календаря за {{monthLabel}} будут удалены. Продолжить?",
+      "hint": "После очистки месяц будет пустым, и вы сможете ввести записи заново.",
+      "yes": "Да, очистить",
+      "no": "Нет"
+    },
+    "approveModal": {
+      "title": "Согласование PPR-календаря",
+      "message": "Вы проверили PPR-календарь за {{monthLabel}} и он верен? Подтверждаете согласование?",
+      "hint": "После нажатия «Да, подтверждаю» месяц будет окончательно согласован.",
+      "yes": "Да, подтверждаю",
+      "no": "Нет"
+    },
+    "incomingApprovalsModal": {
+      "title": "Входящие согласования",
+      "empty": "Пока нет календарей, отправленных на согласование",
+      "rejectConfirm": "Вернуть этот PPR-календарь на доработку?",
+      "submitter": "Отправил: {{name}}",
+      "entries": "{{count}} записей"
+    },
+    "approvalDrawer": {
+      "title": "Месяцы на согласовании",
+      "empty": "Нет месяцев для согласования",
+      "approveConfirm": "Согласовать этот месяц?",
+      "submitter": "Отправил: {{name}}",
+      "entries": "{{count}} записей"
+    },
+    "messages": {
+      "notAvailable": "Для этого месяца нет согласованного PPR-календаря",
+      "selectPendingMonth": "Выберите месяц из входящих согласований и проверьте его",
+      "reviewHint": "Проверьте PPR-календарь, отправленный сотрудником. Нажимайте на дни, чтобы просмотреть записи, затем нажмите «Согласовать».",
+      "revisionHint": "Исправьте ошибки или нажмите «Очистить», чтобы полностью очистить месяц и начать заново. Когда будет готово, отправьте снова на согласование.",
+      "noPendingApproval": "Пока нет месяцев, отправленных на согласование",
+      "createSuccess": "Запись сохранена",
+      "updateSuccess": "Запись обновлена",
+      "deleteSuccess": "Запись удалена",
+      "deleteError": "Не удалось удалить запись",
+      "submitSuccess": "Месяц отправлен на согласование",
+      "clearSuccess": "Месяц очищен",
+      "clearError": "Не удалось очистить месяц",
+      "approveSuccess": "Месяц согласован",
+      "approveError": "Ошибка при согласовании",
+      "rejectSuccess": "Согласование отклонено",
+      "rejectError": "Ошибка при отклонении",
+      "executionSuccess": "Выполнение PPR сохранено",
+      "executeLocked": "Сегодня нельзя выполнить этот PPR",
+      "executeLockedDetail": "Выполнять можно только PPR за последние 3 дня и за сегодня. Просмотр данных доступен."
+    }
+  },
+  "homePage": {
+    "title": "Добро пожаловать, {{name}}",
+    "subtitle": "Основные показатели, сроки и последние события в системе",
+    "filters": {
+      "scopeAll": "Все области",
+      "periodFrom": "Начало",
+      "periodTo": "Конец",
+      "reset": "Сбросить фильтры",
+      "refresh": "Обновить",
+      "applicationScope": {
+        "all": "Все заявки",
+        "submitted": "Отправленные",
+        "incoming": "Входящие"
+      }
+    },
+    "kpis": {
+      "applicationsTotal": "Всего заявок",
+      "applicationsInProgress": "В работе",
+      "applicationsOverdue": "Просрочено",
+      "applicationsIncoming": "Входящие заявки",
+      "pprExecution": "Выполнение PPR",
+      "pprPendingApproval": "Ожидают согласования",
+      "notificationsUnread": "Непрочитанные уведомления"
+    },
+    "ppr": {
+      "title": "Статус календаря PPR",
+      "executionTitle": "Выполнение в согласованных месяцах",
+      "monthStatusTitle": "Месяцы по статусу",
+      "statusDraft": "Черновик",
+      "statusPending": "Ожидает согласования",
+      "statusApproved": "Согласован",
+      "plannedExecutions": "Запланировано",
+      "completedExecutions": "Выполнено"
+    },
+    "summary": {
+      "submittedApplications": "Отправленные заявки",
+      "completedApplications": "Завершённые заявки",
+      "cancelledApplications": "Отменённые",
+      "approvedPprMonths": "Согласованные месяцы PPR"
+    },
+    "tables": {
+      "upcomingDeadlines": "Ближайшие сроки",
+      "recentApplications": "Последние заявки",
+      "recentNotifications": "Последние уведомления",
+      "status": "Статус",
+      "updatedAt": "Обновлено",
+      "daysRemaining": "Осталось дней",
+      "overdue": "Просрочено",
+      "daysLeft": "{{count}} дн.",
+      "emptyDeadlines": "Нет ближайших сроков",
+      "emptyApplications": "Заявки не найдены",
+      "emptyNotifications": "Уведомлений нет"
+    },
+    "alerts": {
+      "overdueApplications": "{{count}} заявок просрочено. Проверьте входящие заявки.",
+      "pendingPprMonths": "{{count}} месяцев PPR ожидают согласования."
+    },
+    "errors": {
+      "loadFailed": "Не удалось загрузить данные главной страницы"
+    }
+  },
+  "managementPage": {
+    "title": "Управление",
+    "subtitle": "Выберите и управляйте разделами системы"
+  },
+  "errorLogsPage": {
+    "title": "Ошибки",
+    "subtitle": "Ошибки системы с причиной, решением, автором и исходной страницей",
+    "forbiddenTitle": "Доступ запрещён",
+    "forbiddenDescription": "Запросите у администратора доступ к журналу ошибок",
+    "resolved": "Решено",
+    "source": {
+      "api": "API",
+      "frontend": "Frontend",
+      "route": "Страница"
+    },
+    "severity": {
+      "user": "Пользователь",
+      "system": "Система"
+    },
+    "filters": {
+      "search": "Поиск по коду, сообщению, ссылке или пользователю",
+      "allSources": "Все источники",
+      "allSeverities": "Все уровни",
+      "allStatuses": "Все статусы",
+      "open": "Открытые",
+      "resolved": "Решённые"
+    },
+    "columns": {
+      "time": "Время",
+      "source": "Источник",
+      "severity": "Уровень",
+      "code": "Код",
+      "message": "Ошибка",
+      "actor": "Кем вызвано",
+      "route": "Ссылка",
+      "solution": "Решение",
+      "actions": "Действия"
+    },
+    "actions": {
+      "refresh": "Обновить",
+      "resolve": "Решено"
+    },
+    "messages": {
+      "resolved": "Ошибка отмечена как решённая"
+    },
+    "detail": {
+      "title": "Детали ошибки",
+      "code": "Код ошибки",
+      "message": "Текст ошибки",
+      "solution": "Решение",
+      "actor": "Кем вызвано",
+      "unknownActor": "Неизвестно",
+      "route": "Страница",
+      "apiPath": "API-запрос",
+      "time": "Время",
+      "userAgent": "Браузер",
+      "validationErrors": "Ошибки валидации",
+      "stack": "Технический stack",
+      "metadata": "Дополнительные данные",
+      "noSolution": "Для этой ошибки нет автоматического решения"
+    }
+  },
+  "pprManagement": {
+    "monthDetail": "PPR календарь",
+    "backToList": "Назад к списку",
+    "search": "Поиск по месяцу или подразделению",
+    "empty": "Утверждённые PPR календари не найдены",
+    "filters": {
+      "structuralUnit": "Подразделение",
+      "scopeAll": "Все охваты",
+      "anySection": "По отделу",
+      "periodFrom": "С месяца",
+      "periodTo": "По месяц",
+      "reset": "Сбросить фильтры"
+    },
+    "deleteEntryConfirm": "Вы действительно хотите удалить эту запись PPR?",
+    "columns": {
+      "period": "Месяц",
+      "unit": "Подразделение",
+      "scope": "Охват",
+      "entries": "Записи",
+      "approvedAt": "Время утверждения",
+      "actions": "Действия"
+    },
+    "actions": {
+      "clearMonth": "Очистить месяц"
+    },
+    "clearModal": {
+      "title": "Очистить месяц",
+      "message": "Удалить все записи PPR за {{monthLabel}}?",
+      "hint": "Это действие нельзя отменить. Месяц вернётся в черновик, и сотрудники смогут составить календарь заново.",
+      "yes": "Да, очистить"
+    },
+    "messages": {
+      "entryDeleted": "Запись PPR удалена",
+      "monthCleared": "Месяц очищен. Пользователи могут составить календарь заново"
+    }
+  },
+  "applicationSubmit": {
+    "listTitle": "Отправленные заявки",
+    "detailTitle": "Детали заявки",
+    "send": "Отправить заявку",
+    "edit": "Редактировать",
+    "delete": "Удалить",
+    "deleteConfirm": "Подтвердите удаление заявки",
+    "selectItem": "Выберите заявку",
+    "emptyList": "Заявки ещё не отправлялись",
+    "emptySearch": "По запросу ничего не найдено",
+    "uploadImages": "Загрузить изображения",
+    "uploadFiles": "Загрузить файлы",
+    "drawer": {
+      "title": "Отправка заявки",
+      "editTitle": "Редактирование заявки"
+    },
+    "fields": {
+      "submittedBy": "Отправитель заявки",
+      "submitterStructuralUnit": "Структурное подразделение отправителя",
+      "structuralUnits": "Структурные подразделения",
+      "type": "Тип заявки",
+      "deadline": "Срок",
+      "images": "Изображения",
+      "files": "Файлы",
+      "comment": "Общий комментарий"
+    },
+    "placeholders": {
+      "structuralUnits": "Выберите одно или несколько подразделений",
+      "type": "Выберите тип заявки",
+      "deadline": "Выберите срок",
+      "comment": "Напишите общий комментарий к заявке"
+    },
+    "types": {
+      "execution": "Для исполнения",
+      "information": "Для информации"
+    },
+    "status": {
+      "in_progress": "В процессе",
+      "completed": "Подтверждена",
+      "cancelled": "Отменена"
+    },
+    "filters": {
+      "search": "Поиск заявок",
+      "type": "Фильтр по типу"
+    },
+    "validation": {
+      "structuralUnitsRequired": "Выберите хотя бы одно структурное подразделение",
+      "deadlineRequired": "Укажите срок для заявки на исполнение",
+      "commentMin": "Комментарий должен содержать минимум 3 символа"
+    },
+    "messages": {
+      "saved": "Заявка успешно отправлена",
+      "updated": "Заявка успешно обновлена",
+      "deleted": "Заявка успешно удалена",
+      "error": "Ошибка при отправке заявки",
+      "finalizedHint": "Заявка подтверждена",
+      "cancelledLockedHint": "Отменённую заявку нельзя редактировать или удалить"
+    },
+    "attachments": {
+      "view": "Просмотр",
+      "download": "Скачать",
+      "empty": "Файлы не загружены",
+      "previewUnavailable": "Содержимое файла отсутствует",
+      "downloadUnavailable": "Не удалось скачать файл"
+    },
+    "specialMessage": {
+      "title": "Специальное сообщение",
+      "prompt": "Хотите отправить специальное сообщение?",
+      "hint": "Напишите отдельное сообщение для выбранных подразделений. Минимум одно сообщение обязательно.",
+      "placeholder": "Специальное сообщение для этого подразделения",
+      "atLeastOne": "Напишите специальное сообщение хотя бы для одного подразделения"
+    }
+  },
+  "applicationIncoming": {
+    "listTitle": "Входящие заявки",
+    "detailTitle": "Детали заявки",
+    "selectItem": "Выберите заявку",
+    "emptyList": "Входящих заявок пока нет",
+    "emptySearch": "По запросу ничего не найдено",
+    "specialMessage": {
+      "badge": "Спец. сообщение",
+      "highlightTitle": "Специальное сообщение для вас"
+    }
+  },
+  "applicationWorkflow": {
+    "title": "Рабочий процесс",
+    "open": "Рабочий процесс",
+    "back": "Назад",
+    "statusLabel": "Статус",
+    "messagePlaceholder": "Напишите сообщение...",
+    "emptyMessages": "Сообщений пока нет",
+    "notFound": "Заявка не найдена",
+    "forbidden": "У вас нет доступа к этому рабочему процессу",
+    "status": {
+      "returned": "Возврат",
+      "in_progress_work": "Выполняется",
+      "pending_confirmation": "На подтверждении",
+      "confirmed": "Подтверждена",
+      "cancelled": "Отменена"
+    },
+    "actions": {
+      "confirm": "Подтвердить",
+      "cancel": "Отменить"
+    },
+    "finalizeModal": {
+      "no": "Нет",
+      "confirm": {
+        "title": "Подтверждение заявки",
+        "yes": "Да, подтвердить",
+        "message": "Все структурные подразделения ответили. Подтвердить заявку окончательно?",
+        "hint": "После подтверждения в заявку нельзя будет добавить новую информацию."
+      },
+      "cancel": {
+        "title": "Отмена заявки",
+        "yes": "Да, отменить",
+        "message": "Все структурные подразделения ответили. Отменить эту заявку?",
+        "hint": "После отмены в заявку нельзя будет добавить новую информацию."
+      }
+    },
+    "unitStatuses": {
+      "title": "Текущие статусы по структурным подразделениям"
+    },
+    "confirmationFiles": {
+      "title": "Загрузка файлов для подтверждения",
+      "hint": "Для перехода в статус «На подтверждении» загрузите хотя бы один файл.",
+      "upload": "Загрузить файлы",
+      "confirm": "Сохранить и изменить статус",
+      "required": "Необходимо загрузить хотя бы один файл"
+    },
+    "messages": {
+      "loadError": "Не удалось загрузить рабочий процесс",
+      "sendError": "Не удалось отправить сообщение",
+      "statusUpdated": "Статус успешно обновлён",
+      "statusError": "Не удалось обновить статус",
+      "confirmSuccess": "Заявка успешно подтверждена",
+      "confirmError": "Не удалось подтвердить заявку",
+      "cancelSuccess": "Заявка отменена",
+      "cancelError": "Не удалось отменить заявку"
+    }
+  },
+  "pprType": {
+    "add": "Добавить",
+    "edit": "Редактировать",
+    "upload": "Загрузить файл",
+    "drawer": {
+      "createTitle": "Регистрация типа PPR",
+      "editTitle": "Редактирование типа PPR"
+    },
+    "fields": {
+      "originalName": "Оригинальное название PPR",
+      "shortName": "Краткое название",
+      "description": "Подробная информация",
+      "files": "Файлы PPR",
+      "createdAt": "Дата создания",
+      "updatedAt": "Дата обновления"
+    },
+    "placeholders": {
+      "originalName": "Например: PPR на основании указа президента",
+      "shortName": "Выберите тип PPR",
+      "description": "Введите подробную информацию о типе PPR"
+    },
+    "columns": {
+      "originalName": "Оригинальное название PPR",
+      "shortName": "Краткое название",
+      "description": "Подробная информация",
+      "owner": "Автор",
+      "files": "Файлы",
+      "actions": "Действия"
+    },
+    "filters": {
+      "search": "Поиск",
+      "shortName": "Фильтр по краткому названию",
+      "originalName": "Фильтр по оригинальному названию",
+      "reset": "Сбросить фильтры"
+    },
+    "owner": {
+      "self": "Я",
+      "unknown": "Неизвестно"
+    },
+    "validation": {
+      "originalNameMin": "Оригинальное название PPR должно содержать минимум 2 символа",
+      "shortNameRequired": "Выберите краткое название",
+      "descriptionMin": "Подробная информация должна содержать минимум 10 символов",
+      "filesMax": "Максимум 100 файлов"
+    },
+    "messages": {
+      "saving": "Сохранение...",
+      "saved": "Тип PPR успешно сохранён",
+      "error": "Ошибка при сохранении типа PPR"
+    },
+    "detail": {
+      "title": "Информация о типе PPR",
+      "close": "Закрыть",
+      "emptyFiles": "Нет файлов"
+    },
+    "fileActions": {
+      "view": "Просмотр",
+      "download": "Скачать",
+      "previewUnavailable": "Содержимое файла недоступно. Загрузите снова.",
+      "previewUnsupported": "Этот тип файла нельзя просмотреть на экране. Скачайте файл.",
+      "downloadUnavailable": "Содержимое файла недоступно для скачивания",
+      "downloadUnavailableHint": "Загрузите файл снова или обновите страницу, если он был сохранен в этом браузере"
+    }
+  },
+  "structuralUnit": {
+    "add": "Добавить",
+    "edit": "Редактировать",
+    "delete": "Удалить",
+    "deleteConfirm": "Вы уверены, что хотите удалить это структурное подразделение?",
+    "upload": "Загрузить файл",
+    "drawer": {
+      "createTitle": "Регистрация структурного подразделения",
+      "editTitle": "Редактирование структурного подразделения"
+    },
+    "fields": {
+      "originalName": "Полное название службы",
+      "shortName": "Краткое название",
+      "headFullName": "ФИО руководителя",
+      "headUser": "Руководитель",
+      "documents": "Документы службы"
+    },
+    "placeholders": {
+      "originalName": "Например: Служба информационных технологий",
+      "shortName": "Например: СИТ",
+      "headFullName": "Например: Каримов Вали Алиевич",
+      "headUser": "Найдите и выберите пользователя"
+    },
+    "filters": {
+      "search": "Поиск (полное название, краткое название, ФИО)",
+      "shortName": "По краткому названию",
+      "originalName": "По полному названию",
+      "reset": "Сбросить фильтры"
+    },
+    "selectItem": "Выберите структурное подразделение",
+    "emptyDocuments": "Документы не загружены",
+    "documents": {
+      "view": "Просмотр",
+      "download": "Скачать",
+      "previewUnavailable": "Содержимое файла отсутствует. Загрузите файл снова.",
+      "previewUnsupported": "Этот тип файла нельзя просмотреть на экране. Скачайте файл.",
+      "downloadUnavailable": "Невозможно скачать файл без содержимого"
+    },
+    "columns": {
+      "originalName": "Полное название службы",
+      "shortName": "Краткое название",
+      "headFullName": "ФИО руководителя",
+      "documents": "Документы",
+      "sections": "Отделы",
+      "actions": "Действия"
+    },
+    "validation": {
+      "originalNameMin": "Полное название службы должно содержать минимум 2 символа",
+      "shortNameMin": "Краткое название должно содержать минимум 2 символа",
+      "headFullNameMin": "ФИО руководителя должно содержать минимум 5 символов",
+      "headRequired": "Выберите руководителя"
+    },
+    "messages": {
+      "saved": "Структурное подразделение успешно сохранено",
+      "error": "Ошибка при сохранении",
+      "deleted": "Структурное подразделение успешно удалено",
+      "deleteError": "Ошибка при удалении структурного подразделения"
+    },
+    "section": {
+      "title": "Отделы",
+      "add": "Добавить отдел",
+      "edit": "Редактировать",
+      "empty": "Отделы отсутствуют",
+      "drawer": {
+        "createTitle": "Создание отдела",
+        "editTitle": "Редактирование отдела"
+      },
+      "fields": {
+        "originalName": "Полное название отдела",
+        "shortName": "Краткое название",
+        "documents": "Файлы"
+      },
+      "placeholders": {
+        "originalName": "Например: Отдел информационной безопасности",
+        "shortName": "Например: ОИБ"
+      },
+      "validation": {
+        "originalNameMin": "Полное название отдела должно содержать минимум 2 символа",
+        "shortNameMin": "Краткое название должно содержать минимум 2 символа"
+      },
+      "messages": {
+        "saved": "Отдел успешно сохранён",
+        "error": "Ошибка при сохранении отдела"
+      }
+    }
+  },
+  "object": {
+    "add": "Добавить",
+    "edit": "Редактировать",
+    "delete": "Удалить",
+    "deleteConfirm": "Вы уверены, что хотите удалить этот объект?",
+    "upload": "Загрузить файл",
+    "openInMaps": "Открыть на карте",
+    "drawer": {
+      "createTitle": "Регистрация объекта",
+      "editTitle": "Редактирование объекта"
+    },
+    "fields": {
+      "originalName": "Полное название объекта",
+      "shortName": "Краткое название",
+      "location": "Местоположение",
+      "address": "Адрес",
+      "latitude": "Широта",
+      "longitude": "Долгота",
+      "documents": "Документы"
+    },
+    "placeholders": {
+      "originalName": "Например: Центральная больница",
+      "shortName": "Например: ЦБ",
+      "address": "Введите адрес"
+    },
+    "filters": {
+      "search": "Поиск (название, краткое название, адрес)",
+      "shortName": "По краткому названию",
+      "originalName": "По полному названию",
+      "reset": "Сбросить фильтры"
+    },
+    "selectItem": "Выберите объект",
+    "emptyDocuments": "Документы не загружены",
+    "documents": {
+      "view": "Просмотр",
+      "download": "Скачать",
+      "previewUnavailable": "Содержимое файла недоступно. Загрузите заново.",
+      "previewUnsupported": "Этот тип файла нельзя просмотреть на экране. Скачайте файл.",
+      "downloadUnavailable": "Содержимое файла недоступно для скачивания"
+    },
+    "columns": {
+      "originalName": "Полное название",
+      "shortName": "Краткое название",
+      "address": "Адрес",
+      "documents": "Документы"
+    },
+    "map": {
+      "search": "Поиск",
+      "searchPlaceholder": "Введите адрес или название места",
+      "clickToSelect": "Нажмите на карту, чтобы выбрать место",
+      "selectedPoint": "Выбранная точка",
+      "noAddress": "Адрес не указан",
+      "loadError": "Не удалось загрузить Яндекс.Карты. Введите адрес вручную.",
+      "searchNotFound": "Адрес не найден",
+      "searchError": "Ошибка при поиске"
+    },
+    "validation": {
+      "originalNameMin": "Полное название должно содержать минимум 2 символа",
+      "shortNameMin": "Краткое название должно содержать минимум 2 символа",
+      "addressMin": "Адрес должен содержать минимум 5 символов"
+    },
+    "messages": {
+      "saved": "Объект успешно сохранён",
+      "error": "Ошибка при сохранении"
+    }
+  },
+  "profile": {
+    "changePassword": "Изменить пароль",
+    "notifications": {
+      "title": "Уведомления"
+    },
+    "drawer": {
+      "editTitle": "Редактирование профиля"
+    },
+    "password": {
+      "drawerTitle": "Изменение пароля",
+      "newPassword": "Новый пароль",
+      "confirmPassword": "Повторите новый пароль",
+      "placeholders": {
+        "newPassword": "Введите новый пароль",
+        "confirmPassword": "Повторите пароль"
+      },
+      "confirmTitle": "Изменить пароль?",
+      "confirmDescription": "Вы действительно хотите подтвердить новый пароль?",
+      "saved": "Пароль успешно обновлён",
+      "error": "Ошибка при обновлении пароля",
+      "validation": {
+        "minLength": "Пароль должен содержать минимум 4 символа",
+        "confirmRequired": "Повторите пароль",
+        "mismatch": "Пароли не совпадают"
+      }
+    },
+    "messages": {
+      "saved": "Профиль успешно обновлён",
+      "error": "Ошибка при сохранении профиля"
+    }
+  },
+  "roles": {
+    "add": "Добавить",
+    "edit": "Редактировать",
+    "upload": "Загрузить файл",
+    "deleteConfirm": "Удалить эту роль?",
+    "drawer": {
+      "createTitle": "Добавить роль",
+      "editTitle": "Редактировать роль"
+    },
+    "fields": {
+      "name": "Название роли",
+      "description": "Описание",
+      "documents": "Документы роли",
+      "permissions": "Права на страницы",
+      "canViewAllStructuralUnits": "Просмотр всех подразделений"
+    },
+    "placeholders": {
+      "name": "Например: Главный специалист",
+      "description": "Введите описание роли"
+    },
+    "filters": {
+      "search": "Поиск роли"
+    },
+    "columns": {
+      "name": "Название роли",
+      "description": "Описание",
+      "documents": "Документы",
+      "users": "Пользователи",
+      "actions": "Действия"
+    },
+    "permissions": {
+      "page": "Страница",
+      "view": "Просмотр",
+      "create": "Добавить",
+      "edit": "Редактировать",
+      "delete": "Удалить"
+    },
+    "validation": {
+      "nameMin": "Название роли должно содержать минимум 2 символа",
+      "descriptionMin": "Описание должно содержать минимум 2 символа"
+    },
+    "messages": {
+      "saved": "Роль успешно сохранена",
+      "error": "Ошибка при сохранении",
+      "deleted": "Роль удалена",
+      "deleteSystem": "Системную роль нельзя удалить",
+      "deleteAssigned": "Эта роль назначена {{count}} пользователям"
+    }
+  },
+  "notifications": {
+    "title": "Уведомления",
+    "empty": "Уведомлений нет",
+    "markAll": "Все",
+    "total": "Всего: {{count}}",
+    "types": {
+      "ppr_calendar_submitted": "PPR календарь",
+      "ppr_calendar_approved": "PPR одобрен",
+      "ppr_calendar_rejected": "PPR отклонен",
+      "application_created": "Новая заявка",
+      "application_workflow_message": "Сообщение по заявке",
+      "application_workflow_status": "Статус заявки",
+      "role_permissions_updated": "Права роли",
+      "user_role_changed": "Смена роли",
+      "user_access_changed": "Доступ",
+      "system": "Система"
+    }
+  }
+}

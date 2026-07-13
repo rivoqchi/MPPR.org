@@ -1,0 +1,17 @@
+export const USER_PUBLIC_SELECT = {
+  id: true,
+  firstName: true,
+  lastName: true,
+  birthDate: true,
+  phone: true,
+  tabelNumber: true,
+  position: true,
+  roleId: true,
+  structuralUnitId: true,
+  withoutSectionAccess: true,
+  structuralUnitSectionId: true,
+  avatar: true,
+  isActive: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;

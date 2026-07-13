@@ -1,0 +1,255 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AppRole {
+  id                        String   @id @default(uuid())
+  name                      String
+  description               String
+  documents                 Json     @default("[]")
+  permissions               Json     @default("[]")
+  canViewAllStructuralUnits Boolean  @default(false)
+  isSystem                  Boolean  @default(false)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+  users                     User[]
+
+  @@map("app_roles")
+}
+
+model StructuralUnit {
+  id              String   @id @default(uuid())
+  originalName    String
+  shortName       String
+  headFullName    String
+  headUserId      String?
+  documents       Json     @default("[]")
+  sections        Json     @default("[]")
+  createdByUserId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  users           User[]
+
+  @@map("structural_units")
+}
+
+model User {
+  id               String         @id @default(uuid())
+  firstName        String
+  lastName         String
+  birthDate        String
+  phone            String         @unique
+  tabelNumber      String         @unique
+  position         String
+  roleId           String
+  appRole          AppRole        @relation(fields: [roleId], references: [id])
+  structuralUnitId String
+  structuralUnit   StructuralUnit @relation(fields: [structuralUnitId], references: [id])
+  withoutSectionAccess     Boolean @default(false)
+  structuralUnitSectionId  String?
+  avatar           String?
+  isActive         Boolean        @default(true)
+  password         String
+  refreshToken     String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  notifications    Notification[]
+  auditLogs        AuditLog[]
+  errorLogs        ErrorLog[]
+
+  @@map("users")
+}
+
+model RegisteredObject {
+  id              String   @id @default(uuid())
+  originalName    String
+  shortName       String
+  location        Json
+  documents       Json     @default("[]")
+  createdByUserId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("registered_objects")
+}
+
+model PprType {
+  id                String             @id @default(uuid())
+  originalName      String
+  shortName         String
+  description       String
+  files             Json               @default("[]")
+  structuralUnitId  String             @default("")
+  scopeType         String             @default("structure")
+  sectionId         String             @default("")
+  createdByUserId   String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  calendarEntries   PprCalendarEntry[]
+
+  @@index([structuralUnitId, scopeType, sectionId])
+  @@map("ppr_types")
+}
+
+model PprCalendarMonth {
+  id                String             @id @default(uuid())
+  structuralUnitId  String
+  sectionId         String             @default("")
+  year              Int
+  month             Int
+  status            String             @default("draft")
+  submittedByUserId String?
+  submittedAt       DateTime?
+  approvedByUserId  String?
+  approvedAt        DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  entries           PprCalendarEntry[]
+
+  @@unique([structuralUnitId, sectionId, year, month])
+  @@index([structuralUnitId, status])
+  @@map("ppr_calendar_months")
+}
+
+model PprCalendarEntry {
+  id              String           @id @default(uuid())
+  monthId         String
+  month           PprCalendarMonth @relation(fields: [monthId], references: [id], onDelete: Cascade)
+  date            String
+  pprTypeId       String
+  pprType         PprType          @relation(fields: [pprTypeId], references: [id])
+  objectIds       Json             @default("[]")
+  scopeType       String
+  sectionId       String?
+  comment         String           @default("")
+  createdByUserId String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  executions      PprCalendarObjectExecution[]
+
+  @@index([monthId, date])
+  @@map("ppr_calendar_entries")
+}
+
+model PprCalendarObjectExecution {
+  id               String           @id @default(uuid())
+  entryId          String
+  entry            PprCalendarEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  objectId         String
+  images           Json             @default("[]")
+  files            Json             @default("[]")
+  comment          String           @default("")
+  executedByUserId String
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@unique([entryId, objectId])
+  @@index([entryId])
+  @@map("ppr_calendar_object_executions")
+}
+
+model Application {
+  id                        String   @id @default(uuid())
+  structuralUnitIds         Json     @default("[]")
+  type                      String
+  status                    String   @default("in_progress")
+  workflowStatus            String   @default("in_progress_work")
+  workflowUnitStatuses      Json     @default("[]")
+  deadline                  String?
+  images                    Json     @default("[]")
+  files                     Json     @default("[]")
+  comment                   String   @default("")
+  specialMessages           Json     @default("[]")
+  confirmationFiles         Json     @default("[]")
+  createdByUserId           String
+  createdByFirstName        String?
+  createdByLastName         String?
+  createdByStructuralUnitId String?
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+  workflowMessages          ApplicationWorkflowMessage[]
+
+  @@index([createdByUserId])
+  @@map("applications")
+}
+
+model ApplicationWorkflowMessage {
+  id                       String      @id @default(uuid())
+  applicationId            String
+  application              Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  authorUserId             String
+  authorFirstName          String?
+  authorLastName           String?
+  authorStructuralUnitId   String?
+  content                  String      @default("")
+  attachments              Json        @default("[]")
+  createdAt                DateTime    @default(now())
+
+  @@index([applicationId, createdAt])
+  @@map("application_workflow_messages")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  message   String
+  linkPath  String?
+  metadata  Json?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, read])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String?
+  entityId  String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model ErrorLog {
+  id           String   @id @default(uuid())
+  source       String
+  severity     String
+  code         String?
+  message      String
+  hint         String?
+  route        String?
+  apiPath      String?
+  method       String?
+  statusCode   Int?
+  stack        String?
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userFullName String?
+  userPhone    String?
+  userAgent    String?
+  metadata     Json?
+  resolved     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([source])
+  @@index([severity])
+  @@index([userId])
+  @@map("error_logs")
+}
