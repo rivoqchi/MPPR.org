@@ -35,10 +35,7 @@ export async function createUser(data: UserFormValues): Promise<User> {
 }
 
 export async function updateUser(id: string, data: UserFormValues): Promise<User> {
-  const response = await api.patch(
-    `/users/${id}`,
-    toUpdateUserPayload(data, generateUserPassword(data.phone, data.roleId)),
-  )
+  const response = await api.patch(`/users/${id}`, toUpdateUserPayload(data))
   return toUser(unwrapApiResponse<ApiUser>(response))
 }
 

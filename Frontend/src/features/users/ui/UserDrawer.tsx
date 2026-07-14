@@ -3,7 +3,7 @@ import { UploadOutlined, UserOutlined } from '@ant-design/icons'
 import { App, Avatar, Button, DatePicker, Drawer, Form, Input, Select, Space, Upload } from 'antd'
 import dayjs from 'dayjs'
 import { useEffect, useMemo, useState } from 'react'
-import { Controller, useForm } from 'react-hook-form'
+import { Controller, useForm, type FieldErrors } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import type { User } from '@/entities/user/model/types'
 import {
@@ -55,6 +55,7 @@ export function UserDrawer({ open, editingUser, onClose, onSaved }: UserDrawerPr
   const updateUser = useUsersStore((state) => state.updateUser)
   const roles = useRolesStore((state) => state.roles)
   const structuralUnits = useStructuralUnitsStore((state) => state.structuralUnits)
+  const isStructuralUnitsHydrated = useStructuralUnitsStore((state) => state.isHydrated)
 
   const {
     control,
@@ -101,23 +102,30 @@ export function UserDrawer({ open, editingUser, onClose, onSaved }: UserDrawerPr
     }
 
     if (editingUser) {
+      const unit = structuralUnits.find((item) => item.id === editingUser.structuralUnitId)
+      const unitHasSections = (unit?.sections?.length ?? 0) > 0
+      const sectionSelection =
+        getSectionSelectionValue(editingUser) ??
+        (unitHasSections ? SECTIONLESS_ACCESS_VALUE : undefined)
+
       reset({
         firstName: editingUser.firstName,
         lastName: editingUser.lastName,
         birthDate: dayjs(editingUser.birthDate),
-        phone: editingUser.phone,
+        phone: formatPhoneInput(editingUser.phone || PHONE_PREFIX),
         tabelNumber: editingUser.tabelNumber,
         position: editingUser.position,
         roleId: editingUser.roleId,
         structuralUnitId: editingUser.structuralUnitId,
-        structuralUnitSectionSelection: getSectionSelectionValue(editingUser),
-        avatar: editingUser.avatar,
+        structuralUnitSectionSelection: sectionSelection,
+        avatar: editingUser.avatar ?? undefined,
       })
       return
     }
 
     reset(defaultValues)
-  }, [open, editingUser, reset])
+    // Re-run when units hydrate so section default can be applied after units load.
+  }, [open, editingUser, reset, isStructuralUnitsHydrated]) // eslint-disable-line react-hooks/exhaustive-deps -- structuralUnits intentionally omitted to avoid mid-edit resets
 
   useEffect(() => {
     if (!open || editingUser) {
@@ -133,6 +141,18 @@ export function UserDrawer({ open, editingUser, onClose, onSaved }: UserDrawerPr
     onClose()
   }
 
+  const onInvalid = (formErrors: FieldErrors<UserDrawerFormSchema>) => {
+    const firstError = Object.values(formErrors).find(
+      (error) => typeof error?.message === 'string' && error.message.length > 0,
+    )
+    const message =
+      typeof firstError?.message === 'string' && firstError.message.startsWith('users.')
+        ? t(firstError.message)
+        : t('users.messages.validationFailed')
+
+    notification.warning({ message })
+  }
+
   const onSubmit = async (values: UserDrawerFormSchema) => {
     const unit = structuralUnits.find((item) => item.id === values.structuralUnitId)
     const sections = unit?.sections ?? []
@@ -141,6 +161,9 @@ export function UserDrawer({ open, editingUser, onClose, onSaved }: UserDrawerPr
       setError('structuralUnitSectionSelection', {
         type: 'manual',
         message: 'users.validation.sectionRequired',
+      })
+      notification.warning({
+        message: t('users.validation.sectionRequired'),
       })
       return
     }
@@ -154,14 +177,14 @@ export function UserDrawer({ open, editingUser, onClose, onSaved }: UserDrawerPr
       firstName: values.firstName,
       lastName: values.lastName,
       birthDate: values.birthDate.format('YYYY-MM-DD'),
-      phone: values.phone,
+      phone: formatPhoneInput(values.phone),
       tabelNumber: values.tabelNumber,
       position: values.position,
       roleId: values.roleId,
       structuralUnitId: values.structuralUnitId,
       withoutSectionAccess: sectionAssignment.withoutSectionAccess,
       structuralUnitSectionId: sectionAssignment.structuralUnitSectionId,
-      avatar: values.avatar,
+      avatar: values.avatar ?? undefined,
     }
 
     setIsSaving(true)
@@ -172,6 +195,7 @@ export function UserDrawer({ open, editingUser, onClose, onSaved }: UserDrawerPr
         : await addUser(payload)
 
       if (!user) {
+        notification.error({ message: t('users.messages.error') })
         return
       }
 
@@ -211,7 +235,11 @@ export function UserDrawer({ open, editingUser, onClose, onSaved }: UserDrawerPr
       footer={
         <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
           <Button onClick={handleClose}>{t('common.cancel')}</Button>
-          <Button type="primary" disabled={isSaving} onClick={handleSubmit(onSubmit)}>
+          <Button
+            type="primary"
+            loading={isSaving}
+            onClick={handleSubmit(onSubmit, onInvalid)}
+          >
             {t('common.save')}
           </Button>
         </Space>

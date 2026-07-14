@@ -18,8 +18,24 @@ export function toCreateUserPayload(data: UserFormValues, password: string) {
   }
 }
 
-export function toUpdateUserPayload(data: UserFormValues, password: string) {
-  return toCreateUserPayload(data, password)
+export function toUpdateUserPayload(data: UserFormValues) {
+  const withoutSectionAccess = data.withoutSectionAccess ?? false
+
+  return {
+    firstName: data.firstName,
+    lastName: data.lastName,
+    birthDate: data.birthDate,
+    phone: data.phone,
+    tabelNumber: data.tabelNumber,
+    position: data.position,
+    roleId: data.roleId,
+    structuralUnitId: data.structuralUnitId,
+    withoutSectionAccess,
+    structuralUnitSectionId: withoutSectionAccess
+      ? null
+      : (data.structuralUnitSectionId ?? null),
+    avatar: data.avatar,
+  }
 }
 
 export function toUpdateProfilePayload(data: ProfileUpdateValues) {

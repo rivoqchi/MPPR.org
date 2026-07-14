@@ -300,6 +300,7 @@
     },
     "messages": {
       "error": "Foydalanuvchini saqlashda xatolik yuz berdi",
+      "validationFailed": "Maydonlarni to'g'ri to'ldiring",
       "avatarError": "Rasmni yuklab bo'lmadi. Boshqa rasm tanlang",
       "activated": "Foydalanuvchi faollashtirildi",
       "deactivated": "Foydalanuvchi faolsizlashtirildi",

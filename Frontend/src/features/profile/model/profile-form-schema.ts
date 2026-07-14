@@ -18,7 +18,7 @@ export const profileFormSchema = z.object({
     .string()
     .trim()
     .min(2, 'users.validation.positionMin'),
-  avatar: z.string().optional(),
+  avatar: z.string().nullish(),
 })
 
 export type ProfileFormSchema = z.infer<typeof profileFormSchema>

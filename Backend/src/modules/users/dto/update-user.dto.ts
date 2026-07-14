@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsOptional, IsString, Matches, MinLength } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, Matches, MinLength, ValidateIf } from 'class-validator';
 import { ErrorCode } from '../../../common/constants/error-codes';
 
 export class UpdateUserDto {
@@ -61,10 +61,11 @@ export class UpdateUserDto {
   @IsBoolean()
   withoutSectionAccess?: boolean;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ nullable: true })
   @IsOptional()
+  @ValidateIf((_, value) => value !== null)
   @IsString()
-  structuralUnitSectionId?: string;
+  structuralUnitSectionId?: string | null;
 
   @ApiPropertyOptional({ example: '123123' })
   @IsOptional()

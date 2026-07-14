@@ -300,6 +300,7 @@
     },
     "messages": {
       "error": "Failed to save user",
+      "validationFailed": "Please fill in the fields correctly",
       "avatarError": "Could not process the image. Choose another image",
       "activated": "User activated",
       "deactivated": "User deactivated",

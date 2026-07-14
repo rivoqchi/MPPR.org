@@ -26,7 +26,7 @@ export interface UserFormValues {
   roleId: string
   structuralUnitId: string
   withoutSectionAccess?: boolean
-  structuralUnitSectionId?: string
+  structuralUnitSectionId?: string | null
   avatar?: string
 }
 

@@ -78,13 +78,45 @@ export function tryExec(command, options = {}) {
   try {
     execSync(command, {
       cwd: ROOT_DIR,
-      stdio: 'pipe',
+      stdio: options.input !== undefined ? ['pipe', 'pipe', 'pipe'] : 'pipe',
       shell: true,
       ...options,
     });
     return true;
-  } catch {
+  } catch (error) {
+    if (options.logError) {
+      const stderr = error?.stderr?.toString?.() ?? '';
+      const stdout = error?.stdout?.toString?.() ?? '';
+      if (stderr.trim()) {
+        warn(stderr.trim());
+      } else if (stdout.trim()) {
+        warn(stdout.trim());
+      }
+    }
     return false;
+  }
+}
+
+export function loadEnvFile() {
+  const envPath = path.join(ROOT_DIR, '.env');
+  if (!existsSync(envPath)) {
+    return;
+  }
+
+  for (const line of readFileSync(envPath, 'utf8').split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) {
+      continue;
+    }
+
+    const separatorIndex = trimmed.indexOf('=');
+    if (separatorIndex <= 0) {
+      continue;
+    }
+
+    const key = trimmed.slice(0, separatorIndex).trim();
+    const value = trimmed.slice(separatorIndex + 1).trim();
+    process.env[key] = value;
   }
 }
 

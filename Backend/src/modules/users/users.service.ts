@@ -143,8 +143,12 @@ export class UsersService {
     }
     if (dto.withoutSectionAccess !== undefined) {
       data.withoutSectionAccess = dto.withoutSectionAccess;
+
+      if (dto.withoutSectionAccess) {
+        data.structuralUnitSectionId = null;
+      }
     }
-    if (dto.structuralUnitSectionId !== undefined) {
+    if (dto.structuralUnitSectionId !== undefined && dto.withoutSectionAccess !== true) {
       data.structuralUnitSectionId = dto.structuralUnitSectionId;
     }
     if (dto.avatar !== undefined) data.avatar = dto.avatar;

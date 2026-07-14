@@ -6,8 +6,10 @@ import {
   ensureEnvFile,
   ensurePortAvailable,
   fail,
+  freePort,
   isPortOpen,
   isPostgresDataDirInitialised,
+  loadEnvFile,
   log,
   removeStalePostmasterPid,
   tryExec,
@@ -15,7 +17,7 @@ import {
   warn,
 } from './utils.mjs';
 
-const POSTGRES_PORT = 5432;
+const POSTGRES_PORT = Number.parseInt(process.env.DEV_POSTGRES_PORT ?? '5433', 10);
 const REDIS_PORT = 6379;
 const managedProcesses = [];
 
@@ -54,7 +56,7 @@ async function startEmbeddedPostgres() {
   log('Starting embedded PostgreSQL (no Docker detected)...');
 
   const { default: EmbeddedPostgres } = await import('embedded-postgres');
-  const dataDir = path.join(ROOT_DIR, '.data', 'postgres');
+  const dataDir = path.join(ROOT_DIR, '.data', `postgres-${POSTGRES_PORT}`);
 
   const pg = new EmbeddedPostgres({
     databaseDir: dataDir,
@@ -72,6 +74,16 @@ async function startEmbeddedPostgres() {
   }
 
   await pg.start();
+
+  try {
+    await pg.createDatabase('ppr_db');
+    log('Created database ppr_db');
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!message.toLowerCase().includes('already exists')) {
+      warn(`Could not create ppr_db: ${message}`);
+    }
+  }
 
   registerCleanup(async () => {
     await pg.stop();
@@ -105,8 +117,27 @@ async function startEmbeddedRedis() {
   return true;
 }
 
+async function isPostgresReady(port = POSTGRES_PORT) {
+  if (!(await isPortOpen(port))) {
+    return false;
+  }
+
+  // Port open is not enough — stale ghost listeners can accept TCP but not serve Postgres.
+  return tryExec(
+    `npx prisma db execute --schema prisma/schema.prisma --stdin`,
+    {
+      input: 'SELECT 1;',
+      env: {
+        ...process.env,
+        DATABASE_URL: `postgresql://user:password@127.0.0.1:${port}/ppr_db?schema=public`,
+      },
+      stdio: ['pipe', 'pipe', 'pipe'],
+    },
+  );
+}
+
 async function ensureInfrastructure() {
-  const postgresReady = await isPortOpen(POSTGRES_PORT);
+  const postgresReady = await isPostgresReady();
   const redisReady = await isPortOpen(REDIS_PORT);
 
   if (postgresReady && redisReady) {
@@ -114,14 +145,14 @@ async function ensureInfrastructure() {
     return;
   }
 
-  if (!postgresReady || !redisReady) {
+  if ((!postgresReady || !redisReady) && POSTGRES_PORT === 5432) {
     const dockerStarted = await startDockerInfra();
 
     if (dockerStarted) {
       const postgresUp = postgresReady || (await waitForPort(POSTGRES_PORT));
       const redisUp = redisReady || (await waitForPort(REDIS_PORT));
 
-      if (postgresUp && redisUp) {
+      if (postgresUp && redisUp && (await isPostgresReady())) {
         log('Docker infrastructure is ready.');
         return;
       }
@@ -130,10 +161,28 @@ async function ensureInfrastructure() {
     }
   }
 
-  if (!(await isPortOpen(POSTGRES_PORT))) {
+  if (!(await isPostgresReady())) {
+    if (await isPortOpen(POSTGRES_PORT)) {
+      warn(`Port ${POSTGRES_PORT} looks occupied but PostgreSQL is unreachable. Restarting embedded Postgres...`);
+      freePort(POSTGRES_PORT);
+      removeStalePostmasterPid(path.join(ROOT_DIR, '.data', `postgres-${POSTGRES_PORT}`));
+    }
+
     await startEmbeddedPostgres();
     if (!(await waitForPort(POSTGRES_PORT))) {
       fail(`PostgreSQL did not become available on port ${POSTGRES_PORT}.`);
+    }
+
+    // Give embedded Postgres a moment after TCP is open.
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      if (await isPostgresReady()) {
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+
+    if (!(await isPostgresReady())) {
+      fail(`PostgreSQL is listening on ${POSTGRES_PORT} but queries fail. Check .data/postgres-${POSTGRES_PORT}.`);
     }
   }
 
@@ -158,12 +207,12 @@ async function prepareDatabase() {
   }
 
   log('Applying database migrations...');
-  if (!tryExec('npx prisma migrate deploy')) {
+  if (!tryExec('npx prisma migrate deploy', { logError: true })) {
     warn('Migration deploy failed.');
   }
 
   log('Syncing database schema for local development...');
-  if (!tryExec('npx prisma db push --accept-data-loss')) {
+  if (!tryExec('npx prisma db push --accept-data-loss', { logError: true })) {
     fail('Database setup failed. Check DATABASE_URL in .env');
   }
 
@@ -206,6 +255,7 @@ function getApiPort() {
 
 async function main() {
   ensureEnvFile();
+  loadEnvFile();
   await ensureInfrastructure();
   await prepareDatabase();
   await ensurePortAvailable(getApiPort());
