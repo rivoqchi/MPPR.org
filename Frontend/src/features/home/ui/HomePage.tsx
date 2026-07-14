@@ -21,7 +21,7 @@ import { useStructuralUnitScope } from '@/shared/hooks/useStructuralUnitScope'
 import { scrollablePageStyle } from '@/shared/lib/page-layout'
 import { getAccessToken } from '@/shared/lib/token-storage'
 
-const { Title, Paragraph, Text } = Typography
+const { Title, Text } = Typography
 
 import { HOME_PAGE_GAP } from '@/features/home/lib/home-page-layout'
 
@@ -169,9 +169,6 @@ export function HomePage() {
         <Title level={3} style={{ margin: 0 }}>
           {t('homePage.title', { name: welcomeName })}
         </Title>
-        <Paragraph type="secondary" style={{ marginTop: 8, marginBottom: 0 }}>
-          {t('homePage.subtitle')}
-        </Paragraph>
       </div>
 
       <DashboardFiltersBar

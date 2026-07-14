@@ -7,6 +7,7 @@ import { useUiStore } from '@/shared/stores/ui-store'
 import { AppHeader } from '@/widgets/layout/AppHeader'
 import { AppSidebar } from '@/widgets/layout/AppSidebar'
 import { MobileSidebarDrawer } from '@/widgets/layout/MobileSidebarDrawer'
+import { useDailyWelcomeGreeting } from '@/features/notifications/hooks/useDailyWelcomeGreeting'
 
 const { Content } = Layout
 
@@ -16,6 +17,8 @@ export function MainLayout() {
   const sidebarPosition = useUiStore((state) => state.sidebarPosition)
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  useDailyWelcomeGreeting()
 
   useEffect(() => {
     setMobileMenuOpen(false)

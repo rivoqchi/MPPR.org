@@ -22,6 +22,7 @@
       },
       "VALIDATION_FAILED": "The submitted data is invalid or incomplete",
       "INTERNAL_SERVER_ERROR": "An unexpected server error occurred. Please try again later",
+      "UNAUTHORIZED": "Session expired or you are not signed in. Please sign in again",
       "INVALID_CREDENTIALS": "Invalid phone number or password",
       "INVALID_REFRESH_TOKEN": "Session expired. Please sign in again",
       "USER_NOT_FOUND": "User not found",
@@ -75,6 +76,7 @@
       "hints": {
         "VALIDATION_FAILED": "Check the fields and fill in all required information",
         "INVALID_CREDENTIALS": "Verify the phone number and password",
+        "UNAUTHORIZED": "Sign out and sign in again",
         "INVALID_REFRESH_TOKEN": "Sign out and sign in again",
         "PHONE_ALREADY_IN_USE": "Use another phone number or edit the existing user",
         "TABEL_NUMBER_ALREADY_IN_USE": "Use another personnel number",
@@ -502,7 +504,6 @@
   },
   "homePage": {
     "title": "Welcome, {{name}}",
-    "subtitle": "Key metrics, deadlines, and recent activity across the system",
     "filters": {
       "scopeAll": "All scopes",
       "periodFrom": "From",
@@ -1100,6 +1101,11 @@
     "empty": "No notifications",
     "markAll": "All",
     "total": "Total: {{count}}",
+    "dailyWelcome": {
+      "title": "Welcome!",
+      "titleWithName": "Welcome, {{name}}!",
+      "message": "Wishing you success with today's work!"
+    },
     "types": {
       "ppr_calendar_submitted": "PPR calendar",
       "ppr_calendar_approved": "PPR approved",

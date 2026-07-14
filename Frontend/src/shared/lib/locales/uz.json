@@ -22,6 +22,7 @@
       },
       "VALIDATION_FAILED": "Kiritilgan ma'lumotlar noto'g'ri yoki to'liq emas",
       "INTERNAL_SERVER_ERROR": "Serverda kutilmagan xatolik yuz berdi. Keyinroq urinib ko'ring",
+      "UNAUTHORIZED": "Sessiya tugagan yoki tizimga kirmagansiz. Qayta kiring",
       "INVALID_CREDENTIALS": "Telefon raqami yoki parol noto'g'ri",
       "INVALID_REFRESH_TOKEN": "Sessiya tugagan. Qayta tizimga kiring",
       "USER_NOT_FOUND": "Foydalanuvchi topilmadi",
@@ -75,6 +76,7 @@
       "hints": {
         "VALIDATION_FAILED": "Maydonlarni tekshirib, barcha majburiy ma'lumotlarni to'ldiring",
         "INVALID_CREDENTIALS": "Telefon raqami va parolni qayta tekshiring",
+        "UNAUTHORIZED": "Chiqib, qayta tizimga kiring",
         "INVALID_REFRESH_TOKEN": "Chiqib, qayta tizimga kiring",
         "PHONE_ALREADY_IN_USE": "Boshqa telefon raqamidan foydalaning yoki mavjud foydalanuvchini tahrirlang",
         "TABEL_NUMBER_ALREADY_IN_USE": "Boshqa tabel raqamidan foydalaning",
@@ -501,7 +503,6 @@
   },
   "homePage": {
     "title": "Xush kelibsiz, {{name}}",
-    "subtitle": "Tizim bo'yicha asosiy ko'rsatkichlar, muddatlar va so'nggi voqealar",
     "filters": {
       "scopeAll": "Barcha doiralar",
       "periodFrom": "Boshlanish",
@@ -1099,6 +1100,11 @@
     "empty": "Bildirishnomalar yo'q",
     "markAll": "Hammasi",
     "total": "Jami: {{count}} ta",
+    "dailyWelcome": {
+      "title": "Xush kelibsiz!",
+      "titleWithName": "Xush kelibsiz, {{name}}!",
+      "message": "Bugungi ishingizga omad tilayman!"
+    },
     "types": {
       "ppr_calendar_submitted": "PPR taqvimi",
       "ppr_calendar_approved": "PPR tasdiqlandi",
