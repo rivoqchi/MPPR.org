@@ -23,9 +23,15 @@ export class NotificationsService {
 
   async findAllForUser(userId: string, query: PaginationQueryDto, unreadOnly = false) {
     const { page, limit, skip } = getPaginationParams(query.page, query.limit);
-    const where = {
+    const where: Prisma.NotificationWhereInput = {
       userId,
       ...(unreadOnly ? { read: false } : {}),
+      NOT: {
+        OR: [
+          { title: 'Welcome' },
+          { message: { contains: 'Welcome to PPR.org API' } },
+        ],
+      },
     };
 
     const [items, total] = await Promise.all([
@@ -46,7 +52,16 @@ export class NotificationsService {
 
   async getUnreadCount(userId: string) {
     const count = await this.prisma.notification.count({
-      where: { userId, read: false },
+      where: {
+        userId,
+        read: false,
+        NOT: {
+          OR: [
+            { title: 'Welcome' },
+            { message: { contains: 'Welcome to PPR.org API' } },
+          ],
+        },
+      },
     });
 
     return { count };

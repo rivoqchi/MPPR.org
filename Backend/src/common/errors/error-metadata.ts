@@ -10,6 +10,7 @@ interface ErrorMetadata {
 
 const ERROR_METADATA: Partial<Record<ErrorCodeValue, ErrorMetadata>> = {
   [ErrorCode.VALIDATION_FAILED]: { category: 'user' },
+  [ErrorCode.UNAUTHORIZED]: { category: 'user' },
   [ErrorCode.INVALID_CREDENTIALS]: { category: 'user' },
   [ErrorCode.INVALID_REFRESH_TOKEN]: { category: 'user' },
   [ErrorCode.USER_NOT_FOUND]: { category: 'user' },

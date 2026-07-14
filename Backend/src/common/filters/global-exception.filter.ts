@@ -198,6 +198,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       code = ErrorCode.FORBIDDEN;
     }
 
+    if (statusCode === HttpStatus.UNAUTHORIZED && code === ErrorCode.INTERNAL_SERVER_ERROR) {
+      code = ErrorCode.UNAUTHORIZED;
+    }
+
     if (statusCode === HttpStatus.NOT_FOUND && code === ErrorCode.INTERNAL_SERVER_ERROR) {
       code = ErrorCode.NOT_FOUND;
     }
@@ -223,6 +227,14 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     if (statusCode === HttpStatus.TOO_MANY_REQUESTS) {
       return ErrorCode.TOO_MANY_REQUESTS;
+    }
+
+    if (statusCode === HttpStatus.UNAUTHORIZED) {
+      return ErrorCode.UNAUTHORIZED;
+    }
+
+    if (trimmed.toLowerCase() === 'unauthorized') {
+      return ErrorCode.UNAUTHORIZED;
     }
 
     if (trimmed.toLowerCase().includes('entity too large')) {

@@ -83,16 +83,13 @@ async function main() {
     },
   });
 
-  await prisma.notification.createMany({
-    data: [
-      {
-        userId: admin.id,
-        type: 'system',
-        title: 'Welcome',
-        message: 'Welcome to PPR.org API',
-      },
-    ],
-    skipDuplicates: true,
+  await prisma.notification.deleteMany({
+    where: {
+      OR: [
+        { title: 'Welcome' },
+        { message: { contains: 'Welcome to PPR.org API' } },
+      ],
+    },
   });
 
   console.log('Seed completed');

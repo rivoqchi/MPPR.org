@@ -112,11 +112,11 @@ export class AuthService {
 
     const accessExpires = this.configService.get<string>(
       'JWT_ACCESS_EXPIRES',
-      '15m',
+      '365d',
     ) as `${number}${'s' | 'm' | 'h' | 'd'}`;
     const refreshExpires = this.configService.get<string>(
       'JWT_REFRESH_EXPIRES',
-      '7d',
+      '365d',
     ) as `${number}${'s' | 'm' | 'h' | 'd'}`;
 
     const accessToken = this.jwtService.sign(payload, {

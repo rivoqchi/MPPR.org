@@ -16,7 +16,7 @@ import { LoginAttemptGuard } from './lib/login-attempt.guard';
       useFactory: (configService: ConfigService) => ({
         secret: configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
         signOptions: {
-          expiresIn: configService.get<string>('JWT_ACCESS_EXPIRES', '15m') as `${number}${'s' | 'm' | 'h' | 'd'}`,
+          expiresIn: configService.get<string>('JWT_ACCESS_EXPIRES', '365d') as `${number}${'s' | 'm' | 'h' | 'd'}`,
         },
       }),
     }),
