@@ -58,6 +58,12 @@ const ERROR_METADATA: Partial<Record<ErrorCodeValue, ErrorMetadata>> = {
   [ErrorCode.DATABASE_ERROR]: { category: 'system' },
   [ErrorCode.DATABASE_SCHEMA_OUT_OF_DATE]: { category: 'system' },
   [ErrorCode.ERROR_LOG_FORBIDDEN]: { category: 'user' },
+  [ErrorCode.GUIDE_VIDEO_NOT_FOUND]: { category: 'user' },
+  [ErrorCode.GUIDE_VIDEO_FORBIDDEN]: { category: 'user' },
+  [ErrorCode.GUIDE_VIDEO_UPLOAD_NOT_FOUND]: { category: 'user' },
+  [ErrorCode.GUIDE_VIDEO_UPLOAD_INCOMPLETE]: { category: 'user' },
+  [ErrorCode.GUIDE_VIDEO_FILE_TOO_LARGE]: { category: 'user' },
+  [ErrorCode.GUIDE_VIDEO_INVALID_MIME]: { category: 'user' },
 };
 
 const USER_STATUS_CODES = new Set<number>([

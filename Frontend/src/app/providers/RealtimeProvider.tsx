@@ -1,10 +1,11 @@
 import { useEffect } from 'react'
 import { socketService } from '@/shared/lib/socket'
 import { getAccessToken } from '@/shared/lib/token-storage'
-import type { EntityChangeEvent } from '@/shared/api/types'
+import type { EntityChangeEvent, UserStatusChangedEvent } from '@/shared/api/types'
 import { syncEntity } from '@/shared/lib/realtime/sync-app-data'
 import { handleWorkflowRealtimeEvent } from '@/shared/lib/realtime/workflow-realtime'
 import { selectIsAuthenticated, useAuthStore } from '@/entities/user/model/auth-store'
+import { useUsersStore } from '@/entities/user/model/users-store'
 import { handleIncomingNotification } from '@/entities/notification/lib/handle-incoming-notification'
 import type { Notification } from '@/entities/notification/model/types'
 import { usePprCalendarStore } from '@/entities/ppr-calendar/model/ppr-calendar-store'
@@ -45,12 +46,18 @@ export function RealtimeProvider() {
       void handleIncomingNotification(notification)
     }
 
+    const handleUserStatusChanged = (event: UserStatusChangedEvent) => {
+      useUsersStore.getState().setUserPresence(event.userId, event.isOnline, event.lastSeenAt)
+    }
+
     socket.on('entity:change', handleEntityChange)
     socket.on('notification:created', handleNotificationCreated)
+    socket.on('user:status_changed', handleUserStatusChanged)
 
     return () => {
       socket.off('entity:change', handleEntityChange)
       socket.off('notification:created', handleNotificationCreated)
+      socket.off('user:status_changed', handleUserStatusChanged)
     }
   }, [isAuthenticated])
 

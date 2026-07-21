@@ -28,6 +28,8 @@ import { AppRolesModule } from './modules/app-roles/app-roles.module';
 
 import { AuthModule } from './modules/auth/auth.module';
 
+import { GuideVideosModule } from './modules/guide-videos/guide-videos.module';
+
 import { HealthModule } from './modules/health/health.module';
 
 import { NotificationsModule } from './modules/notifications/notifications.module';
@@ -140,6 +142,8 @@ import { RedisModule } from './shared/redis/redis.module';
     NotificationsModule,
 
     ErrorLogsModule,
+
+    GuideVideosModule,
 
     WebsocketModule,
 

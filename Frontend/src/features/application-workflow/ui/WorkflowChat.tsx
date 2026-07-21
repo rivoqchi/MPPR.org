@@ -233,7 +233,7 @@ export function WorkflowChatComposer({ onSend, sending = false, disabled = false
       style={{
         flexShrink: 0,
         borderTop: `1px solid ${token.colorBorderSecondary}`,
-        padding: `${PAGE_CONTENT_PADDING}px 0`,
+        padding: `${PAGE_CONTENT_PADDING}px ${PAGE_CONTENT_PADDING}px`,
         background: token.colorBgContainer,
         display: 'flex',
         gap: 8,

@@ -1,6 +1,16 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { AntComponentSize, AppLocale, SidebarPosition, ThemeMode } from '@/shared/types'
+import {
+  DEFAULT_UI_COLOR_PRESETS,
+  type UiSemanticColorKey,
+} from '@/shared/lib/theme-colors'
+import type {
+  AntComponentSize,
+  AppLocale,
+  SidebarPosition,
+  ThemeMode,
+  UiColorPreset,
+} from '@/shared/types'
 import { DEFAULT_ANT_COMPONENT_SIZE, DEFAULT_SIDEBAR_POSITION } from '@/shared/lib/constants'
 
 interface UiState {
@@ -9,6 +19,10 @@ interface UiState {
   sidebarCollapsed: boolean
   sidebarPosition: SidebarPosition
   componentSize: AntComponentSize
+  primaryColorPreset: UiColorPreset
+  successColorPreset: UiColorPreset
+  warningColorPreset: UiColorPreset
+  errorColorPreset: UiColorPreset
   browserNotificationsEnabled: boolean
   autoMarkNotificationsAsRead: boolean
   setTheme: (theme: ThemeMode) => void
@@ -17,6 +31,7 @@ interface UiState {
   setSidebarCollapsed: (collapsed: boolean) => void
   setSidebarPosition: (position: SidebarPosition) => void
   setComponentSize: (size: AntComponentSize) => void
+  setColorPreset: (key: UiSemanticColorKey, color: UiColorPreset) => void
   setBrowserNotificationsEnabled: (enabled: boolean) => void
   setAutoMarkNotificationsAsRead: (enabled: boolean) => void
 }
@@ -29,6 +44,10 @@ export const useUiStore = create<UiState>()(
       sidebarCollapsed: false,
       sidebarPosition: DEFAULT_SIDEBAR_POSITION,
       componentSize: DEFAULT_ANT_COMPONENT_SIZE,
+      primaryColorPreset: DEFAULT_UI_COLOR_PRESETS.primary,
+      successColorPreset: DEFAULT_UI_COLOR_PRESETS.success,
+      warningColorPreset: DEFAULT_UI_COLOR_PRESETS.warning,
+      errorColorPreset: DEFAULT_UI_COLOR_PRESETS.error,
       browserNotificationsEnabled: false,
       autoMarkNotificationsAsRead: false,
       setTheme: (theme) => set({ theme }),
@@ -38,6 +57,13 @@ export const useUiStore = create<UiState>()(
       setSidebarCollapsed: (sidebarCollapsed) => set({ sidebarCollapsed }),
       setSidebarPosition: (sidebarPosition) => set({ sidebarPosition }),
       setComponentSize: (componentSize) => set({ componentSize }),
+      setColorPreset: (key, color) =>
+        set({
+          ...(key === 'primary' ? { primaryColorPreset: color } : {}),
+          ...(key === 'success' ? { successColorPreset: color } : {}),
+          ...(key === 'warning' ? { warningColorPreset: color } : {}),
+          ...(key === 'error' ? { errorColorPreset: color } : {}),
+        }),
       setBrowserNotificationsEnabled: (browserNotificationsEnabled) =>
         set({ browserNotificationsEnabled }),
       setAutoMarkNotificationsAsRead: (autoMarkNotificationsAsRead) =>
@@ -51,6 +77,10 @@ export const useUiStore = create<UiState>()(
         sidebarCollapsed: state.sidebarCollapsed,
         sidebarPosition: state.sidebarPosition,
         componentSize: state.componentSize,
+        primaryColorPreset: state.primaryColorPreset,
+        successColorPreset: state.successColorPreset,
+        warningColorPreset: state.warningColorPreset,
+        errorColorPreset: state.errorColorPreset,
         browserNotificationsEnabled: state.browserNotificationsEnabled,
         autoMarkNotificationsAsRead: state.autoMarkNotificationsAsRead,
       }),
@@ -60,6 +90,18 @@ export const useUiStore = create<UiState>()(
         componentSize:
           (persistedState as Partial<UiState> | undefined)?.componentSize ??
           DEFAULT_ANT_COMPONENT_SIZE,
+        primaryColorPreset:
+          (persistedState as Partial<UiState> | undefined)?.primaryColorPreset ??
+          DEFAULT_UI_COLOR_PRESETS.primary,
+        successColorPreset:
+          (persistedState as Partial<UiState> | undefined)?.successColorPreset ??
+          DEFAULT_UI_COLOR_PRESETS.success,
+        warningColorPreset:
+          (persistedState as Partial<UiState> | undefined)?.warningColorPreset ??
+          DEFAULT_UI_COLOR_PRESETS.warning,
+        errorColorPreset:
+          (persistedState as Partial<UiState> | undefined)?.errorColorPreset ??
+          DEFAULT_UI_COLOR_PRESETS.error,
         sidebarPosition:
           (persistedState as Partial<UiState> | undefined)?.sidebarPosition ??
           DEFAULT_SIDEBAR_POSITION,

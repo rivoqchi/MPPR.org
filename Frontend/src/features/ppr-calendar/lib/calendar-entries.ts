@@ -6,7 +6,7 @@ import type {
   PprCalendarMonthStatus,
   PprCalendarViewScope,
 } from '@/entities/ppr-calendar/model/types'
-import dayjs from 'dayjs'
+import dayjs, { type Dayjs } from 'dayjs'
 import type { StructuralUnit } from '@/entities/structural-unit/model/types'
 import type { User } from '@/entities/user/model/types'
 import type { PprCalendarEntryFormSchema } from '@/features/ppr-calendar/model/ppr-calendar-entry-form-schema'
@@ -54,18 +54,46 @@ export function canClearPprCalendarMonth(
   return status === 'draft' && canCreate && entryCount > 0 && hasMonthId
 }
 
-const EXECUTION_WINDOW_DAYS = 3
+const EXECUTION_GRACE_DAYS = 3
+const APP_TIME_ZONE = 'Asia/Tashkent'
 
-export function canExecutePprDate(date: string, referenceDate = dayjs()): boolean {
+/** Backend bilan bir xil: Asia/Tashkent bo‘yicha bugungi YYYY-MM-DD. */
+export function getAppTodayKey(now = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: APP_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(now)
+}
+
+function resolveReferenceDay(referenceDate?: Dayjs): Dayjs {
+  return (referenceDate ?? dayjs(getAppTodayKey())).startOf('day')
+}
+
+/**
+ * Rejalashtirilgan sanadan 3 kundan ortiq kechiksa — overdue (qizil).
+ * Bugun 21 bo'lsa: 17 va undan eski overdue; 18–21 normal.
+ */
+export function isPprExecutionOverdue(date: string, referenceDate?: Dayjs): boolean {
   const entryDate = dayjs(date).startOf('day')
-  const today = referenceDate.startOf('day')
-  const minDate = today.subtract(EXECUTION_WINDOW_DAYS, 'day')
+  const today = resolveReferenceDay(referenceDate)
 
-  return (
-    entryDate.isValid() &&
-    (entryDate.isSame(minDate, 'day') || entryDate.isAfter(minDate, 'day')) &&
-    (entryDate.isSame(today, 'day') || entryDate.isBefore(today, 'day'))
-  )
+  if (!entryDate.isValid()) {
+    return false
+  }
+
+  const graceDeadline = entryDate.add(EXECUTION_GRACE_DAYS, 'day')
+
+  return today.isAfter(graceDeadline, 'day')
+}
+
+/** Kelajak sanasi emas — bajarish mumkin (eski sanalar ham ochiq). */
+export function canExecutePprDate(date: string, referenceDate?: Dayjs): boolean {
+  const entryDate = dayjs(date).startOf('day')
+  const today = resolveReferenceDay(referenceDate)
+
+  return entryDate.isValid() && (entryDate.isSame(today, 'day') || entryDate.isBefore(today, 'day'))
 }
 
 export function isObjectExecuted(entry: PprCalendarEntry, objectId: string): boolean {
@@ -312,6 +340,40 @@ export function entryToFormScope(
     scopeType: entry.scopeType,
     entrySectionId: entry.sectionId,
   }
+}
+
+export function getCommentPreview(comment: string | undefined | null, maxLength = 120): string | null {
+  const trimmed = comment?.trim()
+
+  if (!trimmed) {
+    return null
+  }
+
+  const urlMatches = trimmed.match(/https?:\/\/\S+/g)
+
+  if (urlMatches && urlMatches.join('').length >= trimmed.length * 0.6) {
+    return null
+  }
+
+  if (trimmed.length <= maxLength) {
+    return trimmed
+  }
+
+  return `${trimmed.slice(0, maxLength)}…`
+}
+
+export function getExecutionStatusTagColor(
+  status: PprCalendarEntryExecutionStatus,
+): 'success' | 'processing' | 'default' {
+  if (status === 'completed') {
+    return 'success'
+  }
+
+  if (status === 'in_progress') {
+    return 'processing'
+  }
+
+  return 'default'
 }
 
 export function getViewScopeLabel(

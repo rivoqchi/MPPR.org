@@ -52,6 +52,39 @@ export interface DashboardRecentApplication {
   isOverdue: boolean
 }
 
+export interface DashboardPriorityIncomingApplication {
+  id: string
+  type: string
+  status: string
+  workflowStatus: string
+  createdAt: string
+  deadline?: string
+  createdByFirstName?: string
+  createdByLastName?: string
+  structuralUnitIds: string[]
+  isOverdue: boolean
+  updatedAt: string
+}
+
+export type DashboardTodayPprExecutionStatus = 'pending' | 'in_progress' | 'completed'
+
+export interface DashboardTodayPprTask {
+  entryId: string
+  monthId: string
+  date: string
+  pprTypeId: string
+  pprTypeName: string
+  structuralUnitId: string
+  sectionId?: string
+  objectIds: string[]
+  completedObjectIds: string[]
+  completionPercent: number
+  executionStatus: DashboardTodayPprExecutionStatus
+  canExecute: boolean
+  isOverdue: boolean
+  comment: string
+}
+
 export interface DashboardUpcomingDeadline {
   id: string
   type: string
@@ -84,6 +117,8 @@ export interface DashboardSummary {
       unread: number
     }
   }
+  priorityIncomingApplications: DashboardPriorityIncomingApplication[]
+  todayPprTasks: DashboardTodayPprTask[]
   recentApplications: DashboardRecentApplication[]
   upcomingDeadlines: DashboardUpcomingDeadline[]
   recentNotifications: DashboardRecentNotification[]

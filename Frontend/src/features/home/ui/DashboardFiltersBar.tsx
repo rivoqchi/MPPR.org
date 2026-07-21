@@ -1,4 +1,3 @@
-import { ReloadOutlined } from '@ant-design/icons'
 import { Button, Card, DatePicker, Select, Space } from 'antd'
 import type { Dayjs } from 'dayjs'
 import { useMemo } from 'react'
@@ -10,26 +9,22 @@ import {
   type DashboardFilters,
   type DashboardScopeValue,
 } from '@/features/home/lib/dashboard-filters'
-import { pageToolbarActionStyle, pageToolbarStyle } from '@/shared/lib/page-layout'
+import { pageToolbarStyle } from '@/shared/lib/page-layout'
 
 const { RangePicker } = DatePicker
 
 interface DashboardFiltersBarProps {
   filters: DashboardFilters
-  loading: boolean
   canViewAll: boolean
   onFiltersChange: (filters: DashboardFilters) => void
   onReset: () => void
-  onRefresh: () => void
 }
 
 export function DashboardFiltersBar({
   filters,
-  loading,
   canViewAll,
   onFiltersChange,
   onReset,
-  onRefresh,
 }: DashboardFiltersBarProps) {
   const { t } = useTranslation()
   const structuralUnits = useStructuralUnitsStore((state) => state.structuralUnits)
@@ -131,14 +126,6 @@ export function DashboardFiltersBar({
           )}
         </Space>
 
-        <Button
-          icon={<ReloadOutlined />}
-          loading={loading}
-          style={pageToolbarActionStyle}
-          onClick={onRefresh}
-        >
-          {t('homePage.filters.refresh')}
-        </Button>
       </div>
     </Card>
   )

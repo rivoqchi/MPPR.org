@@ -25,5 +25,5 @@ export const useAuthStore = create<AuthState>()(
 )
 
 export function selectIsAuthenticated(state: AuthState): boolean {
-  return state.currentUser !== null && Boolean(getAccessToken())
+  return state.currentUser !== null && state.currentUser.isActive !== false && Boolean(getAccessToken())
 }

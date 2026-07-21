@@ -14,6 +14,7 @@ import {
   getEntryCompletionPercent,
   getEntriesForDate,
   groupEntriesByDate,
+  isPprExecutionOverdue,
 } from '@/features/ppr-calendar/lib/calendar-entries'
 
 const MAX_VISIBLE_EVENTS = 2
@@ -304,6 +305,14 @@ export function PprCalendar({
                       const entryPercent = showExecutionProgress
                         ? getEntryCompletionPercent(entry)
                         : null
+                      const isOverdue =
+                        showExecutionProgress && isPprExecutionOverdue(entry.date)
+                      const chipBackground = isOverdue
+                        ? token.colorErrorBg
+                        : token.colorPrimaryBg
+                      const chipColor = isOverdue
+                        ? token.colorErrorText
+                        : token.colorPrimaryText
 
                       return (
                         <button
@@ -316,7 +325,7 @@ export function PprCalendar({
                           title={entry.comment || label}
                           style={{
                             width: '100%',
-                            border: 'none',
+                            border: isOverdue ? `1px solid ${token.colorErrorBorder}` : 'none',
                             borderRadius: token.borderRadiusSM,
                             margin: 0,
                             padding: '4px 6px',
@@ -325,8 +334,8 @@ export function PprCalendar({
                             justifyContent: 'space-between',
                             gap: 6,
                             cursor: 'pointer',
-                            background: token.colorPrimaryBg,
-                            color: token.colorPrimaryText,
+                            background: chipBackground,
+                            color: chipColor,
                             fontSize: 11,
                             fontWeight: 600,
                             lineHeight: 1.3,
@@ -351,8 +360,9 @@ export function PprCalendar({
                                 flexShrink: 0,
                                 fontSize: 10,
                                 fontWeight: 700,
-                                color:
-                                  entryPercent === 100
+                                color: isOverdue
+                                  ? token.colorError
+                                  : entryPercent === 100
                                     ? token.colorSuccess
                                     : entryPercent > 0
                                       ? token.colorPrimary

@@ -56,6 +56,7 @@ model User {
   isActive         Boolean        @default(true)
   password         String
   refreshToken     String?
+  lastSeenAt       DateTime?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
   notifications    Notification[]
@@ -252,4 +253,37 @@ model ErrorLog {
   @@index([severity])
   @@index([userId])
   @@map("error_logs")
+}
+
+model GuideVideo {
+  id              String               @id @default(uuid())
+  title           String
+  description     String               @default("")
+  fileName        String
+  mimeType        String
+  sizeBytes       BigInt
+  storageKey      String
+  durationSec     Int?
+  sortOrder       Int                  @default(0)
+  createdByUserId String?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  progress        GuideVideoProgress[]
+
+  @@index([sortOrder])
+  @@map("guide_videos")
+}
+
+model GuideVideoProgress {
+  id        String     @id @default(uuid())
+  userId    String
+  videoId   String
+  video     GuideVideo @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  watched   Boolean    @default(false)
+  watchedAt DateTime?
+  updatedAt DateTime   @updatedAt
+
+  @@unique([userId, videoId])
+  @@index([userId])
+  @@map("guide_video_progress")
 }

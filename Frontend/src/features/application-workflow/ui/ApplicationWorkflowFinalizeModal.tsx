@@ -22,6 +22,7 @@ export function ApplicationWorkflowFinalizeModal({
 }: ApplicationWorkflowFinalizeModalProps) {
   const { t } = useTranslation()
   const isConfirm = action === 'confirm'
+  const hint = t(`applicationWorkflow.finalizeModal.${action}.hint`)
 
   return (
     <Modal
@@ -44,7 +45,7 @@ export function ApplicationWorkflowFinalizeModal({
     >
       <Space direction="vertical" size={12}>
         <Text>{t(`applicationWorkflow.finalizeModal.${action}.message`)}</Text>
-        <Text type="secondary">{t(`applicationWorkflow.finalizeModal.${action}.hint`)}</Text>
+        {hint ? <Text type="secondary">{hint}</Text> : null}
       </Space>
     </Modal>
   )

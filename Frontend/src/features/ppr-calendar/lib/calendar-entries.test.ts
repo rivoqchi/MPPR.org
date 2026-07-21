@@ -10,6 +10,7 @@ import {
   getDayCompletionPercent,
   getEntryCompletionPercent,
   groupEntriesByDate,
+  isPprExecutionOverdue,
   isStructuralUnitHead,
   viewScopeToEntryFormScope,
 } from '@/features/ppr-calendar/lib/calendar-entries'
@@ -119,15 +120,24 @@ describe('viewScopeToEntryFormScope', () => {
 })
 
 describe('canExecutePprDate', () => {
-  it('allows execution within the last 3 days including today', () => {
+  it('allows today and any past date, blocks future', () => {
     const today = dayjs('2026-07-13')
 
     expect(canExecutePprDate('2026-07-13', today)).toBe(true)
     expect(canExecutePprDate('2026-07-12', today)).toBe(true)
-    expect(canExecutePprDate('2026-07-11', today)).toBe(true)
-    expect(canExecutePprDate('2026-07-10', today)).toBe(true)
-    expect(canExecutePprDate('2026-07-09', today)).toBe(false)
+    expect(canExecutePprDate('2026-07-01', today)).toBe(true)
     expect(canExecutePprDate('2026-07-14', today)).toBe(false)
+  })
+})
+
+describe('isPprExecutionOverdue', () => {
+  it('marks dates older than planned+3 days as overdue', () => {
+    const today = dayjs('2026-07-21')
+
+    expect(isPprExecutionOverdue('2026-07-21', today)).toBe(false)
+    expect(isPprExecutionOverdue('2026-07-18', today)).toBe(false)
+    expect(isPprExecutionOverdue('2026-07-17', today)).toBe(true)
+    expect(isPprExecutionOverdue('2026-07-10', today)).toBe(true)
   })
 })
 

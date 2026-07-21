@@ -9,6 +9,8 @@ import { syncAuthSession, waitForAuthStoreHydration } from '@/shared/lib/auth-se
 import { getAccessToken } from '@/shared/lib/token-storage'
 import { selectIsAuthenticated, useAuthStore } from '@/entities/user/model/auth-store'
 import { useNotifyApiError } from '@/shared/hooks/useNotifyApiError'
+import { useTranslation } from 'react-i18next'
+import { App } from 'antd'
 
 function shouldIgnoreHydrationError(error: unknown): boolean {
   return (
@@ -21,9 +23,13 @@ function shouldIgnoreHydrationError(error: unknown): boolean {
 
 export function ProtectedRoute() {
   const isAuthenticated = useAuthStore(selectIsAuthenticated)
+  const currentUser = useAuthStore((state) => state.currentUser)
+  const logout = useAuthStore((state) => state.logout)
   const location = useLocation()
   const { notifyApiError } = useNotifyApiError()
   const notifyApiErrorRef = useRef(notifyApiError)
+  const { t } = useTranslation()
+  const { notification } = App.useApp()
 
   useEffect(() => {
     notifyApiErrorRef.current = notifyApiError
@@ -70,6 +76,17 @@ export function ProtectedRoute() {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />
+  }
+
+  if (currentUser?.isActive === false) {
+    notification.warning({
+      key: 'user-inactive',
+      message: t('auth.accountDeactivated', 'Hisobingiz faolsizlashtirilgan'),
+      description: t('auth.contactAdmin', 'Tizimga kirish uchun administrator bilan bog\'laning'),
+      duration: 5,
+    })
+    logout()
+    return <Navigate to="/login" replace />
   }
 
   return <Outlet />

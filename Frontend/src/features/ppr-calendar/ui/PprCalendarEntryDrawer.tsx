@@ -159,10 +159,11 @@ export function PprCalendarEntryDrawer({
           : t('pprCalendar.entryDrawer.addTitle', { date: date?.format('DD.MM.YYYY') })
       }
       placement="right"
-      width={520}
+      width={560}
       open={open}
       onClose={handleClose}
       destroyOnHidden
+      zIndex={1100}
       footer={
         <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
           <Button onClick={handleClose}>{t('common.cancel')}</Button>

@@ -1,22 +1,36 @@
-import { Alert, Col, Row, Typography, theme } from 'antd'
+import { Alert, App, Col, Row, Typography, theme } from 'antd'
 import dayjs from 'dayjs'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { UploadFile } from 'antd/es/upload'
 import { useStructuralUnitsStore } from '@/entities/structural-unit/model/structural-units-store'
 import {
   buildDashboardSummaryQuery,
   createDefaultDashboardFilters,
   type DashboardFilters,
 } from '@/features/home/lib/dashboard-filters'
-import type { DashboardSummary } from '@/features/home/model/dashboard-types'
+import type {
+  DashboardSummary,
+  DashboardTodayPprTask,
+} from '@/features/home/model/dashboard-types'
 import { DashboardActivityPanels } from '@/features/home/ui/DashboardActivityPanels'
 import { DashboardFiltersBar } from '@/features/home/ui/DashboardFiltersBar'
+import { HomeIncomingApplicationsPanel } from '@/features/home/ui/HomeIncomingApplicationsPanel'
+import {
+  buildHomePprExecutionPayload,
+  HomePprExecutionModal,
+} from '@/features/home/ui/HomePprExecutionModal'
+import { HomeTodayPprTasksPanel } from '@/features/home/ui/HomeTodayPprTasksPanel'
 import { DashboardKpiCards } from '@/features/home/ui/DashboardKpiCards'
 import { DashboardPprOverview } from '@/features/home/ui/DashboardPprOverview'
 import { HomePageSkeleton } from '@/features/home/ui/HomePageSkeleton'
+import type { PprExecutionFormSchema } from '@/features/ppr-calendar/model/ppr-execution-form-schema'
 import { fetchDashboardSummary } from '@/shared/api/dashboard-api'
+import type { EntityChangeEvent } from '@/shared/api/types'
+import { executePprCalendarEntry } from '@/shared/api/ppr-calendar-api'
 import { useNotifyApiError } from '@/shared/hooks/useNotifyApiError'
 import { useRolePermissions } from '@/shared/hooks/useRolePermissions'
+import { socketService } from '@/shared/lib/socket'
 import { useStructuralUnitScope } from '@/shared/hooks/useStructuralUnitScope'
 import { scrollablePageStyle } from '@/shared/lib/page-layout'
 import { getAccessToken } from '@/shared/lib/token-storage'
@@ -31,6 +45,7 @@ function buildDefaultPeriodRange(): [dayjs.Dayjs, dayjs.Dayjs] {
 
 export function HomePage() {
   const { t } = useTranslation()
+  const { message } = App.useApp()
   const { notifyApiError } = useNotifyApiError()
   const { canViewAll, currentUser } = useStructuralUnitScope()
   const { canView } = useRolePermissions()
@@ -39,6 +54,8 @@ export function HomePage() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null)
   const [loading, setLoading] = useState(true)
   const [initialized, setInitialized] = useState(false)
+  const [selectedPprTask, setSelectedPprTask] = useState<DashboardTodayPprTask | null>(null)
+  const [isExecutingPpr, setIsExecutingPpr] = useState(false)
   const [filters, setFilters] = useState<DashboardFilters>(() =>
     createDefaultDashboardFilters({
       periodRange: buildDefaultPeriodRange(),
@@ -95,11 +112,69 @@ export function HomePage() {
     }
   }, [initialized, loadSummary])
 
+  useEffect(() => {
+    const socket = socketService.instance
+
+    if (!socket || !initialized) {
+      return
+    }
+
+    const handleEntityChange = (event: EntityChangeEvent) => {
+      if (event.entity === 'applications' || event.entity === 'ppr-calendar') {
+        void loadSummary()
+      }
+    }
+
+    socket.on('entity:change', handleEntityChange)
+
+    return () => {
+      socket.off('entity:change', handleEntityChange)
+    }
+  }, [initialized, loadSummary])
+
   const handleResetFilters = () => {
     setFilters(defaultFilters)
   }
 
   const canViewPpr = canView('/ppr-calendar') || canView('/management/ppr')
+  const canViewIncoming = canView('/applications/incoming')
+  const canExecutePpr = canView('/ppr-calendar') || canView('/management/ppr')
+
+  const handleOpenPprExecution = (task: DashboardTodayPprTask) => {
+    setSelectedPprTask(task)
+  }
+
+  const handleClosePprExecution = () => {
+    if (isExecutingPpr) {
+      return
+    }
+
+    setSelectedPprTask(null)
+  }
+
+  const handleExecutePpr = async (
+    values: PprExecutionFormSchema,
+    images: UploadFile[],
+    files: UploadFile[],
+  ) => {
+    if (!selectedPprTask) {
+      return
+    }
+
+    setIsExecutingPpr(true)
+
+    try {
+      const payload = await buildHomePprExecutionPayload(values, images, files)
+      await executePprCalendarEntry(selectedPprTask.entryId, payload)
+      message.success(t('homePage.actions.executionSuccess'))
+      setSelectedPprTask(null)
+      await loadSummary()
+    } catch (error) {
+      notifyApiError(error)
+    } finally {
+      setIsExecutingPpr(false)
+    }
+  }
 
   const summaryStatCards = useMemo(() => {
     if (!summary) {
@@ -134,6 +209,16 @@ export function HomePage() {
 
     return cards
   }, [canViewPpr, summary, t])
+
+  const todayIncomingApplications = useMemo(
+    () =>
+      summary?.priorityIncomingApplications.filter((item) =>
+        dayjs(item.createdAt).isSame(dayjs(), 'day'),
+      ) ?? [],
+    [summary?.priorityIncomingApplications],
+  )
+
+  const hasTodayPprTasks = (summary?.todayPprTasks.length ?? 0) > 0
 
   if (!isStructuralUnitsHydrated || !initialized) {
     return (
@@ -173,11 +258,9 @@ export function HomePage() {
 
       <DashboardFiltersBar
         filters={filters}
-        loading={loading}
         canViewAll={canViewAll}
         onFiltersChange={setFilters}
         onReset={handleResetFilters}
-        onRefresh={() => void loadSummary()}
       />
 
       {loading && !summary ? (
@@ -187,6 +270,31 @@ export function HomePage() {
         />
       ) : summary ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: HOME_PAGE_GAP }}>
+          {((canViewIncoming && todayIncomingApplications.length > 0) ||
+            (canViewPpr && hasTodayPprTasks)) && (
+            <Row gutter={[HOME_PAGE_GAP, HOME_PAGE_GAP]}>
+              {canViewIncoming && todayIncomingApplications.length > 0 && (
+                <Col xs={24}>
+                  <div style={{ width: '100%' }}>
+                    <HomeIncomingApplicationsPanel items={summary.priorityIncomingApplications} />
+                  </div>
+                </Col>
+              )}
+
+              {canViewPpr && hasTodayPprTasks && (
+                <Col xs={24}>
+                  <div style={{ width: '100%' }}>
+                    <HomeTodayPprTasksPanel
+                      items={summary.todayPprTasks}
+                      canExecute={canExecutePpr}
+                      onExecute={handleOpenPprExecution}
+                    />
+                  </div>
+                </Col>
+              )}
+            </Row>
+          )}
+
           {summary.kpis.applications.overdue > 0 && (
             <Alert
               type="warning"
@@ -253,6 +361,14 @@ export function HomePage() {
           }
         />
       )}
+
+      <HomePprExecutionModal
+        open={Boolean(selectedPprTask)}
+        task={selectedPprTask}
+        isSaving={isExecutingPpr}
+        onClose={handleClosePprExecution}
+        onSave={handleExecutePpr}
+      />
     </div>
   )
 }

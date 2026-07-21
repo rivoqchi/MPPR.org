@@ -49,6 +49,7 @@ export type RealtimeEntityName =
   | 'ppr-types'
   | 'applications'
   | 'application-workflow'
-  | 'ppr-calendar';
+  | 'ppr-calendar'
+  | 'guide-videos';
 
 export type RealtimeEntityAction = 'create' | 'update' | 'delete';

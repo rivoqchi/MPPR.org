@@ -34,3 +34,9 @@ export interface EntityChangeEvent {
   action: EntityChangeAction
   data?: unknown
 }
+
+export interface UserStatusChangedEvent {
+  userId: string
+  isOnline: boolean
+  lastSeenAt?: string | null
+}

@@ -17,7 +17,12 @@ async function bootstrap() {
   app.useBodyParser('urlencoded', { extended: true, limit: '2mb' });
 
   app.useLogger(logger);
-  app.use(helmet());
+  app.use(
+    helmet({
+      // Frontend (e.g. :5173) loads media from API (:3000) via <video src>.
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
   app.use(compression());
 
   const corsOrigin = configService.get<string>('CORS_ORIGIN', 'http://localhost:5173');

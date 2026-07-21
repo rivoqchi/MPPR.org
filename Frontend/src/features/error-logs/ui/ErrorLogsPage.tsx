@@ -233,9 +233,6 @@ export function ErrorLogsPage() {
           <Typography.Title level={3} style={{ margin: 0 }}>
             {t('errorLogsPage.title')}
           </Typography.Title>
-          <Typography.Paragraph type="secondary" style={{ marginTop: 8, marginBottom: 0 }}>
-            {t('errorLogsPage.subtitle')}
-          </Typography.Paragraph>
         </div>
         <div style={pageToolbarActionStyle}>
           <Button icon={<ReloadOutlined />} onClick={() => void loadErrorLogs()}>

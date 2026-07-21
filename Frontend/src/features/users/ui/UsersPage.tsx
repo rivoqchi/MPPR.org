@@ -23,6 +23,7 @@ export function UsersPage() {
   const isUsersHydrated = useUsersStore((state) => state.isHydrated)
   const users = useUsersStore((state) => state.users)
   const setUserActive = useUsersStore((state) => state.setUserActive)
+  const removeUser = useUsersStore((state) => state.removeUser)
   const scopedUsers = useMemo(
     () => filterUsersByStructuralUnitScope(users, currentUser, canViewAll),
     [users, currentUser, canViewAll],
@@ -31,6 +32,7 @@ export function UsersPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [selectedUserId, setSelectedUserId] = useState<string>()
   const [isActiveToggleLoading, setIsActiveToggleLoading] = useState(false)
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false)
 
   const activeUserId = selectedUserId ?? scopedUsers[0]?.id
 
@@ -94,6 +96,29 @@ export function UsersPage() {
     }
   }
 
+  const handleDelete = async () => {
+    if (!selectedUser) {
+      return
+    }
+
+    if (selectedUser.id === currentUser?.id) {
+      notification.warning({ message: t('users.messages.cannotDeleteSelf') })
+      return
+    }
+
+    setIsDeleteLoading(true)
+
+    try {
+      await removeUser(selectedUser.id)
+      setSelectedUserId(undefined)
+      notification.success({ message: t('users.messages.deleteSuccess') })
+    } catch (error) {
+      notifyApiError(error, { fallbackKey: 'users.messages.deleteError' })
+    } finally {
+      setIsDeleteLoading(false)
+    }
+  }
+
   if (!isUsersHydrated) {
     return <UsersPageSkeleton />
   }
@@ -113,8 +138,11 @@ export function UsersPage() {
             user={selectedUser}
             onEdit={canEdit(pageKey) && selectedUser ? handleOpenEdit : undefined}
             onToggleActive={canEdit(pageKey) && selectedUser ? handleToggleActive : undefined}
+            onDelete={canEdit(pageKey) && selectedUser ? handleDelete : undefined}
             isActiveToggleLoading={isActiveToggleLoading}
+            isDeleteLoading={isDeleteLoading}
             canToggleActive={selectedUser?.id !== currentUser?.id}
+            canDelete={selectedUser?.id !== currentUser?.id}
           />
         </div>
       </div>

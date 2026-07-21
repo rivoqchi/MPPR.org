@@ -201,6 +201,7 @@ export function PprManagementMonthPage() {
         canCreate={false}
         canEdit={false}
         canDelete
+        showExecutionProgress
         onClose={() => setDayDrawerOpen(false)}
         onAdd={() => undefined}
         onEdit={() => undefined}
@@ -217,7 +218,7 @@ export function PprManagementMonthPage() {
           setEntryDetailOpen(false)
           setDetailEntry(null)
         }}
-        onExecute={() => undefined}
+        onSaveExecution={async () => undefined}
       />
 
       <Modal

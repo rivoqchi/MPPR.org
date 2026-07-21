@@ -3,7 +3,7 @@ import { selectIsAuthenticated, useAuthStore } from '@/entities/user/model/auth-
 import { ProfileChangePasswordDrawer } from '@/features/profile/ui/ProfileChangePasswordDrawer'
 import { ProfileEditDrawer } from '@/features/profile/ui/ProfileEditDrawer'
 import { UserDetail } from '@/features/users/ui/UserDetail'
-import { scrollablePageStyle } from '@/shared/lib/page-layout'
+import { fullHeightPageStyle } from '@/shared/lib/page-layout'
 
 export function ProfilePage() {
   const currentUser = useAuthStore((state) => state.currentUser)
@@ -17,7 +17,7 @@ export function ProfilePage() {
 
   return (
     <>
-      <div style={scrollablePageStyle}>
+      <div style={fullHeightPageStyle}>
         <UserDetail
           user={currentUser}
           onEdit={() => setDrawerOpen(true)}

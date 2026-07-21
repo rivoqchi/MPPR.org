@@ -26,6 +26,7 @@ interface UsersState {
   users: User[]
   isHydrated: boolean
   setUsers: (users: User[]) => void
+  setUserPresence: (userId: string, isOnline: boolean, lastSeenAt?: string | null) => void
   hydrate: () => Promise<void>
   addUser: (data: UserFormValues) => Promise<User>
   updateUser: (id: string, data: UserFormValues) => Promise<User | null>
@@ -41,6 +42,20 @@ export const useUsersStore = create<UsersState>()((set, get) => ({
   setUsers: (users) => {
     set({ users, isHydrated: true })
     syncCurrentUserFromUsers(users)
+  },
+  setUserPresence: (userId, isOnline, lastSeenAt) => {
+    const nextUsers = get().users.map((user) =>
+      user.id === userId
+        ? {
+            ...user,
+            isOnline,
+            ...(lastSeenAt !== undefined ? { lastSeenAt } : {}),
+          }
+        : user,
+    )
+
+    set({ users: nextUsers })
+    syncCurrentUserFromUsers(nextUsers)
   },
   hydrate: async () => {
     const users = await fetchUsers()

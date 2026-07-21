@@ -12,7 +12,9 @@ export interface User {
   structuralUnitSectionId?: string
   avatar?: string
   isActive: boolean
+  isOnline?: boolean
   password: string
+  lastSeenAt?: string | null
   createdAt: string
 }
 

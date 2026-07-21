@@ -32,10 +32,7 @@ import { PprCalendarPageSkeleton } from '@/features/ppr-calendar/ui/PprCalendarP
 import { PprCalendarSubmitModal } from '@/features/ppr-calendar/ui/PprCalendarSubmitModal'
 import { PprCalendarClearModal } from '@/features/ppr-calendar/ui/PprCalendarClearModal'
 import { PprCalendarEntryDetailDrawer } from '@/features/ppr-calendar/ui/PprCalendarEntryDetailDrawer'
-import {
-  buildExecutionAttachments,
-  PprCalendarExecutionDrawer,
-} from '@/features/ppr-calendar/ui/PprCalendarExecutionDrawer'
+import { buildExecutionAttachments } from '@/features/ppr-calendar/ui/PprCalendarExecutionDrawer'
 import { usePprCalendarHydration } from '@/shared/hooks/usePprCalendarHydration'
 import { useRolePermissions } from '@/shared/hooks/useRolePermissions'
 import { useStructuralUnitScope } from '@/shared/hooks/useStructuralUnitScope'
@@ -68,6 +65,7 @@ export function PprCalendarPage() {
   const { message } = App.useApp()
   const { notifyApiError } = useNotifyApiError()
   const isHydrated = usePprCalendarHydration()
+  const revisionHint = t('pprCalendar.messages.revisionHint')
   const { currentUser, users, canViewAll } = useStructuralUnitScope()
   const { canCreate, canEdit, canDelete } = useRolePermissions()
   const structuralUnits = useStructuralUnitsStore((state) => state.structuralUnits)
@@ -94,7 +92,6 @@ export function PprCalendarPage() {
   const [entryDrawerOpen, setEntryDrawerOpen] = useState(false)
   const [entryModalOpen, setEntryModalOpen] = useState(false)
   const [entryDetailOpen, setEntryDetailOpen] = useState(false)
-  const [executionDrawerOpen, setExecutionDrawerOpen] = useState(false)
   const [submitModalOpen, setSubmitModalOpen] = useState(false)
   const [clearModalOpen, setClearModalOpen] = useState(false)
   const [incomingApprovalsOpen, setIncomingApprovalsOpen] = useState(false)
@@ -456,11 +453,6 @@ export function PprCalendarPage() {
     setEntryModalOpen(true)
   }
 
-  const handleOpenExecution = (entry: PprCalendarEntry) => {
-    setDetailEntry(entry)
-    setExecutionDrawerOpen(true)
-  }
-
   const handleSaveExecution = async (
     values: import('@/features/ppr-calendar/model/ppr-execution-form-schema').PprExecutionFormSchema,
     images: import('antd/es/upload').UploadFile[],
@@ -483,9 +475,9 @@ export function PprCalendarPage() {
       })
 
       message.success(t('pprCalendar.messages.executionSuccess'))
-      setExecutionDrawerOpen(false)
     } catch (error) {
       notifyApiError(error)
+      throw error
     } finally {
       setIsExecuting(false)
     }
@@ -662,8 +654,8 @@ export function PprCalendarPage() {
         <Alert type="info" showIcon message={t('pprCalendar.messages.reviewHint')} />
       ) : null}
 
-      {canClear ? (
-        <Alert type="warning" showIcon message={t('pprCalendar.messages.revisionHint')} />
+      {canClear && revisionHint ? (
+        <Alert type="warning" showIcon message={revisionHint} />
       ) : null}
 
       {calendarMonth ? (
@@ -726,19 +718,12 @@ export function PprCalendarPage() {
         open={entryDetailOpen}
         entry={detailEntry}
         monthApproved={isApprovedMonth && !isBrowseOnly}
+        isSaving={isExecuting}
         onClose={() => {
           setEntryDetailOpen(false)
           setDetailEntry(null)
         }}
-        onExecute={handleOpenExecution}
-      />
-
-      <PprCalendarExecutionDrawer
-        open={executionDrawerOpen}
-        entry={detailEntry}
-        isSaving={isExecuting}
-        onClose={() => setExecutionDrawerOpen(false)}
-        onSave={handleSaveExecution}
+        onSaveExecution={handleSaveExecution}
       />
 
       <PprCalendarSubmitModal

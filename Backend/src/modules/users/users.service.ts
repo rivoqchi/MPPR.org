@@ -4,10 +4,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { RealtimeService } from '../../shared/realtime/realtime.service';
 import { ErrorCode } from '../../common/constants/error-codes';
 import { PrismaService } from '../../shared/prisma/prisma.service';
+import { RedisService } from '../../shared/redis/redis.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NOTIFICATION_TYPES } from '../notifications/lib/notification-types';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -15,20 +17,83 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { USER_PUBLIC_SELECT } from './lib/user-select';
 
 const BCRYPT_ROUNDS = 12;
+const ONLINE_USERS_SET_KEY = 'presence:users:online';
+
+type UserPublic = Prisma.UserGetPayload<{ select: typeof USER_PUBLIC_SELECT }>;
+type UserWithPresence = UserPublic & { isOnline: boolean };
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly redisService: RedisService,
     private readonly realtimeService: RealtimeService,
     private readonly notificationsService: NotificationsService,
   ) {}
 
-  findAll() {
-    return this.prisma.user.findMany({
+  private getUserConnectionKey(userId: string) {
+    return `presence:user:${userId}:connections`;
+  }
+
+  private async enrichUser(user: UserPublic): Promise<UserWithPresence> {
+    const isOnline =
+      (await this.redisService.getClient().sismember(ONLINE_USERS_SET_KEY, user.id)) === 1;
+
+    return {
+      ...user,
+      isOnline,
+    };
+  }
+
+  private async enrichUsers(users: UserPublic[]): Promise<UserWithPresence[]> {
+    const onlineUserIds = new Set(await this.redisService.getClient().smembers(ONLINE_USERS_SET_KEY));
+
+    return users.map((user) => ({
+      ...user,
+      isOnline: onlineUserIds.has(user.id),
+    }));
+  }
+
+  async setUserOnline(userId: string): Promise<boolean> {
+    const redis = this.redisService.getClient();
+    const connectionCount = await redis.incr(this.getUserConnectionKey(userId));
+
+    if (connectionCount === 1) {
+      await redis.sadd(ONLINE_USERS_SET_KEY, userId);
+      return true;
+    }
+
+    return false;
+  }
+
+  async setUserOffline(userId: string): Promise<Date | null> {
+    const redis = this.redisService.getClient();
+    const connectionKey = this.getUserConnectionKey(userId);
+    const remainingConnections = await redis.decr(connectionKey);
+
+    if (remainingConnections > 0) {
+      return null;
+    }
+
+    await redis.del(connectionKey);
+    await redis.srem(ONLINE_USERS_SET_KEY, userId);
+
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: { lastSeenAt: new Date() },
+      select: { lastSeenAt: true },
+    });
+
+    return user.lastSeenAt;
+  }
+
+  async findAll() {
+    const users = await this.prisma.user.findMany({
       orderBy: { createdAt: 'desc' },
       select: USER_PUBLIC_SELECT,
     });
+
+    return this.enrichUsers(users);
   }
 
   async findOne(id: string) {
@@ -41,7 +106,7 @@ export class UsersService {
       throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
     }
 
-    return user;
+    return this.enrichUser(user);
   }
 
   async create(dto: CreateUserDto) {
@@ -82,9 +147,9 @@ export class UsersService {
       select: USER_PUBLIC_SELECT,
     });
 
-    this.realtimeService.emitEntityChange('users', 'create', user);
+    this.realtimeService.emitEntityChange('users', 'create', await this.enrichUser(user));
 
-    return user;
+    return this.enrichUser(user);
   }
 
   async update(id: string, dto: UpdateUserDto, actorId?: string) {
@@ -210,9 +275,9 @@ export class UsersService {
       });
     }
 
-    this.realtimeService.emitEntityChange('users', 'update', user);
+    this.realtimeService.emitEntityChange('users', 'update', await this.enrichUser(user));
 
-    return user;
+    return this.enrichUser(user);
   }
 
   async remove(id: string) {

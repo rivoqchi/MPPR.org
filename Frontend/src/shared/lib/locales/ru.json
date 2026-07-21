@@ -50,12 +50,20 @@
       "PPR_CALENDAR_MONTH_NOT_SUBMITTABLE": "Этот месяц календаря сейчас нельзя отправить",
       "PPR_CALENDAR_HEAD_NOT_FOUND": "Руководитель подразделения не найден",
       "PPR_CALENDAR_MONTH_EMPTY": "В календаре должна быть хотя бы одна запись",
+      "PPR_CALENDAR_MONTH_NOT_APPROVED": "Выполнять PPR можно только для утверждённого месяца",
+      "PPR_CALENDAR_EXECUTION_DATE_LOCKED": "Нельзя выполнить PPR на будущую дату",
       "FORBIDDEN": "У вас нет прав для этого действия",
       "NOT_FOUND": "Запрошенные данные не найдены",
       "RESOURCE_ALREADY_EXISTS": "Такая запись уже существует",
       "DATABASE_ERROR": "Произошла ошибка базы данных",
       "DATABASE_SCHEMA_OUT_OF_DATE": "Версии приложения и базы данных не совпадают",
       "ERROR_LOG_FORBIDDEN": "Нет доступа к журналу ошибок",
+      "GUIDE_VIDEO_NOT_FOUND": "Видео руководства не найдено",
+      "GUIDE_VIDEO_FORBIDDEN": "Нет доступа к видео руководства",
+      "GUIDE_VIDEO_UPLOAD_NOT_FOUND": "Сессия загрузки видео не найдена",
+      "GUIDE_VIDEO_UPLOAD_INCOMPLETE": "Видео загружено не полностью",
+      "GUIDE_VIDEO_FILE_TOO_LARGE": "Файл видео слишком большой (максимум 4 ГБ)",
+      "GUIDE_VIDEO_INVALID_MIME": "Можно загружать только видеофайлы (mp4, webm, mov и т.д.)",
       "CLIENT_RUNTIME_ERROR": "Произошла непредвиденная ошибка в клиенте",
       "CLIENT_UNHANDLED_REJECTION": "Произошла необработанная ошибка promise",
       "ROUTE_ERROR": "Ошибка при загрузке страницы",
@@ -89,6 +97,8 @@
         "PPR_CALENDAR_MONTH_NOT_SUBMITTABLE": "Заполните календарь или проверьте статус месяца",
         "PPR_CALENDAR_HEAD_NOT_FOUND": "Назначьте руководителя структурного подразделения",
         "PPR_CALENDAR_MONTH_EMPTY": "Добавьте хотя бы одну запись PPR",
+        "PPR_CALENDAR_MONTH_NOT_APPROVED": "Сначала утвердите календарь месяца",
+        "PPR_CALENDAR_EXECUTION_DATE_LOCKED": "Выберите PPR на сегодня или прошедшую дату",
         "FORBIDDEN": "Запросите необходимые права у администратора",
         "NOT_FOUND": "Данные могли быть удалены или изменены. Обновите страницу",
         "RESOURCE_ALREADY_EXISTS": "Введите другое значение или отредактируйте существующую запись",
@@ -164,12 +174,8 @@
     }
   },
   "settingsPage": {
-    "placeholder": "Этот раздел скоро будет заполнен",
     "tabs": {
       "tab1": "Основные",
-      "tab2": "Настройки 2",
-      "tab3": "Настройки 3",
-      "tab4": "Настройки 4",
       "programUi": "UI программы"
     },
     "programUi": {
@@ -186,9 +192,27 @@
         "large": "Large"
       },
       "theme": "Тема",
+      "primaryColor": "Основной цвет элементов",
+      "successColor": "Цвет успеха",
+      "warningColor": "Цвет предупреждения",
+      "errorColor": "Цвет ошибки",
       "themes": {
         "light": "Светлая",
         "dark": "Тёмная"
+      },
+      "colors": {
+        "blue": "Синий",
+        "green": "Зелёный",
+        "purple": "Фиолетовый",
+        "orange": "Оранжевый",
+        "red": "Красный",
+        "cyan": "Голубой"
+      },
+      "preview": {
+        "primary": "Основной",
+        "success": "Успех",
+        "warning": "Предупреждение",
+        "error": "Ошибка"
       }
     },
     "notifications": {
@@ -203,6 +227,46 @@
       "autoMarkDescription": "Новые уведомления сразу сохраняются как прочитанные",
       "autoMarkEnabled": "Автоматическая отметка прочитанными включена",
       "autoMarkDisabled": "Автоматическая отметка прочитанными отключена"
+    }
+  },
+  "guidePage": {
+    "title": "Руководство",
+    "empty": "Пока нет видеоуроков",
+    "selectVideo": "Выберите видео для просмотра",
+    "forbidden": "Нет доступа к этой странице",
+    "watched": "Просмотрено",
+    "sizeLabel": "{{size}}",
+    "nextIn": "Следующее видео через {{seconds}} сек...",
+    "fields": {
+      "title": "Заголовок",
+      "description": "Описание",
+      "video": "Видеофайл"
+    },
+    "actions": {
+      "add": "Добавить видео",
+      "selectFile": "Выбрать файл",
+      "markWatched": "Просмотрено",
+      "cancelNext": "Отмена"
+    },
+    "drawer": {
+      "createTitle": "Добавить видео",
+      "editTitle": "Редактировать видео"
+    },
+    "deleteConfirm": {
+      "title": "Удалить видео",
+      "description": "Вы действительно хотите удалить это видео?",
+      "ok": "Да, удалить"
+    },
+    "validation": {
+      "titleRequired": "Заголовок обязателен",
+      "fileRequired": "Видеофайл обязателен",
+      "fileTooLarge": "Размер видео не должен превышать 4 ГБ"
+    },
+    "messages": {
+      "created": "Видео загружено",
+      "updated": "Видео обновлено",
+      "deleted": "Видео удалено",
+      "completed": "Все видео просмотрены"
     }
   },
   "menu": {
@@ -304,7 +368,38 @@
       "avatarError": "Не удалось обработать изображение. Выберите другое",
       "activated": "Пользователь активирован",
       "deactivated": "Пользователь деактивирован",
-      "cannotDeactivateSelf": "Вы не можете деактивировать свой аккаунт"
+      "cannotDeactivateSelf": "Вы не можете деактивировать свой аккаунт",
+      "deleteSuccess": "Пользователь удалён",
+      "deleteError": "Ошибка при удалении пользователя",
+      "cannotDeleteSelf": "Вы не можете удалить свой профиль"
+    },
+    "delete": "Удалить",
+    "deleteConfirm": {
+      "title": "Удаление пользователя",
+      "description": "Вы уверены, что хотите удалить этого пользователя? Это действие нельзя отменить.",
+      "ok": "Да, удалить",
+      "cancel": "Отмена"
+    }
+  },
+  "employeesPage": {
+    "searchPlaceholder": "Поиск сотрудника",
+    "empty": "Сотрудники не найдены",
+    "online": "Онлайн",
+    "offline": "Офлайн",
+    "nowOnline": "Сейчас онлайн",
+    "neverOnline": "Ещё не был онлайн",
+    "stats": {
+      "total": "Всего сотрудников",
+      "online": "Сейчас онлайн",
+      "active": "Активные сотрудники"
+    },
+    "columns": {
+      "employee": "Сотрудник",
+      "position": "Должность",
+      "accountStatus": "Статус профиля",
+      "onlineStatus": "Статус онлайн",
+      "lastSeen": "Последняя активность",
+      "phone": "Телефон"
     }
   },
   "applicationCalendar": {
@@ -412,7 +507,11 @@
     },
     "dayDrawer": {
       "title": "{{date}}",
-      "empty": "На этот день записей нет"
+      "empty": "На этот день записей нет",
+      "entryIndex": "#{{index}}",
+      "progress": "Выполнение",
+      "objectsSummary": "{{completed}}/{{total}} объектов",
+      "noObjects": "Объекты не назначены"
     },
     "entryDrawer": {
       "addTitle": "{{date}} — новая запись",
@@ -433,7 +532,8 @@
     "executionStatus": {
       "pending": "Ожидает",
       "in_progress": "В процессе",
-      "completed": "Выполнено"
+      "completed": "Выполнено",
+      "overdue": "Просрочено"
     },
     "executionDrawer": {
       "title": "Выполнение PPR",
@@ -499,8 +599,9 @@
       "rejectSuccess": "Согласование отклонено",
       "rejectError": "Ошибка при отклонении",
       "executionSuccess": "Выполнение PPR сохранено",
-      "executeLocked": "Сегодня нельзя выполнить этот PPR",
-      "executeLockedDetail": "Выполнять можно только PPR за последние 3 дня и за сегодня. Просмотр данных доступен."
+      "overdueHint": "После запланированной даты прошло более 3 дней. Даже после выполнения запись остаётся красной.",
+      "executeLocked": "Нельзя выполнить PPR на будущую дату",
+      "executeLockedDetail": "Можно выполнять PPR на сегодня и прошедшие даты. Если опоздание больше 3 дней, запись остаётся красной."
     }
   },
   "homePage": {
@@ -559,13 +660,48 @@
       "overdueApplications": "{{count}} заявок просрочено. Проверьте входящие заявки.",
       "pendingPprMonths": "{{count}} месяцев PPR ожидают согласования."
     },
+    "actions": {
+      "incomingTitle": "Новые входящие заявки",
+      "todayPprTitle": "PPR за сегодня и предыдущие 3 дня",
+      "markPprDone": "Выполнить PPR",
+      "emptyIncoming": "Сегодня новые входящие заявки не найдены",
+      "emptyTodayPpr": "Нет PPR за сегодня и предыдущие 3 дня",
+      "objectsCount": "{{count}} объект(ов)",
+      "updatedAt": "Обновлено",
+      "executionSuccess": "Выполнение PPR сохранено",
+      "status": {
+        "pending": "Не начато",
+        "in_progress": "В процессе",
+        "completed": "Выполнено",
+        "overdue": "Просрочено"
+      }
+    },
     "errors": {
       "loadFailed": "Не удалось загрузить данные главной страницы"
     }
   },
   "managementPage": {
     "title": "Управление",
-    "subtitle": "Выберите и управляйте разделами системы"
+    "subtitle": "Управляйте всеми основными данными из единого пространства с вкладками",
+    "forbiddenTitle": "Доступ запрещён",
+    "forbiddenDescription": "Универсальный центр управления доступен только администраторам",
+    "backToApplications": "Назад к заявкам",
+    "workflowEmptyDescription": "Выберите заявку для управления workflow",
+    "tabs": {
+      "ppr": "PPR",
+      "registration": "Регистрация",
+      "applications": "Заявки",
+      "service": "Сервис"
+    },
+    "ppr": {
+      "calendar": "Календарь PPR",
+      "approved": "Утверждённые месяцы"
+    },
+    "applications": {
+      "submitted": "Отправленные",
+      "incoming": "Входящие",
+      "workflow": "Workflow"
+    }
   },
   "errorLogsPage": {
     "title": "Ошибки",
@@ -718,6 +854,12 @@
       "error": "Ошибка при отправке заявки",
       "finalizedHint": "Заявка подтверждена",
       "cancelledLockedHint": "Отменённую заявку нельзя редактировать или удалить"
+    },
+    "progress": {
+      "submitted": "Отправлена",
+      "inProgress": "На рассмотрении",
+      "pendingConfirmation": "Этап подтверждения",
+      "finalized": "Завершена"
     },
     "attachments": {
       "view": "Просмотр",

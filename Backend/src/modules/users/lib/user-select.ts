@@ -12,6 +12,7 @@ export const USER_PUBLIC_SELECT = {
   structuralUnitSectionId: true,
   avatar: true,
   isActive: true,
+  lastSeenAt: true,
   createdAt: true,
   updatedAt: true,
 } as const;

@@ -1,5 +1,5 @@
 import { DeleteOutlined, DownloadOutlined, EditOutlined, EyeOutlined, FileOutlined, MessageOutlined } from '@ant-design/icons'
-import { Alert, App, Button, Descriptions, Empty, Image, List, Popconfirm, Space, Tag, theme } from 'antd'
+import { Alert, App, Button, Descriptions, Empty, Image, List, Popconfirm, Space, Steps, Tag, theme } from 'antd'
 import dayjs from 'dayjs'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -97,6 +97,48 @@ export function ApplicationDetail({
 
   const showWorkflowStatus = application ? hasApplicationWorkflow(application) : false
   const isFinalized = application ? isApplicationFinalized(application) : false
+  const progressStepItems = useMemo(
+    () => {
+      if (!application) {
+        return []
+      }
+
+      return [
+        { key: 'submitted', title: t('applicationSubmit.progress.submitted') },
+        {
+          key: 'in_progress_work',
+          title: t('applicationSubmit.progress.inProgress'),
+          description:
+            application.workflowStatus === 'returned'
+              ? t('applicationWorkflow.status.returned')
+              : application.workflowStatus === 'in_progress_work' ||
+                  application.workflowStatus === 'pending_confirmation'
+                ? showWorkflowStatus
+                  ? t(`applicationWorkflow.status.${application.workflowStatus}`)
+                  : t(`applicationSubmit.status.${application.status}`)
+                : undefined,
+          status:
+            application.workflowStatus === 'returned'
+              ? ('error' as const)
+              : application.workflowStatus === 'in_progress_work' ||
+                  application.workflowStatus === 'pending_confirmation'
+                ? ('process' as const)
+                : ('finish' as const),
+        },
+        {
+          key: 'finalized',
+          title: t('applicationSubmit.progress.finalized'),
+          status:
+            application.workflowStatus === 'confirmed'
+              ? ('finish' as const)
+              : application.workflowStatus === 'cancelled'
+                ? ('error' as const)
+                : ('wait' as const),
+        },
+      ]
+    },
+    [application, showWorkflowStatus, t],
+  )
 
   if (!application) {
     return (
@@ -314,6 +356,18 @@ export function ApplicationDetail({
               style={{ marginBottom: 16 }}
             />
           )}
+
+          <div style={{ marginBottom: 24 }}>
+            <Steps
+              responsive
+              current={
+                application.workflowStatus === 'confirmed' || application.workflowStatus === 'cancelled'
+                  ? 2
+                  : 1
+              }
+              items={progressStepItems}
+            />
+          </div>
 
           {viewerSpecialMessage && (
             <div style={{ marginBottom: 24 }}>

@@ -50,12 +50,20 @@
       "PPR_CALENDAR_MONTH_NOT_SUBMITTABLE": "Bu oy taqvimini hozir yuborib bo'lmaydi",
       "PPR_CALENDAR_HEAD_NOT_FOUND": "Tarkibiy tuzilma boshlig'i topilmadi",
       "PPR_CALENDAR_MONTH_EMPTY": "Taqvimda kamida bitta yozuv bo'lishi kerak",
+      "PPR_CALENDAR_MONTH_NOT_APPROVED": "Faqat tasdiqlangan oy uchun PPR bajarish mumkin",
+      "PPR_CALENDAR_EXECUTION_DATE_LOCKED": "Kelajak sanadagi PPRni bajarib bo'lmaydi",
       "FORBIDDEN": "Bu amalni bajarishga ruxsatingiz yo'q",
       "NOT_FOUND": "So'ralgan ma'lumot topilmadi",
       "RESOURCE_ALREADY_EXISTS": "Bu ma'lumot allaqachon mavjud",
       "DATABASE_ERROR": "Ma'lumotlar bazasida xatolik yuz berdi",
       "DATABASE_SCHEMA_OUT_OF_DATE": "Dastur va ma'lumotlar bazasi versiyasi mos kelmayapti",
       "ERROR_LOG_FORBIDDEN": "Xatolar jurnalini ko'rishga ruxsat yo'q",
+      "GUIDE_VIDEO_NOT_FOUND": "Qo'llanma videosi topilmadi",
+      "GUIDE_VIDEO_FORBIDDEN": "Qo'llanma videolariga kirishga ruxsat yo'q",
+      "GUIDE_VIDEO_UPLOAD_NOT_FOUND": "Video yuklash sessiyasi topilmadi",
+      "GUIDE_VIDEO_UPLOAD_INCOMPLETE": "Video to'liq yuklanmagan",
+      "GUIDE_VIDEO_FILE_TOO_LARGE": "Video fayl juda katta (maksimum 4 GB)",
+      "GUIDE_VIDEO_INVALID_MIME": "Faqat video fayllarni yuklash mumkin (mp4, webm, mov va hokazo)",
       "CLIENT_RUNTIME_ERROR": "Dasturda kutilmagan xatolik yuz berdi",
       "CLIENT_UNHANDLED_REJECTION": "Bajarilmagan va'da (promise) xatosi yuz berdi",
       "ROUTE_ERROR": "Sahifa yuklanayotganda xatolik yuz berdi",
@@ -89,6 +97,8 @@
         "PPR_CALENDAR_MONTH_NOT_SUBMITTABLE": "Avval taqvimni to'ldiring yoki oy holatini tekshiring",
         "PPR_CALENDAR_HEAD_NOT_FOUND": "Tarkibiy tuzilma boshlig'ini ro'yxatdan o'tkazing",
         "PPR_CALENDAR_MONTH_EMPTY": "Kamida bitta PPR yozuvini qo'shing",
+        "PPR_CALENDAR_MONTH_NOT_APPROVED": "Avval oy taqvimini tasdiqlang",
+        "PPR_CALENDAR_EXECUTION_DATE_LOCKED": "Bugungi yoki o'tgan sanadagi PPRni tanlang",
         "FORBIDDEN": "Administratoringizdan kerakli ruxsatni so'rang",
         "NOT_FOUND": "Ma'lumot o'chirilgan yoki boshqa foydalanuvchi tahrirlagan bo'lishi mumkin. Sahifani yangilang",
         "RESOURCE_ALREADY_EXISTS": "Boshqa qiymat kiriting yoki mavjud yozuvni tahrirlang",
@@ -164,12 +174,8 @@
     }
   },
   "settingsPage": {
-    "placeholder": "Bu bo'lim tez orada to'ldiriladi",
     "tabs": {
       "tab1": "Asosiy",
-      "tab2": "Sozlamalar 2",
-      "tab3": "Sozlamalar 3",
-      "tab4": "Sozlamalar 4",
       "programUi": "Dastur UI"
     },
     "programUi": {
@@ -186,9 +192,27 @@
         "large": "Large"
       },
       "theme": "Mavzu",
+      "primaryColor": "Asosiy elementlar rangi",
+      "successColor": "Muvaffaqiyat rangi",
+      "warningColor": "Ogohlantirish rangi",
+      "errorColor": "Xatolik rangi",
       "themes": {
         "light": "Yorug'",
         "dark": "Qorong'u"
+      },
+      "colors": {
+        "blue": "Ko'k",
+        "green": "Yashil",
+        "purple": "Binafsha",
+        "orange": "To'q sariq",
+        "red": "Qizil",
+        "cyan": "Havorang"
+      },
+      "preview": {
+        "primary": "Asosiy",
+        "success": "Muvaffaqiyat",
+        "warning": "Ogohlantirish",
+        "error": "Xatolik"
       }
     },
     "notifications": {
@@ -203,6 +227,46 @@
       "autoMarkDescription": "Yangi bildirishnomalar kelishi bilanoq o'qilgan sifatida saqlanadi",
       "autoMarkEnabled": "Avtomatik o'qilgan deb belgilash yoqildi",
       "autoMarkDisabled": "Avtomatik o'qilgan deb belgilash o'chirildi"
+    }
+  },
+  "guidePage": {
+    "title": "Yo'riqnoma",
+    "empty": "Hali video qo'llanmalar yo'q",
+    "selectVideo": "Ko'rish uchun videoni tanlang",
+    "forbidden": "Bu sahifani ko'rishga ruxsat yo'q",
+    "watched": "Ko'rilgan",
+    "sizeLabel": "{{size}}",
+    "nextIn": "Keyingi video {{seconds}} soniyadan keyin...",
+    "fields": {
+      "title": "Sarlavha",
+      "description": "Tavsif",
+      "video": "Video fayl"
+    },
+    "actions": {
+      "add": "Video qo'shish",
+      "selectFile": "Fayl tanlash",
+      "markWatched": "Ko'rdim",
+      "cancelNext": "Bekor qilish"
+    },
+    "drawer": {
+      "createTitle": "Video qo'shish",
+      "editTitle": "Videoni tahrirlash"
+    },
+    "deleteConfirm": {
+      "title": "Videoni o'chirish",
+      "description": "Bu videoni o'chirishni tasdiqlaysizmi?",
+      "ok": "Ha, o'chirish"
+    },
+    "validation": {
+      "titleRequired": "Sarlavha majburiy",
+      "fileRequired": "Video fayl majburiy",
+      "fileTooLarge": "Video hajmi 4 GB dan oshmasligi kerak"
+    },
+    "messages": {
+      "created": "Video yuklandi",
+      "updated": "Video yangilandi",
+      "deleted": "Video o'chirildi",
+      "completed": "Barcha videolar ko'rib chiqildi"
     }
   },
   "menu": {
@@ -304,7 +368,38 @@
       "avatarError": "Rasmni yuklab bo'lmadi. Boshqa rasm tanlang",
       "activated": "Foydalanuvchi faollashtirildi",
       "deactivated": "Foydalanuvchi faolsizlashtirildi",
-      "cannotDeactivateSelf": "O'zingizni faolsiz qila olmaysiz"
+      "cannotDeactivateSelf": "O'zingizni faolsiz qila olmaysiz",
+      "deleteSuccess": "Foydalanuvchi o'chirildi",
+      "deleteError": "Foydalanuvchini o'chirishda xatolik yuz berdi",
+      "cannotDeleteSelf": "O'z profilingizni o'chira olmaysiz"
+    },
+    "delete": "O'chirish",
+    "deleteConfirm": {
+      "title": "Foydalanuvchini o'chirish",
+      "description": "Bu foydalanuvchini o'chirishni tasdiqlaysizmi? Bu amal qaytarilmaydi.",
+      "ok": "Ha, o'chirish",
+      "cancel": "Bekor qilish"
+    }
+  },
+  "employeesPage": {
+    "searchPlaceholder": "Xodim qidirish",
+    "empty": "Xodimlar topilmadi",
+    "online": "Onlayn",
+    "offline": "Offlayn",
+    "nowOnline": "Hozir onlayn",
+    "neverOnline": "Hali onlayn bo'lmagan",
+    "stats": {
+      "total": "Jami xodimlar",
+      "online": "Hozir onlayn",
+      "active": "Faol xodimlar"
+    },
+    "columns": {
+      "employee": "Xodim",
+      "position": "Lavozim",
+      "accountStatus": "Profil holati",
+      "onlineStatus": "Onlayn holati",
+      "lastSeen": "Oxirgi faollik",
+      "phone": "Telefon"
     }
   },
   "applicationCalendar": {
@@ -412,7 +507,11 @@
     },
     "dayDrawer": {
       "title": "{{date}} sanasi",
-      "empty": "Bu kunda yozuvlar yo'q"
+      "empty": "Bu kunda yozuvlar yo'q",
+      "entryIndex": "#{{index}}",
+      "progress": "Bajarilish",
+      "objectsSummary": "{{completed}}/{{total}} obyekt",
+      "noObjects": "Obyektlar biriktirilmagan"
     },
     "entryDrawer": {
       "addTitle": "{{date}} — yangi yozuv",
@@ -439,7 +538,8 @@
     "executionStatus": {
       "pending": "Kutilmoqda",
       "in_progress": "Jarayonda",
-      "completed": "Bajarildi"
+      "completed": "Bajarildi",
+      "overdue": "Muddati o'tgan"
     },
     "executionDrawer": {
       "title": "PPRni bajarish",
@@ -455,7 +555,7 @@
     "submitModal": {
       "title": "Oyni tasdiqlashga yuborish",
       "message": "{{headName}} tasdiqlab berishi zarur. Rozimisiz?",
-      "hint": "Ha, roziman tugmasini bosganingizdan so'ng so'rov boshliqqa yuboriladi.",
+      "hint": "",
       "yes": "Ha, roziman",
       "no": "Yo'q"
     },
@@ -469,7 +569,7 @@
     "approveModal": {
       "title": "PPR taqvimini tasdiqlash",
       "message": "{{monthLabel}} oyi PPR taqvimini ko'rib chiqdingizmi va u to'g'rimi? Rostdan tasdiqlaysizmi?",
-      "hint": "Ha, tasdiqlayman tugmasini bosganingizdan so'ng oy yakuniy tasdiqlangan hisoblanadi.",
+      "hint": "",
       "yes": "Ha, tasdiqlayman",
       "no": "Yo'q"
     },
@@ -484,7 +584,7 @@
       "notAvailable": "Ushbu oy uchun tasdiqlangan PPR taqvimi mavjud emas",
       "selectPendingMonth": "Kelgan tasviqlardan oyni tanlang va ko'rib chiqing",
       "reviewHint": "Xodim yuborgan PPR taqvimini ko'rib chiqing. Kunlarga bosib yozuvlarni tekshiring, so'ng Tasdiqlash tugmasini bosing.",
-      "revisionHint": "Xatolarni tuzating yoki Tozalash tugmasi orqali oyni butunlay tozalab, boshidan yozing. Tayyor bo'lgach qayta tasdiqlashga yuboring.",
+      "revisionHint": "",
       "noPendingApproval": "Hozircha tasdiqlash uchun yuborilgan oylar yo'q",
       "createSuccess": "Yozuv saqlandi",
       "updateSuccess": "Yozuv yangilandi",
@@ -498,8 +598,9 @@
       "rejectSuccess": "Tasdiqlash bekor qilindi",
       "rejectError": "Bekor qilishda xatolik yuz berdi",
       "executionSuccess": "PPR bajarilishi saqlandi",
-      "executeLocked": "Ushbu PPRni bugun bajara olmaysiz",
-      "executeLockedDetail": "Faqat oxirgi 3 kun va bugungi sanadagi PPRlarni bajarish mumkin. Ma'lumotlarni ko'rish mumkin."
+      "overdueHint": "Rejalashtirilgan sanadan 3 kundan ortiq kechikkan. Bajarilsa ham qizil holatda qoladi.",
+      "executeLocked": "Kelajak sanadagi PPRni bajarib bo'lmaydi",
+      "executeLockedDetail": "Faqat bugungi va o'tgan sanalardagi PPRlarni bajarish mumkin. 3 kundan kechiksa yozuv qizil bo'lib qoladi."
     }
   },
   "homePage": {
@@ -558,13 +659,48 @@
       "overdueApplications": "{{count}} ta arizaning muddati o'tgan. Kiruvchi arizalar bo'limini tekshiring.",
       "pendingPprMonths": "{{count}} ta PPR taqvim oyi tasdiqlashni kutmoqda."
     },
+    "actions": {
+      "incomingTitle": "Yangi kelgan arizalar",
+      "todayPprTitle": "Bugun va oldingi 3 kun PPRlari",
+      "markPprDone": "PPR qilish",
+      "emptyIncoming": "Bugun yangi kelgan arizalar topilmadi",
+      "emptyTodayPpr": "Bugun va oldingi 3 kunda bajariladigan PPR yo'q",
+      "objectsCount": "{{count}} ta obyekt",
+      "updatedAt": "Yangilangan vaqti",
+      "executionSuccess": "PPR bajarilishi saqlandi",
+      "status": {
+        "pending": "Boshlanmagan",
+        "in_progress": "Jarayonda",
+        "completed": "Bajarilgan",
+        "overdue": "Muddati o'tgan"
+      }
+    },
     "errors": {
       "loadFailed": "Bosh sahifa ma'lumotlarini yuklab bo'lmadi"
     }
   },
   "managementPage": {
     "title": "Boshqaruv",
-    "subtitle": "Tizim bo'limlarini tanlang va boshqaring"
+    "subtitle": "Barcha asosiy ma'lumotlarni tablar orqali bitta joydan boshqaring",
+    "forbiddenTitle": "Ruxsat yo'q",
+    "forbiddenDescription": "Universal boshqaruv bo'limi faqat administratorlar uchun ochiq",
+    "backToApplications": "Arizalarga qaytish",
+    "workflowEmptyDescription": "Workflow ni boshqarish uchun arizani tanlang",
+    "tabs": {
+      "ppr": "PPR",
+      "registration": "Ro'yxatga olish",
+      "applications": "Arizalar",
+      "service": "Servis"
+    },
+    "ppr": {
+      "calendar": "PPR taqvimi",
+      "approved": "Tasdiqlangan oylar"
+    },
+    "applications": {
+      "submitted": "Yuborilgan",
+      "incoming": "Kelgan",
+      "workflow": "Workflow"
+    }
   },
   "errorLogsPage": {
     "title": "Xatolar",
@@ -718,6 +854,12 @@
       "finalizedHint": "Ariza tasdiqlangan",
       "cancelledLockedHint": "Bekor qilingan arizani tahrirlab yoki o'chirib bo'lmaydi"
     },
+    "progress": {
+      "submitted": "Yuborildi",
+      "inProgress": "Ko'rib chiqilmoqda",
+      "pendingConfirmation": "Tasdiqlash bosqichi",
+      "finalized": "Yakunlandi"
+    },
     "attachments": {
       "view": "Ko'rish",
       "download": "Yuklab olish",
@@ -770,7 +912,7 @@
         "title": "Arizani tasdiqlash",
         "yes": "Ha, tasdiqlash",
         "message": "Barcha tarkibiy tuzilmalar javob berdi. Arizani yakuniy tasdiqlaysizmi?",
-        "hint": "Tasdiqlangandan keyin arizaga yangi ma'lumot qo'shib bo'lmaydi."
+        "hint": ""
       },
       "cancel": {
         "title": "Arizani bekor qilish",

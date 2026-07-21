@@ -1,12 +1,27 @@
 import type { RouteObject } from 'react-router-dom'
-import { HomePage, ApplicationCalendarPage, ApplicationWorkflowPage, ErrorLogsPage, IncomingApplicationPage, ManagementPage, ObjectPage, PlaceholderPage, PprCalendarPage, PprManagementMonthPage, PprManagementPage, PprTypePage, ProfilePage, RolesPage, SettingsPage, StructuralUnitPage, SubmitApplicationPage, UsersPage, lazyRoute, applicationCalendarRouteFallback, errorLogsRouteFallback, objectRouteFallback, pprCalendarRouteFallback, pprTypeRouteFallback, rolesRouteFallback, structuralUnitRouteFallback, submitApplicationRouteFallback, usersRouteFallback } from '@/app/router/lazy-route'
-
-function page(titleKey: string): Pick<RouteObject, 'element' | 'handle'> {
-  return {
-    element: lazyRoute(<PlaceholderPage />),
-    handle: { titleKey },
-  }
-}
+import {
+  ApplicationCalendarPage,
+  ApplicationWorkflowPage,
+  GuidePage,
+  HomePage,
+  IncomingApplicationPage,
+  ManagementPage,
+  ObjectPage,
+  PprCalendarPage,
+  PprManagementMonthPage,
+  PprTypePage,
+  ProfilePage,
+  SettingsPage,
+  StructuralUnitPage,
+  SubmitApplicationPage,
+  applicationCalendarRouteFallback,
+  lazyRoute,
+  objectRouteFallback,
+  pprCalendarRouteFallback,
+  pprTypeRouteFallback,
+  structuralUnitRouteFallback,
+  submitApplicationRouteFallback,
+} from '@/app/router/lazy-route'
 
 export const appRoutes: RouteObject[] = [
   {
@@ -16,7 +31,8 @@ export const appRoutes: RouteObject[] = [
   },
   {
     path: 'guide',
-    ...page('menu.guide'),
+    element: lazyRoute(<GuidePage />),
+    handle: { titleKey: 'menu.guide' },
   },
   {
     path: 'settings',
@@ -84,7 +100,7 @@ export const appRoutes: RouteObject[] = [
   },
   {
     path: 'management/ppr',
-    element: lazyRoute(<PprManagementPage />),
+    element: lazyRoute(<ManagementPage />),
     handle: { titleKey: 'menu.management.ppr' },
   },
   {
@@ -94,29 +110,32 @@ export const appRoutes: RouteObject[] = [
   },
   {
     path: 'management/users',
-    element: lazyRoute(<UsersPage />, usersRouteFallback),
+    element: lazyRoute(<ManagementPage />),
     handle: { titleKey: 'menu.management.users' },
   },
   {
     path: 'management/roles',
-    element: lazyRoute(<RolesPage />, rolesRouteFallback),
+    element: lazyRoute(<ManagementPage />),
     handle: { titleKey: 'menu.management.roles' },
   },
   {
     path: 'management/employees',
-    ...page('menu.management.employees'),
+    element: lazyRoute(<ManagementPage />),
+    handle: { titleKey: 'menu.management.employees' },
   },
   {
     path: 'management/programs',
-    ...page('menu.management.programs'),
+    element: lazyRoute(<ManagementPage />),
+    handle: { titleKey: 'menu.management.programs' },
   },
   {
     path: 'management/errors',
-    element: lazyRoute(<ErrorLogsPage />, errorLogsRouteFallback),
+    element: lazyRoute(<ManagementPage />),
     handle: { titleKey: 'menu.management.errors' },
   },
   {
     path: 'management/changes',
-    ...page('menu.management.changes'),
+    element: lazyRoute(<ManagementPage />),
+    handle: { titleKey: 'menu.management.changes' },
   },
 ]

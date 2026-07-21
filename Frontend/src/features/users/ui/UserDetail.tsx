@@ -1,5 +1,5 @@
-import { EditOutlined, LockOutlined, UserOutlined } from '@ant-design/icons'
-import { Avatar, Button, Descriptions, Empty, Image, Space, Switch, Tag, theme } from 'antd'
+import { DeleteOutlined, EditOutlined, LockOutlined, UserOutlined } from '@ant-design/icons'
+import { Avatar, Button, Descriptions, Empty, Image, Popconfirm, Space, Switch, Tag, theme } from 'antd'
 import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
 import { useRoleName } from '@/entities/role/lib/use-role-name'
@@ -15,8 +15,11 @@ interface UserDetailProps {
   onEdit?: () => void
   onChangePassword?: () => void
   onToggleActive?: (isActive: boolean) => void
+  onDelete?: () => void
   isActiveToggleLoading?: boolean
+  isDeleteLoading?: boolean
   canToggleActive?: boolean
+  canDelete?: boolean
 }
 
 export function UserDetail({
@@ -24,8 +27,11 @@ export function UserDetail({
   onEdit,
   onChangePassword,
   onToggleActive,
+  onDelete,
   isActiveToggleLoading = false,
+  isDeleteLoading = false,
   canToggleActive = true,
+  canDelete = false,
 }: UserDetailProps) {
   const { token } = theme.useToken()
   const { t } = useTranslation()
@@ -75,8 +81,22 @@ export function UserDetail({
         >
           <div style={{ flex: 1 }} />
 
-          {(onEdit || onChangePassword) && (
+          {(onEdit || onChangePassword || onDelete) && (
             <Space>
+              {onDelete && canDelete && (
+                <Popconfirm
+                  title={t('users.deleteConfirm.title')}
+                  description={t('users.deleteConfirm.description')}
+                  okText={t('users.deleteConfirm.ok')}
+                  cancelText={t('users.deleteConfirm.cancel')}
+                  okButtonProps={{ danger: true, loading: isDeleteLoading }}
+                  onConfirm={onDelete}
+                >
+                  <Button danger icon={<DeleteOutlined />} loading={isDeleteLoading}>
+                    {t('users.delete')}
+                  </Button>
+                </Popconfirm>
+              )}
               {onChangePassword && (
                 <Button icon={<LockOutlined />} onClick={onChangePassword}>
                   {t('profile.changePassword')}

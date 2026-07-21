@@ -1,6 +1,7 @@
-import { CheckOutlined, CloseOutlined, LockOutlined, PlayCircleOutlined } from '@ant-design/icons'
-import { Button, Descriptions, Drawer, List, Progress, Space, Tag, Tooltip, Typography } from 'antd'
-import { useMemo } from 'react'
+import { CheckOutlined, CloseOutlined, PlayCircleOutlined } from '@ant-design/icons'
+import { Alert, Button, Descriptions, Drawer, List, Progress, Space, Tag, Typography } from 'antd'
+import type { UploadFile } from 'antd/es/upload'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { PprCalendarEntry } from '@/entities/ppr-calendar/model/types'
 import { useObjectsStore } from '@/entities/object/model/objects-store'
@@ -12,30 +13,47 @@ import {
   getEntryExecutionStatus,
   getIncompleteObjectIds,
   isObjectExecuted,
+  isPprExecutionOverdue,
 } from '@/features/ppr-calendar/lib/calendar-entries'
+import type { PprExecutionFormSchema } from '@/features/ppr-calendar/model/ppr-execution-form-schema'
+import { PprCalendarExecutionForm } from '@/features/ppr-calendar/ui/PprCalendarExecutionForm'
 import { PprCalendarExecutionTimeline } from '@/features/ppr-calendar/ui/PprCalendarExecutionTimeline'
 
 const { Text } = Typography
+const EXECUTION_FORM_ID = 'ppr-entry-detail-execution-form'
 
 interface PprCalendarEntryDetailDrawerProps {
   open: boolean
   entry: PprCalendarEntry | null
   monthApproved: boolean
+  isSaving?: boolean
   onClose: () => void
-  onExecute: (entry: PprCalendarEntry) => void
+  onSaveExecution: (
+    values: PprExecutionFormSchema,
+    images: UploadFile[],
+    files: UploadFile[],
+  ) => Promise<void>
 }
 
 export function PprCalendarEntryDetailDrawer({
   open,
   entry,
   monthApproved,
+  isSaving = false,
   onClose,
-  onExecute,
+  onSaveExecution,
 }: PprCalendarEntryDetailDrawerProps) {
   const { t } = useTranslation()
   const pprTypes = usePprTypesStore((state) => state.pprTypes)
   const objects = useObjectsStore((state) => state.objects)
   const structuralUnits = useStructuralUnitsStore((state) => state.structuralUnits)
+  const [isExecutionMode, setIsExecutionMode] = useState(false)
+
+  useEffect(() => {
+    if (!open) {
+      setIsExecutionMode(false)
+    }
+  }, [open, entry?.id])
 
   const pprTypeLabel = useMemo(() => {
     if (!entry) {
@@ -44,7 +62,7 @@ export function PprCalendarEntryDetailDrawer({
 
     const pprType = pprTypes.find((item) => item.id === entry.pprTypeId)
 
-    return pprType ? `${pprType.shortName} — ${pprType.originalName}` : entry.pprTypeId
+    return pprType?.shortName || pprType?.originalName || entry.pprTypeId
   }, [entry, pprTypes])
 
   const sectionLabel = useMemo(() => {
@@ -63,37 +81,114 @@ export function PprCalendarEntryDetailDrawer({
   const completionPercent = entry ? getEntryCompletionPercent(entry) : 0
   const executionStatus = entry ? getEntryExecutionStatus(entry) : 'pending'
   const hasIncompleteObjects = entry ? getIncompleteObjectIds(entry).length > 0 : false
+  const isOverdue = entry ? isPprExecutionOverdue(entry.date) : false
+  const isDateExecutable = entry ? canExecutePprDate(entry.date) : false
   const canExecute = Boolean(
-    entry && monthApproved && hasIncompleteObjects && canExecutePprDate(entry.date),
+    entry && monthApproved && hasIncompleteObjects && isDateExecutable,
   )
-  const isExecuteLocked = Boolean(
-    entry && monthApproved && hasIncompleteObjects && !canExecutePprDate(entry.date),
+  const showFutureDateLock = Boolean(
+    entry && monthApproved && hasIncompleteObjects && !isDateExecutable,
   )
+
+  const statusTagColor = isOverdue
+    ? 'error'
+    : executionStatus === 'completed'
+      ? 'success'
+      : executionStatus === 'in_progress'
+        ? 'processing'
+        : 'default'
+
+  const handleClose = () => {
+    if (isSaving) {
+      return
+    }
+
+    if (isExecutionMode) {
+      setIsExecutionMode(false)
+      return
+    }
+
+    onClose()
+  }
+
+  const handleSaveExecution = async (
+    values: PprExecutionFormSchema,
+    images: UploadFile[],
+    files: UploadFile[],
+  ) => {
+    await onSaveExecution(values, images, files)
+    setIsExecutionMode(false)
+  }
 
   return (
     <Drawer
       open={open}
-      onClose={onClose}
-      width={720}
-      title={t('pprCalendar.entryDetail.title')}
+      onClose={handleClose}
+      placement="right"
+      width={560}
+      zIndex={1100}
+      title={
+        isExecutionMode
+          ? t('pprCalendar.executionDrawer.title')
+          : t('pprCalendar.entryDetail.title')
+      }
       extra={
-        entry && monthApproved ? (
-          canExecute ? (
-            <Button type="primary" icon={<PlayCircleOutlined />} onClick={() => onExecute(entry)}>
-              {t('pprCalendar.actions.executePpr')}
+        !isExecutionMode && canExecute ? (
+          <Button
+            type="primary"
+            icon={<PlayCircleOutlined />}
+            onClick={() => setIsExecutionMode(true)}
+          >
+            {t('pprCalendar.actions.executePpr')}
+          </Button>
+        ) : null
+      }
+      footer={
+        isExecutionMode ? (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <Button disabled={isSaving} onClick={() => setIsExecutionMode(false)}>
+              {t('common.cancel')}
             </Button>
-          ) : (
-            <Tooltip title={t('pprCalendar.messages.executeLocked')}>
-              <Button icon={<LockOutlined />} disabled>
-                {t('pprCalendar.actions.executePpr')}
-              </Button>
-            </Tooltip>
-          )
+            <Button
+              type="primary"
+              loading={isSaving}
+              htmlType="submit"
+              form={EXECUTION_FORM_ID}
+            >
+              {t('common.save')}
+            </Button>
+          </div>
+        ) : canExecute ? (
+          <Button
+            type="primary"
+            block
+            size="large"
+            icon={<PlayCircleOutlined />}
+            onClick={() => setIsExecutionMode(true)}
+          >
+            {t('pprCalendar.actions.executePpr')}
+          </Button>
         ) : null
       }
     >
-      {entry ? (
+      {entry && isExecutionMode ? (
+        <PprCalendarExecutionForm
+          entry={entry}
+          active={isExecutionMode}
+          isSaving={isSaving}
+          formId={EXECUTION_FORM_ID}
+          showActions={false}
+          onCancel={() => setIsExecutionMode(false)}
+          onSave={handleSaveExecution}
+        />
+      ) : null}
+
+      {entry && !isExecutionMode ? (
         <Space direction="vertical" size={20} style={{ width: '100%' }}>
+          {showFutureDateLock ? (
+            <Alert type="info" showIcon message={t('pprCalendar.messages.executeLockedDetail')} />
+          ) : null}
+
           <Descriptions column={1} size="small" bordered>
             <Descriptions.Item label={t('pprCalendar.fields.date')}>{entry.date}</Descriptions.Item>
             <Descriptions.Item label={t('pprCalendar.fields.pprType')}>{pprTypeLabel}</Descriptions.Item>
@@ -101,29 +196,34 @@ export function PprCalendarEntryDetailDrawer({
               <Tag color={entry.scopeType === 'section' ? 'blue' : 'purple'}>{sectionLabel}</Tag>
             </Descriptions.Item>
             <Descriptions.Item label={t('pprCalendar.entryDetail.status')}>
-              <Tag
-                color={
-                  executionStatus === 'completed'
-                    ? 'success'
-                    : executionStatus === 'in_progress'
-                      ? 'processing'
-                      : 'default'
-                }
-              >
-                {t(`pprCalendar.executionStatus.${executionStatus}`)}
-              </Tag>
+              <Space wrap>
+                <Tag color={statusTagColor}>
+                  {t(`pprCalendar.executionStatus.${executionStatus}`)}
+                </Tag>
+                {isOverdue ? (
+                  <Tag color="error">{t('pprCalendar.executionStatus.overdue')}</Tag>
+                ) : null}
+              </Space>
             </Descriptions.Item>
             <Descriptions.Item label={t('pprCalendar.fields.comment')}>
               {entry.comment || '—'}
             </Descriptions.Item>
           </Descriptions>
 
+          {isOverdue ? (
+            <Text type="danger">{t('pprCalendar.messages.overdueHint')}</Text>
+          ) : null}
+
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
               <Text strong>{t('pprCalendar.entryDetail.completion')}</Text>
-              <Text>{completionPercent}%</Text>
+              <Text type={isOverdue ? 'danger' : undefined}>{completionPercent}%</Text>
             </div>
-            <Progress percent={completionPercent} showInfo={false} />
+            <Progress
+              percent={completionPercent}
+              showInfo={false}
+              status={isOverdue ? 'exception' : completionPercent === 100 ? 'success' : 'active'}
+            />
           </div>
 
           <div>
@@ -142,12 +242,12 @@ export function PprCalendarEntryDetailDrawer({
                     <Space direction="vertical" size={4} style={{ width: '100%' }}>
                       <Space>
                         {completed ? (
-                          <CheckOutlined style={{ color: '#52c41a' }} />
+                          <CheckOutlined style={{ color: isOverdue ? '#ff4d4f' : '#52c41a' }} />
                         ) : (
                           <CloseOutlined style={{ color: '#ff4d4f' }} />
                         )}
                         <Text>{object?.shortName ?? objectId}</Text>
-                        <Tag color={completed ? 'success' : 'default'}>
+                        <Tag color={completed ? (isOverdue ? 'error' : 'success') : 'default'}>
                           {completed
                             ? t('pprCalendar.entryDetail.objectCompleted')
                             : t('pprCalendar.entryDetail.objectPending')}
@@ -169,10 +269,6 @@ export function PprCalendarEntryDetailDrawer({
               <PprCalendarExecutionTimeline entry={entry} />
             </div>
           </div>
-
-          {isExecuteLocked ? (
-            <Text type="secondary">{t('pprCalendar.messages.executeLockedDetail')}</Text>
-          ) : null}
         </Space>
       ) : null}
     </Drawer>

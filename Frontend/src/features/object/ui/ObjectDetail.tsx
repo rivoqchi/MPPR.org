@@ -21,7 +21,12 @@ import {
   ObjectDocumentModal,
 } from '@/features/object/ui/ObjectDocumentModal'
 import { YandexMapPicker } from '@/features/object/ui/YandexMapPicker'
-import { splitPanelScrollStyle, splitPanelShellStyle, detailPanelScrollStyle, getDetailPanelCardStyle } from '@/shared/lib/page-layout'
+import {
+  getSplitDetailPanelCardStyle,
+  splitDetailPanelScrollStyle,
+  splitPanelScrollStyle,
+  splitPanelShellStyle,
+} from '@/shared/lib/page-layout'
 
 interface ObjectDetailProps {
   object?: RegisteredObject
@@ -89,8 +94,8 @@ export function ObjectDetail({ object, canManage = false, onEdit, onDelete }: Ob
           background: token.colorBgLayout,
         }}
       >
-        <div style={detailPanelScrollStyle}>
-        <div style={getDetailPanelCardStyle(token)}>
+        <div style={splitDetailPanelScrollStyle}>
+        <div style={getSplitDetailPanelCardStyle(token)}>
           <div
             style={{
               display: 'flex',

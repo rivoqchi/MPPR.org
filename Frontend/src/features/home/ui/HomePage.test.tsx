@@ -59,6 +59,38 @@ vi.mock('@/shared/api/dashboard-api', () => ({
         unread: 1,
       },
     },
+    priorityIncomingApplications: [
+      {
+        id: 'application-1',
+        type: 'execution',
+        status: 'in_progress',
+        workflowStatus: 'in_progress_work',
+        createdAt: '2026-07-21T08:00:00.000Z',
+        deadline: '2026-07-21',
+        createdByFirstName: 'Ali',
+        createdByLastName: 'Valiyev',
+        structuralUnitIds: ['unit-1'],
+        isOverdue: false,
+        updatedAt: '2026-07-21T09:00:00.000Z',
+      },
+    ],
+    todayPprTasks: [
+      {
+        entryId: 'entry-1',
+        monthId: 'month-1',
+        date: '2026-07-21',
+        pprTypeId: 'ppr-1',
+        pprTypeName: 'Nasos tekshiruvi',
+        structuralUnitId: 'unit-1',
+        objectIds: ['object-1', 'object-2'],
+        completedObjectIds: ['object-1'],
+        completionPercent: 50,
+        executionStatus: 'in_progress',
+        canExecute: true,
+        isOverdue: false,
+        comment: '',
+      },
+    ],
     recentApplications: [],
     upcomingDeadlines: [],
     recentNotifications: [],
@@ -87,6 +119,8 @@ vi.mock('@/shared/hooks/useStructuralUnitScope', () => ({
 vi.mock('@/shared/hooks/useRolePermissions', () => ({
   useRolePermissions: () => ({
     canView: () => true,
+    canCreate: () => true,
+    canEdit: () => true,
   }),
 }))
 
@@ -106,7 +140,6 @@ describe('HomePage', () => {
   it('renders dashboard title', async () => {
     renderHomePage()
 
-    expect(await screen.findByText(/Xush kelibsiz, Test User/i)).toBeInTheDocument()
-    expect(screen.getByText('Jami arizalar')).toBeInTheDocument()
+    expect(await screen.findByText(/Xush kelibsiz, Test/i)).toBeInTheDocument()
   })
 })

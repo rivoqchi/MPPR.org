@@ -18,6 +18,8 @@ import {
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { RedisService } from '../../shared/redis/redis.service';
 
+const ONLINE_USERS_SET_KEY = 'presence:users:online';
+
 interface AuthenticatedSocket extends Socket {
   data: {
     user: {
@@ -50,6 +52,10 @@ export class WebsocketGateway
     private readonly redisService: RedisService,
   ) {}
 
+  private getUserConnectionKey(userId: string) {
+    return `presence:user:${userId}:connections`;
+  }
+
   afterInit(server: Server) {
     const pubClient = this.redisService.getClient();
     const subClient = this.redisService.createDuplicateClient();
@@ -75,23 +81,34 @@ export class WebsocketGateway
 
       const user = await this.prisma.user.findUnique({
         where: { id: payload.sub },
-        select: { id: true, phone: true, roleId: true },
+        select: { id: true, phone: true, roleId: true, isActive: true },
       });
 
-      if (!user) {
+      if (!user || !user.isActive) {
         client.disconnect();
         return;
       }
 
-      client.data.user = user;
+      client.data.user = {
+        id: user.id,
+        phone: user.phone,
+        roleId: user.roleId,
+      };
 
       await client.join(`user:${user.id}`);
       await client.join(`role:${user.roleId}`);
 
-      this.server.emit('user:status_changed', {
-        userId: user.id,
-        status: 'online',
-      });
+      const redis = this.redisService.getClient();
+      const connectionCount = await redis.incr(this.getUserConnectionKey(user.id));
+
+      if (connectionCount === 1) {
+        await redis.sadd(ONLINE_USERS_SET_KEY, user.id);
+        this.server.emit('user:status_changed', {
+          userId: user.id,
+          isOnline: true,
+          lastSeenAt: null,
+        });
+      }
 
       this.logger.log(`Client connected: ${user.phone} (${client.id})`);
     } catch {
@@ -104,11 +121,35 @@ export class WebsocketGateway
     const user = client.data?.user;
 
     if (user) {
-      this.server.emit('user:status_changed', {
-        userId: user.id,
-        status: 'offline',
-      });
-      this.logger.log(`Client disconnected: ${user.phone} (${client.id})`);
+      void (async () => {
+        try {
+          const redis = this.redisService.getClient();
+          const connectionKey = this.getUserConnectionKey(user.id);
+          const remainingConnections = await redis.decr(connectionKey);
+
+          if (remainingConnections <= 0) {
+            await redis.del(connectionKey);
+            await redis.srem(ONLINE_USERS_SET_KEY, user.id);
+
+            const updatedUser = await this.prisma.user.update({
+              where: { id: user.id },
+              data: { lastSeenAt: new Date() },
+              select: { lastSeenAt: true },
+            });
+
+            this.server.emit('user:status_changed', {
+              userId: user.id,
+              isOnline: false,
+              lastSeenAt: updatedUser.lastSeenAt?.toISOString() ?? null,
+            });
+          }
+
+          this.logger.log(`Client disconnected: ${user.phone} (${client.id})`);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Unknown error';
+          this.logger.warn(`Failed to update disconnect presence: ${message}`);
+        }
+      })();
     }
   }
 

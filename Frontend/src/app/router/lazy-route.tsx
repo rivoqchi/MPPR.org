@@ -22,6 +22,12 @@ export const UsersPage = lazy(() =>
   })),
 )
 
+export const EmployeesPage = lazy(() =>
+  import('@/features/employees/ui/EmployeesPage').then((module) => ({
+    default: module.EmployeesPage,
+  })),
+)
+
 export const PprTypePage = lazy(() =>
   import('@/features/ppr-type/ui/PprTypePage').then((module) => ({
     default: module.PprTypePage,
@@ -43,6 +49,12 @@ export const ObjectPage = lazy(() =>
 export const PlaceholderPage = lazy(() =>
   import('@/features/placeholder/ui/PlaceholderPage').then((module) => ({
     default: module.PlaceholderPage,
+  })),
+)
+
+export const GuidePage = lazy(() =>
+  import('@/features/guide/ui/GuidePage').then((module) => ({
+    default: module.GuidePage,
   })),
 )
 

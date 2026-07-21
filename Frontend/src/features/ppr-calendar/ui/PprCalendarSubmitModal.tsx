@@ -19,6 +19,7 @@ export function PprCalendarSubmitModal({
   onConfirm,
 }: PprCalendarSubmitModalProps) {
   const { t } = useTranslation()
+  const hint = t('pprCalendar.submitModal.hint')
 
   return (
     <Modal
@@ -40,7 +41,7 @@ export function PprCalendarSubmitModal({
             headName: headFullName,
           })}
         </Text>
-        <Text type="secondary">{t('pprCalendar.submitModal.hint')}</Text>
+        {hint ? <Text type="secondary">{hint}</Text> : null}
       </Space>
     </Modal>
   )

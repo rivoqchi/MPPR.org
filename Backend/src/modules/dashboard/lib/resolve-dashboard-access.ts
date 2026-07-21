@@ -8,6 +8,8 @@ export interface DashboardUserContext {
   firstName: string;
   lastName: string;
   structuralUnitId: string;
+  withoutSectionAccess: boolean;
+  structuralUnitSectionId: string | null;
   canViewAll: boolean;
   visibleUnitIds: string[];
   headedUnitIds: string[];
@@ -47,6 +49,8 @@ export async function resolveDashboardUserContext(
       firstName: true,
       lastName: true,
       structuralUnitId: true,
+      withoutSectionAccess: true,
+      structuralUnitSectionId: true,
       appRole: {
         select: {
           isSystem: true,
@@ -99,6 +103,8 @@ export async function resolveDashboardUserContext(
     firstName: user.firstName,
     lastName: user.lastName,
     structuralUnitId: user.structuralUnitId,
+    withoutSectionAccess: user.withoutSectionAccess,
+    structuralUnitSectionId: user.structuralUnitSectionId,
     canViewAll,
     visibleUnitIds,
     headedUnitIds,

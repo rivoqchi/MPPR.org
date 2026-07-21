@@ -121,18 +121,97 @@ export function resolveMonthSectionId(sectionId?: string | null): string {
   return sectionId?.trim() ? sectionId : '';
 }
 
-export function isPprExecutionDateAllowed(entryDate: string, today = new Date()): boolean {
-  const entry = new Date(`${entryDate}T00:00:00.000Z`);
+const APP_TIME_ZONE = 'Asia/Tashkent';
 
-  if (Number.isNaN(entry.getTime())) {
+/** YYYY-MM-DD → UTC midnight epoch for calendar-day math (no timezone shift). */
+function parseDateKey(dateKey: string): number | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateKey.trim());
+
+  if (!match) {
+    return null;
+  }
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+
+  if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) {
+    return null;
+  }
+
+  if (month < 1 || month > 12 || day < 1 || day > 31) {
+    return null;
+  }
+
+  return Date.UTC(year, month - 1, day);
+}
+
+function formatDateKeyInTimeZone(date: Date, timeZone: string): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+}
+
+/**
+ * Bajarish uchun faqat kelajak sanalari yopiq.
+ * Eski sanalar istalgan paytda bajarilishi mumkin.
+ */
+export function isPprExecutionDateAllowed(entryDate: string, today = new Date()): boolean {
+  const entryTime = parseDateKey(entryDate);
+
+  if (entryTime === null) {
     return false;
   }
 
-  const todayUtc = new Date(
-    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
-  );
-  const minUtc = new Date(todayUtc);
-  minUtc.setUTCDate(minUtc.getUTCDate() - 3);
+  const todayKey = formatDateKeyInTimeZone(today, APP_TIME_ZONE);
+  const todayTime = parseDateKey(todayKey);
 
-  return entry.getTime() >= minUtc.getTime() && entry.getTime() <= todayUtc.getTime();
+  if (todayTime === null) {
+    return false;
+  }
+
+  return entryTime <= todayTime;
+}
+
+/**
+ * Rejalashtirilgan sanadan 3 kundan ortiq o'tgan bo'lsa overdue.
+ * Bugun 21 bo'lsa: 17 va undan eski overdue.
+ */
+export function isPprExecutionOverdue(entryDate: string, today = new Date()): boolean {
+  const entryTime = parseDateKey(entryDate);
+
+  if (entryTime === null) {
+    return false;
+  }
+
+  const todayKey = formatDateKeyInTimeZone(today, APP_TIME_ZONE);
+  const todayTime = parseDateKey(todayKey);
+
+  if (todayTime === null) {
+    return false;
+  }
+
+  const graceDeadline = entryTime + 3 * 24 * 60 * 60 * 1000;
+
+  return todayTime > graceDeadline;
+}
+
+export function subtractCalendarDays(dateKey: string, days: number): string | null {
+  const time = parseDateKey(dateKey);
+
+  if (time === null) {
+    return null;
+  }
+
+  const next = new Date(time);
+  next.setUTCDate(next.getUTCDate() - days);
+
+  const year = next.getUTCFullYear();
+  const month = String(next.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(next.getUTCDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
 }

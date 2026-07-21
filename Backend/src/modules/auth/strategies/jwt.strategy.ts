@@ -2,9 +2,20 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import type { Request } from 'express';
 import { ErrorCode } from '../../../common/constants/error-codes';
 import { PrismaService } from '../../../shared/prisma/prisma.service';
 import { JwtPayload, AuthenticatedUser } from '../../../common/types';
+
+function extractJwtFromRequest(req: Request): string | null {
+  const fromHeader = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+  if (fromHeader) {
+    return fromHeader;
+  }
+
+  const queryToken = req.query?.access_token;
+  return typeof queryToken === 'string' && queryToken.length > 0 ? queryToken : null;
+}
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -13,7 +24,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     private readonly prisma: PrismaService,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: extractJwtFromRequest,
       ignoreExpiration: false,
       secretOrKey: configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
     });

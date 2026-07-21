@@ -19,6 +19,7 @@ export function PprCalendarApproveModal({
   onConfirm,
 }: PprCalendarApproveModalProps) {
   const { t } = useTranslation()
+  const hint = t('pprCalendar.approveModal.hint')
 
   return (
     <Modal
@@ -40,7 +41,7 @@ export function PprCalendarApproveModal({
             monthLabel,
           })}
         </Text>
-        <Text type="secondary">{t('pprCalendar.approveModal.hint')}</Text>
+        {hint ? <Text type="secondary">{hint}</Text> : null}
       </Space>
     </Modal>
   )

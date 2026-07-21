@@ -14,6 +14,10 @@ import {
   filterMonthsByPeriod,
 } from './lib/build-ppr-month-where';
 import {
+  buildPriorityIncomingApplications,
+  buildTodayPprTasks,
+} from './lib/build-home-action-items';
+import {
   resolveDashboardUserContext,
   resolveScopedStructuralUnitIds,
 } from './lib/resolve-dashboard-access';
@@ -267,6 +271,13 @@ export class DashboardService {
         !isApplicationFinalized(application),
     }));
 
+    const priorityIncomingApplications = buildPriorityIncomingApplications(
+      applications,
+      scopedUnitIds,
+      today,
+    );
+    const todayPprTasks = await buildTodayPprTasks(this.prisma, context, today);
+
     return {
       context: {
         userName: `${context.firstName} ${context.lastName}`.trim(),
@@ -298,6 +309,8 @@ export class DashboardService {
           unread: unreadNotifications,
         },
       },
+      priorityIncomingApplications,
+      todayPprTasks,
       recentApplications,
       upcomingDeadlines: upcomingDeadlines.slice(0, 8),
       recentNotifications: recentNotifications.map((notification) => ({
