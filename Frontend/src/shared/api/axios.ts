@@ -31,6 +31,11 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     config.headers['X-Client-Route'] = getClientRouteHeaderValue()
   }
 
+  // FormData uchun boundary bilan multipart header avtomatik qo'yilishi kerak.
+  if (config.data instanceof FormData) {
+    config.headers.delete('Content-Type')
+  }
+
   return config
 })
 

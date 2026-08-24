@@ -12,6 +12,7 @@ import { TABLE_PAGE_SIZE } from '@/shared/lib/constants'
 import { useRolePermissions } from '@/shared/hooks/useRolePermissions'
 import { useNotifyApiError } from '@/shared/hooks/useNotifyApiError'
 import { pageToolbarActionStyle, pageToolbarStyle, scrollablePageStyle } from '@/shared/lib/page-layout'
+import { RequirePageView } from '@/shared/ui/RequirePageView'
 
 export function RolesPage() {
   const { t } = useTranslation()
@@ -181,6 +182,7 @@ export function RolesPage() {
   }
 
   return (
+    <RequirePageView pageKey={pageKey}>
     <div style={scrollablePageStyle}>
       <div style={pageToolbarStyle}>
         <Input.Search
@@ -232,5 +234,6 @@ export function RolesPage() {
         />
       )}
     </div>
+    </RequirePageView>
   )
 }

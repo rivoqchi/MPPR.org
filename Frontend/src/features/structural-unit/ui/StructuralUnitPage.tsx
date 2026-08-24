@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { StructuralUnit, StructuralUnitSection } from '@/entities/structural-unit/model/types'
 import { useStructuralUnitsStore } from '@/entities/structural-unit/model/structural-units-store'
+import { useUsersStore } from '@/entities/user/model/users-store'
 import {
   applyStructuralUnitFilters,
   getStructuralUnitFilterOptions,
@@ -25,6 +26,7 @@ import { StructuralUnitPageSkeleton } from '@/features/structural-unit/ui/Struct
 import { StructuralUnitSectionDrawer } from '@/features/structural-unit/ui/StructuralUnitSectionDrawer'
 import { useRolePermissions } from '@/shared/hooks/useRolePermissions'
 import { useNotifyApiError } from '@/shared/hooks/useNotifyApiError'
+import { RequirePageView } from '@/shared/ui/RequirePageView'
 
 const STRUCTURAL_UNIT_TABLE_PAGE_SIZE = 10
 
@@ -38,6 +40,8 @@ export function StructuralUnitPage() {
   const isStructuralUnitsHydrated = useStructuralUnitsStore((state) => state.isHydrated)
   const structuralUnits = useStructuralUnitsStore((state) => state.structuralUnits)
   const removeStructuralUnit = useStructuralUnitsStore((state) => state.removeStructuralUnit)
+  const isUsersHydrated = useUsersStore((state) => state.isHydrated)
+  const hydrateUsers = useUsersStore((state) => state.hydrate)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editingStructuralUnit, setEditingStructuralUnit] = useState<StructuralUnit | null>(null)
   const [sectionDrawerOpen, setSectionDrawerOpen] = useState(false)
@@ -75,6 +79,12 @@ export function StructuralUnitPage() {
   }, [searchValue, shortNameFilter, originalNameFilter])
 
   useEffect(() => {
+    if (!isUsersHydrated) {
+      void hydrateUsers()
+    }
+  }, [hydrateUsers, isUsersHydrated])
+
+  useEffect(() => {
     const maxPage = Math.max(1, Math.ceil(filteredStructuralUnits.length / STRUCTURAL_UNIT_TABLE_PAGE_SIZE))
 
     if (page > maxPage) {
@@ -107,6 +117,7 @@ export function StructuralUnitPage() {
         dataIndex: 'headFullName',
         key: 'headFullName',
         ellipsis: true,
+        render: (value: string) => value?.trim() || '—',
       },
       {
         title: t('structuralUnit.columns.documents'),
@@ -212,6 +223,7 @@ export function StructuralUnitPage() {
   }
 
   return (
+    <RequirePageView pageKey={pageKey}>
     <>
       <div style={fullHeightPageStyle}>
         <div style={pageToolbarStyle}>
@@ -327,5 +339,6 @@ export function StructuralUnitPage() {
         />
       )}
     </>
+    </RequirePageView>
   )
 }

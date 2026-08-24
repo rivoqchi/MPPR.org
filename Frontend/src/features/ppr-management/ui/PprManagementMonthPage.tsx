@@ -15,9 +15,12 @@ import {
   fetchApprovedPprCalendarMonthById,
 } from '@/shared/api/ppr-calendar-api'
 import { useNotifyApiError } from '@/shared/hooks/useNotifyApiError'
+import { useRolePermissions } from '@/shared/hooks/useRolePermissions'
+import { RequirePageView } from '@/shared/ui/RequirePageView'
 import { fullHeightPageStyle } from '@/shared/lib/page-layout'
 
 const { Text } = Typography
+const PAGE_KEY = '/management/ppr'
 
 export function PprManagementMonthPage() {
   const { monthId } = useParams<{ monthId: string }>()
@@ -25,6 +28,7 @@ export function PprManagementMonthPage() {
   const { t } = useTranslation()
   const { message } = App.useApp()
   const { notifyApiError } = useNotifyApiError()
+  const { canView, canDelete } = useRolePermissions()
   const structuralUnits = useStructuralUnitsStore((state) => state.structuralUnits)
 
   const [month, setMonth] = useState<PprCalendarMonth | null>(null)
@@ -138,6 +142,14 @@ export function PprManagementMonthPage() {
     }
   }
 
+  if (!canView(PAGE_KEY)) {
+    return (
+      <RequirePageView pageKey={PAGE_KEY}>
+        <div />
+      </RequirePageView>
+    )
+  }
+
   if (loading || !month) {
     return (
       <div style={{ ...fullHeightPageStyle, alignItems: 'center', justifyContent: 'center' }}>
@@ -146,7 +158,10 @@ export function PprManagementMonthPage() {
     )
   }
 
+  const canRemove = canDelete(PAGE_KEY)
+
   return (
+    <RequirePageView pageKey={PAGE_KEY}>
     <div style={{ ...fullHeightPageStyle, gap: 12 }}>
       <div
         style={{
@@ -170,14 +185,16 @@ export function PprManagementMonthPage() {
           <Tag color="success">{t('pprCalendar.status.approved')}</Tag>
         </Space>
 
-        <Button
-          danger
-          icon={<DeleteOutlined />}
-          disabled={month.entries.length === 0}
-          onClick={() => setClearModalOpen(true)}
-        >
-          {t('pprManagement.actions.clearMonth')}
-        </Button>
+        {canRemove && (
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            disabled={month.entries.length === 0}
+            onClick={() => setClearModalOpen(true)}
+          >
+            {t('pprManagement.actions.clearMonth')}
+          </Button>
+        )}
       </div>
 
       <PprCalendar
@@ -200,7 +217,7 @@ export function PprManagementMonthPage() {
         entries={dayEntries}
         canCreate={false}
         canEdit={false}
-        canDelete
+        canDelete={canRemove}
         showExecutionProgress
         onClose={() => setDayDrawerOpen(false)}
         onAdd={() => undefined}
@@ -240,5 +257,6 @@ export function PprManagementMonthPage() {
         </Space>
       </Modal>
     </div>
+    </RequirePageView>
   )
 }

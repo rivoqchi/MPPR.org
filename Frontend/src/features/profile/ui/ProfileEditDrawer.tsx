@@ -15,7 +15,8 @@ import {
 } from '@/features/profile/model/profile-form-schema'
 import { formatPhoneDisplay } from '@/features/users/lib/phone'
 import { useNotifyApiError } from '@/shared/hooks/useNotifyApiError'
-import { compressAvatarToDataUrl } from '@/shared/lib/avatar'
+import { uploadAvatarFile } from '@/shared/lib/avatar'
+import { resolveMediaUrl } from '@/shared/lib/resolve-media-url'
 
 interface ProfileEditDrawerProps {
   open: boolean
@@ -74,8 +75,8 @@ export function ProfileEditDrawer({ open, user, onClose, onSaved }: ProfileEditD
 
   const handleAvatarUpload = async (file: File, onChange: (value: string) => void) => {
     try {
-      const dataUrl = await compressAvatarToDataUrl(file)
-      onChange(dataUrl)
+      const storageKey = await uploadAvatarFile(file)
+      onChange(storageKey)
     } catch {
       notification.error({
         message: t('users.messages.avatarError'),
@@ -136,7 +137,7 @@ export function ProfileEditDrawer({ open, user, onClose, onSaved }: ProfileEditD
       <Form layout="vertical">
         <Form.Item label={t('users.fields.avatar')}>
           <Space align="center" size="large">
-            <Avatar src={avatar} size={80} icon={<UserOutlined />} />
+            <Avatar src={resolveMediaUrl(avatar)} size={80} icon={<UserOutlined />} />
             <Controller
               name="avatar"
               control={control}

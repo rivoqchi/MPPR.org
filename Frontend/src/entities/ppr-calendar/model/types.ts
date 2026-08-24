@@ -71,6 +71,10 @@ export interface PprCalendarEntryFormValues {
   comment?: string
 }
 
+export interface MovePprCalendarEntryPayload {
+  date: string
+}
+
 export interface CreatePprCalendarEntryPayload extends PprCalendarEntryFormValues {
   structuralUnitId: string
   sectionId?: string

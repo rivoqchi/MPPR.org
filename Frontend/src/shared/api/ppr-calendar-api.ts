@@ -2,6 +2,7 @@ import { api } from '@/shared/api/axios'
 import { unwrapApiResponse } from '@/shared/api/client'
 import type {
   CreatePprCalendarEntryPayload,
+  MovePprCalendarEntryPayload,
   PprCalendarEntry,
   PprCalendarEntryFormValues,
   PprCalendarMonth,
@@ -34,7 +35,7 @@ export async function createPprCalendarEntry(
 
 export async function updatePprCalendarEntry(
   id: string,
-  payload: Partial<PprCalendarEntryFormValues & { entrySectionId?: string }>,
+  payload: Partial<PprCalendarEntryFormValues & MovePprCalendarEntryPayload & { entrySectionId?: string }>,
 ): Promise<PprCalendarEntry> {
   const response = await api.patch(`/ppr-calendar/entries/${id}`, payload)
   return unwrapApiResponse<PprCalendarEntry>(response)

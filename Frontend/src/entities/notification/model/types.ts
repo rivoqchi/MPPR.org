@@ -2,6 +2,7 @@ export type NotificationType =
   | 'ppr_calendar_submitted'
   | 'ppr_calendar_approved'
   | 'ppr_calendar_rejected'
+  | 'ppr_calendar_entry_moved'
   | 'application_created'
   | 'application_workflow_message'
   | 'application_workflow_status'

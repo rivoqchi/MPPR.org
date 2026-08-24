@@ -124,7 +124,8 @@
     "profile": "Mening profilim",
     "fields": {
       "phone": "Telefon raqami",
-      "password": "Parol"
+      "password": "Parol",
+      "rememberMe": "Eslab qolish"
     },
     "placeholders": {
       "password": "Parolingizni kiriting"
@@ -154,7 +155,8 @@
     "loading": "Yuklanmoqda...",
     "yes": "Ha",
     "no": "Yo'q",
-    "refresh": "Yangilash"
+    "refresh": "Yangilash",
+    "forbidden": "Bu sahifani ko'rishga ruxsat yo'q"
   },
   "errors": {
     "unauthorized": "Sessiya tugagan yoki tizimga kirmagansiz. Qayta kiring.",
@@ -497,6 +499,8 @@
     },
     "actions": {
       "add": "Qo'shish",
+      "move": "Ko'chirish",
+      "finishMoving": "Ko'chirishni tugatish",
       "submitMonth": "Oyni tasdiqlash",
       "clearMonth": "Tozalash",
       "executePpr": "PPRni bajarish",
@@ -572,6 +576,18 @@
       "hint": "",
       "yes": "Ha, tasdiqlayman",
       "no": "Yo'q"
+    },
+    "move": {
+      "pickSource": "Ko'chirish uchun avval kalendardan PPR yozuvini tanlang.",
+      "pickTarget": "PPR tanlandi. Endi uni ko'chirish uchun boshqa sanani bosing. Joriy sana: {{date}}.",
+      "selectEntryFirst": "Avval ko'chiriladigan PPR yozuvini tanlang.",
+      "sameMonthOnly": "PPRni faqat joriy oy ichidagi sanaga ko'chirish mumkin.",
+      "sameDate": "Tanlangan PPR allaqachon shu sanada turibdi.",
+      "entrySelected": "PPR tanlandi: {{date}}. Endi yangi sanani bosing.",
+      "confirmTitle": "PPRni ko'chirish",
+      "confirmMessage": "PPRni {{fromDate}} sanadan {{toDate}} sanaga ko'chirasizmi?",
+      "confirmYes": "Ha, ko'chirish",
+      "confirmNo": "Yo'q"
     },
     "incomingApprovalsModal": {
       "title": "Kelgan tasviqlar",
@@ -1027,7 +1043,8 @@
       "originalName": "Masalan: Axborot texnologiyalari xizmati",
       "shortName": "Masalan: ATX",
       "headFullName": "Masalan: Karimov Vali Aliyevich",
-      "headUser": "Foydalanuvchini qidiring va tanlang"
+      "headUser": "Foydalanuvchini qidiring va tanlang (ixtiyoriy)",
+      "headUserEmpty": "Foydalanuvchilar topilmadi"
     },
     "filters": {
       "search": "Qidirish (asl nomi, qisqa nomi, FIO)",
@@ -1076,11 +1093,13 @@
       "fields": {
         "originalName": "Bo'limning asl nomi",
         "shortName": "Qisqa nomi",
+        "headUser": "Bo'lim raxbari",
         "documents": "Fayllar"
       },
       "placeholders": {
         "originalName": "Masalan: Axborot xavfsizligi bo'limi",
-        "shortName": "Masalan: AXB"
+        "shortName": "Masalan: AXB",
+        "headUser": "Foydalanuvchini qidiring va tanlang (ixtiyoriy)"
       },
       "validation": {
         "originalNameMin": "Bo'limning asl nomi kamida 2 ta belgidan iborat bo'lishi kerak",
@@ -1252,6 +1271,7 @@
       "ppr_calendar_submitted": "PPR taqvimi",
       "ppr_calendar_approved": "PPR tasdiqlandi",
       "ppr_calendar_rejected": "PPR rad etildi",
+      "ppr_calendar_entry_moved": "PPR ko'chirildi",
       "application_created": "Yangi dastur",
       "application_workflow_message": "Dastur xabari",
       "application_workflow_status": "Dastur statusi",

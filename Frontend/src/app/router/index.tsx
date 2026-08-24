@@ -3,13 +3,8 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { ProtectedRoute } from '@/app/router/ProtectedRoute'
 import { appRoutes } from '@/app/router/routes'
 import { lazyRoute } from '@/app/router/lazy-route'
+import { LoginPage } from '@/features/auth/ui/LoginPage'
 import { MainLayout } from '@/widgets/layout/MainLayout'
-
-const LoginPage = lazy(() =>
-  import('@/features/auth/ui/LoginPage').then((module) => ({
-    default: module.LoginPage,
-  })),
-)
 
 const UnauthorizedPage = lazy(() =>
   import('@/features/error/ui/UnauthorizedPage').then((module) => ({
@@ -38,7 +33,7 @@ const RouteErrorPage = lazy(() =>
 const router = createBrowserRouter([
   {
     path: '/login',
-    element: lazyRoute(<LoginPage />),
+    element: <LoginPage />,
     errorElement: lazyRoute(<RouteErrorPage />),
   },
   {

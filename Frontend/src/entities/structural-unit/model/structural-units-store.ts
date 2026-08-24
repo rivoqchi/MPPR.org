@@ -137,9 +137,10 @@ export const useStructuralUnitsStore = create<StructuralUnitsState>()((set, get)
 
     const now = new Date().toISOString()
     const updatedSection = createStructuralUnitSection({
-      ...sections[sectionIndex],
       originalName: data.originalName,
       shortName: data.shortName,
+      headUserId: data.headUserId,
+      headFullName: data.headFullName,
       documents: data.documents,
     })
 

@@ -124,7 +124,8 @@
     "profile": "Мой профиль",
     "fields": {
       "phone": "Номер телефона",
-      "password": "Пароль"
+      "password": "Пароль",
+      "rememberMe": "Запомнить меня"
     },
     "placeholders": {
       "password": "Введите пароль"
@@ -154,7 +155,8 @@
     "loading": "Загрузка...",
     "yes": "Да",
     "no": "Нет",
-    "refresh": "Обновить"
+    "refresh": "Обновить",
+    "forbidden": "Нет доступа к этой странице"
   },
   "errors": {
     "unauthorized": "Сессия истекла или вы не вошли в систему. Войдите снова.",
@@ -497,6 +499,8 @@
     },
     "actions": {
       "add": "Добавить",
+      "move": "Переместить",
+      "finishMoving": "Завершить перенос",
       "submitMonth": "Отправить месяц",
       "clearMonth": "Очистить",
       "executePpr": "Выполнить PPR",
@@ -566,6 +570,18 @@
       "hint": "После нажатия «Да, подтверждаю» месяц будет окончательно согласован.",
       "yes": "Да, подтверждаю",
       "no": "Нет"
+    },
+    "move": {
+      "pickSource": "Сначала выберите запись PPR в календаре для переноса.",
+      "pickTarget": "PPR выбран. Теперь нажмите другую дату, чтобы перенести его. Текущая дата: {{date}}.",
+      "selectEntryFirst": "Сначала выберите запись PPR для переноса.",
+      "sameMonthOnly": "PPR можно перенести только на другую дату в пределах текущего месяца.",
+      "sameDate": "Этот PPR уже стоит на этой дате.",
+      "entrySelected": "PPR выбран: {{date}}. Теперь нажмите новую дату.",
+      "confirmTitle": "Перенос PPR",
+      "confirmMessage": "Перенести PPR с {{fromDate}} на {{toDate}}?",
+      "confirmYes": "Да, перенести",
+      "confirmNo": "Нет"
     },
     "incomingApprovalsModal": {
       "title": "Входящие согласования",
@@ -1028,7 +1044,8 @@
       "originalName": "Например: Служба информационных технологий",
       "shortName": "Например: СИТ",
       "headFullName": "Например: Каримов Вали Алиевич",
-      "headUser": "Найдите и выберите пользователя"
+      "headUser": "Найдите и выберите пользователя (необязательно)",
+      "headUserEmpty": "Пользователи не найдены"
     },
     "filters": {
       "search": "Поиск (полное название, краткое название, ФИО)",
@@ -1077,11 +1094,13 @@
       "fields": {
         "originalName": "Полное название отдела",
         "shortName": "Краткое название",
+        "headUser": "Руководитель отдела",
         "documents": "Файлы"
       },
       "placeholders": {
         "originalName": "Например: Отдел информационной безопасности",
-        "shortName": "Например: ОИБ"
+        "shortName": "Например: ОИБ",
+        "headUser": "Найдите и выберите пользователя (необязательно)"
       },
       "validation": {
         "originalNameMin": "Полное название отдела должно содержать минимум 2 символа",
@@ -1253,6 +1272,7 @@
       "ppr_calendar_submitted": "PPR календарь",
       "ppr_calendar_approved": "PPR одобрен",
       "ppr_calendar_rejected": "PPR отклонен",
+      "ppr_calendar_entry_moved": "PPR перенесён",
       "application_created": "Новая заявка",
       "application_workflow_message": "Сообщение по заявке",
       "application_workflow_status": "Статус заявки",

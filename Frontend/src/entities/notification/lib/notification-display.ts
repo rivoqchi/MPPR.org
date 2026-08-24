@@ -5,6 +5,7 @@ export function getNotificationTypeColor(type: NotificationType | string): strin
     case 'ppr_calendar_submitted':
     case 'ppr_calendar_approved':
     case 'ppr_calendar_rejected':
+    case 'ppr_calendar_entry_moved':
       return 'blue'
     case 'application_created':
     case 'application_workflow_message':

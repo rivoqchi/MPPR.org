@@ -304,31 +304,6 @@ export function GuidePage() {
                     <Text type="secondary" style={{ fontSize: 12 }}>
                       {t('guidePage.sizeLabel', { size: formatGuideVideoSizeMb(video.sizeBytes) })}
                     </Text>
-                    {(canEdit(PAGE_KEY) || canDelete(PAGE_KEY)) && (
-                      <Space size={4} style={{ marginTop: 8 }}>
-                        {canEdit(PAGE_KEY) ? (
-                          <Button
-                            size="small"
-                            icon={<EditOutlined />}
-                            onClick={(event) => {
-                              event.stopPropagation()
-                              openEditDrawer(video)
-                            }}
-                          />
-                        ) : null}
-                        {canDelete(PAGE_KEY) ? (
-                          <Button
-                            size="small"
-                            danger
-                            icon={<DeleteOutlined />}
-                            onClick={(event) => {
-                              event.stopPropagation()
-                              handleDelete(video)
-                            }}
-                          />
-                        ) : null}
-                      </Space>
-                    )}
                   </div>
                 ),
               }))}
@@ -355,9 +330,39 @@ export function GuidePage() {
           ) : (
             <>
               <div>
-                <Title level={4} style={{ margin: 0 }}>
-                  {selectedVideo.title}
-                </Title>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                  }}
+                >
+                  <Title level={4} style={{ margin: 0 }}>
+                    {selectedVideo.title}
+                  </Title>
+                  {(canEdit(PAGE_KEY) || canDelete(PAGE_KEY)) && (
+                    <Space size={8} wrap>
+                      {canEdit(PAGE_KEY) ? (
+                        <Button
+                          icon={<EditOutlined />}
+                          onClick={() => openEditDrawer(selectedVideo)}
+                        >
+                          {t('common.edit')}
+                        </Button>
+                      ) : null}
+                      {canDelete(PAGE_KEY) ? (
+                        <Button
+                          danger
+                          icon={<DeleteOutlined />}
+                          onClick={() => handleDelete(selectedVideo)}
+                        >
+                          {t('common.delete')}
+                        </Button>
+                      ) : null}
+                    </Space>
+                  )}
+                </div>
                 <Space wrap style={{ marginTop: 8 }}>
                   <Tag>
                     {t('guidePage.sizeLabel', {

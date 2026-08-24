@@ -47,11 +47,11 @@ export function canSubmitPprCalendarMonth(
 
 export function canClearPprCalendarMonth(
   status: PprCalendarMonthStatus,
-  canCreate: boolean,
+  canDelete: boolean,
   entryCount: number,
   hasMonthId: boolean,
 ): boolean {
-  return status === 'draft' && canCreate && entryCount > 0 && hasMonthId
+  return status === 'draft' && canDelete && entryCount > 0 && hasMonthId
 }
 
 const EXECUTION_GRACE_DAYS = 3

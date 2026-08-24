@@ -11,8 +11,12 @@ export interface PhoneLoginResponse extends AuthTokens {
   user: Omit<User, 'password'>
 }
 
-export async function loginWithPhone(phone: string, password: string): Promise<PhoneLoginResponse> {
-  const response = await api.post('/auth/login-phone', { phone, password })
+export async function loginWithPhone(
+  phone: string,
+  password: string,
+  rememberMe = false,
+): Promise<PhoneLoginResponse> {
+  const response = await api.post('/auth/login-phone', { phone, password, rememberMe })
   return unwrapApiResponse<PhoneLoginResponse>(response)
 }
 

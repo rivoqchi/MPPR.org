@@ -42,7 +42,7 @@ async function persistStructuralUnit(
   const payload = {
     originalName: values.originalName,
     shortName: values.shortName,
-    headUserId: values.headUserId,
+    headUserId: values.headUserId?.trim() || '',
     documents: await toStructuralUnitDocuments(
       values.documents,
       editingStructuralUnit?.documents ?? [],
@@ -209,13 +209,13 @@ export function StructuralUnitDrawer({
           label={t('structuralUnit.fields.headUser')}
           validateStatus={errors.headUserId ? 'error' : undefined}
           help={getError(errors.headUserId?.message)}
-          required
         >
           <Controller
             name="headUserId"
             control={control}
             render={({ field }) => (
               <Select
+                allowClear
                 showSearch
                 optionFilterProp="label"
                 filterOption={(input, option) =>
@@ -225,10 +225,11 @@ export function StructuralUnitDrawer({
                   )
                 }
                 value={field.value || undefined}
-                onChange={field.onChange}
+                onChange={(value) => field.onChange(value ?? '')}
                 onBlur={field.onBlur}
                 placeholder={t('structuralUnit.placeholders.headUser')}
                 options={headUserOptions}
+                notFoundContent={t('structuralUnit.placeholders.headUserEmpty')}
               />
             )}
           />

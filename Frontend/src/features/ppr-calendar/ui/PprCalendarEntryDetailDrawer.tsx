@@ -1,5 +1,5 @@
-import { CheckOutlined, CloseOutlined, PlayCircleOutlined } from '@ant-design/icons'
-import { Alert, Button, Descriptions, Drawer, List, Progress, Space, Tag, Typography } from 'antd'
+import { CheckOutlined, ClockCircleOutlined, PlayCircleOutlined } from '@ant-design/icons'
+import { Alert, Button, Descriptions, Drawer, List, Progress, Space, Tag, Typography, theme } from 'antd'
 import type { UploadFile } from 'antd/es/upload'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -44,6 +44,7 @@ export function PprCalendarEntryDetailDrawer({
   onSaveExecution,
 }: PprCalendarEntryDetailDrawerProps) {
   const { t } = useTranslation()
+  const { token } = theme.useToken()
   const pprTypes = usePprTypesStore((state) => state.pprTypes)
   const objects = useObjectsStore((state) => state.objects)
   const structuralUnits = useStructuralUnitsStore((state) => state.structuralUnits)
@@ -189,6 +190,18 @@ export function PprCalendarEntryDetailDrawer({
             <Alert type="info" showIcon message={t('pprCalendar.messages.executeLockedDetail')} />
           ) : null}
 
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <Text strong>{t('pprCalendar.entryDetail.completion')}</Text>
+              <Text type={isOverdue ? 'danger' : undefined}>{completionPercent}%</Text>
+            </div>
+            <Progress
+              percent={completionPercent}
+              showInfo={false}
+              status={isOverdue ? 'exception' : completionPercent === 100 ? 'success' : 'active'}
+            />
+          </div>
+
           <Descriptions column={1} size="small" bordered>
             <Descriptions.Item label={t('pprCalendar.fields.date')}>{entry.date}</Descriptions.Item>
             <Descriptions.Item label={t('pprCalendar.fields.pprType')}>{pprTypeLabel}</Descriptions.Item>
@@ -215,18 +228,6 @@ export function PprCalendarEntryDetailDrawer({
           ) : null}
 
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-              <Text strong>{t('pprCalendar.entryDetail.completion')}</Text>
-              <Text type={isOverdue ? 'danger' : undefined}>{completionPercent}%</Text>
-            </div>
-            <Progress
-              percent={completionPercent}
-              showInfo={false}
-              status={isOverdue ? 'exception' : completionPercent === 100 ? 'success' : 'active'}
-            />
-          </div>
-
-          <div>
             <Text strong>{t('pprCalendar.fields.objects')}</Text>
             <List
               style={{ marginTop: 12 }}
@@ -235,27 +236,18 @@ export function PprCalendarEntryDetailDrawer({
               renderItem={(objectId) => {
                 const object = objects.find((item) => item.id === objectId)
                 const completed = isObjectExecuted(entry, objectId)
-                const execution = entry.executions?.find((item) => item.objectId === objectId)
 
                 return (
                   <List.Item>
-                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
-                      <Space>
-                        {completed ? (
-                          <CheckOutlined style={{ color: isOverdue ? '#ff4d4f' : '#52c41a' }} />
-                        ) : (
-                          <CloseOutlined style={{ color: '#ff4d4f' }} />
-                        )}
-                        <Text>{object?.shortName ?? objectId}</Text>
-                        <Tag color={completed ? (isOverdue ? 'error' : 'success') : 'default'}>
-                          {completed
-                            ? t('pprCalendar.entryDetail.objectCompleted')
-                            : t('pprCalendar.entryDetail.objectPending')}
-                        </Tag>
-                      </Space>
-                      {execution?.comment ? (
-                        <Text type="secondary">{execution.comment}</Text>
-                      ) : null}
+                    <Space align="center">
+                      {completed ? (
+                        <CheckOutlined
+                          style={{ color: isOverdue ? token.colorError : token.colorSuccess }}
+                        />
+                      ) : (
+                        <ClockCircleOutlined style={{ color: token.colorTextSecondary }} />
+                      )}
+                      <Text>{object?.shortName ?? objectId}</Text>
                     </Space>
                   </List.Item>
                 )

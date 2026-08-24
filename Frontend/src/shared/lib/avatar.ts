@@ -1,7 +1,9 @@
+import { uploadFile } from '@/shared/api/files-api'
+
 const MAX_AVATAR_DIMENSION = 256
 const INITIAL_JPEG_QUALITY = 0.82
 const MIN_JPEG_QUALITY = 0.45
-const MAX_DATA_URL_LENGTH = 180_000
+const MAX_AVATAR_BYTES = 180_000
 
 function loadImageFromFile(file: File): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -22,7 +24,7 @@ function loadImageFromFile(file: File): Promise<HTMLImageElement> {
   })
 }
 
-export async function compressAvatarToDataUrl(file: File): Promise<string> {
+async function compressAvatarToFile(file: File): Promise<File> {
   const image = await loadImageFromFile(file)
   const canvas = document.createElement('canvas')
   const largestSide = Math.max(image.width, image.height)
@@ -40,16 +42,27 @@ export async function compressAvatarToDataUrl(file: File): Promise<string> {
   context.drawImage(image, 0, 0, canvas.width, canvas.height)
 
   let quality = INITIAL_JPEG_QUALITY
-  let dataUrl = canvas.toDataURL('image/jpeg', quality)
+  let blob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob(resolve, 'image/jpeg', quality)
+  })
 
-  while (dataUrl.length > MAX_DATA_URL_LENGTH && quality > MIN_JPEG_QUALITY) {
+  while (blob && blob.size > MAX_AVATAR_BYTES && quality > MIN_JPEG_QUALITY) {
     quality -= 0.08
-    dataUrl = canvas.toDataURL('image/jpeg', quality)
+    blob = await new Promise<Blob | null>((resolve) => {
+      canvas.toBlob(resolve, 'image/jpeg', quality)
+    })
   }
 
-  if (dataUrl.length > MAX_DATA_URL_LENGTH) {
+  if (!blob || blob.size > MAX_AVATAR_BYTES) {
     throw new Error('AVATAR_TOO_LARGE')
   }
 
-  return dataUrl
+  const baseName = file.name.replace(/\.[^.]+$/, '') || 'avatar'
+  return new File([blob], `${baseName}.jpg`, { type: 'image/jpeg' })
+}
+
+export async function uploadAvatarFile(file: File): Promise<string> {
+  const compressed = await compressAvatarToFile(file)
+  const uploaded = await uploadFile(compressed, compressed.name)
+  return uploaded.id
 }

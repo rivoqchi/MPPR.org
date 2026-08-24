@@ -10,6 +10,7 @@ export const structuralUnitSectionFormSchema = z.object({
     .string()
     .trim()
     .min(2, 'structuralUnit.section.validation.shortNameMin'),
+  headUserId: z.string().trim().optional().default(''),
   documents: z.array(
     z.custom<UploadFile>((value) => value !== null && typeof value === 'object'),
   ),

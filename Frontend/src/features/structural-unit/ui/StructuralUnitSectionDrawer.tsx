@@ -1,15 +1,22 @@
 import { UploadOutlined } from '@ant-design/icons'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { App, Button, Drawer, Form, Input, Space, Upload } from 'antd'
+import { App, Button, Drawer, Form, Input, Select, Space, Upload } from 'antd'
 import { useEffect, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import type { StructuralUnitSection } from '@/entities/structural-unit/model/types'
 import { useStructuralUnitsStore } from '@/entities/structural-unit/model/structural-units-store'
+import { useUsersStore } from '@/entities/user/model/users-store'
 import {
   toStructuralUnitDocuments,
   toUploadFiles,
 } from '@/features/structural-unit/lib/document-utils'
+import {
+  buildHeadUserSelectOptions,
+  filterHeadUserSelectOption,
+  resolveHeadFullName,
+  resolveSectionHeadUserId,
+} from '@/features/structural-unit/lib/head-user-select'
 import {
   structuralUnitSectionFormSchema,
   type StructuralUnitSectionFormSchema,
@@ -28,12 +35,16 @@ async function persistSection(
   structuralUnitId: string,
   values: StructuralUnitSectionFormSchema,
   editingSection: StructuralUnitSection | null,
+  users: ReturnType<typeof useUsersStore.getState>['users'],
   addSection: ReturnType<typeof useStructuralUnitsStore.getState>['addSection'],
   updateSection: ReturnType<typeof useStructuralUnitsStore.getState>['updateSection'],
 ) {
+  const headUserId = values.headUserId?.trim() || undefined
   const payload = {
     originalName: values.originalName,
     shortName: values.shortName,
+    headUserId,
+    headFullName: resolveHeadFullName(headUserId, users) || undefined,
     documents: await toStructuralUnitDocuments(
       values.documents,
       editingSection?.documents ?? [],
@@ -71,12 +82,16 @@ export function StructuralUnitSectionDrawer({
   const { notifyApiError } = useNotifyApiError()
   const addSection = useStructuralUnitsStore((state) => state.addSection)
   const updateSection = useStructuralUnitsStore((state) => state.updateSection)
+  const users = useUsersStore((state) => state.users)
   const [isSaving, setIsSaving] = useState(false)
+
+  const headUserOptions = useMemo(() => buildHeadUserSelectOptions(users), [users])
 
   const defaultValues = useMemo<StructuralUnitSectionFormSchema>(
     () => ({
       originalName: '',
       shortName: '',
+      headUserId: '',
       documents: [],
     }),
     [],
@@ -101,13 +116,14 @@ export function StructuralUnitSectionDrawer({
       reset({
         originalName: editingSection.originalName,
         shortName: editingSection.shortName,
+        headUserId: resolveSectionHeadUserId(editingSection, users) ?? '',
         documents: toUploadFiles(editingSection.documents),
       })
       return
     }
 
     reset(defaultValues)
-  }, [open, editingSection, reset, defaultValues])
+  }, [open, editingSection, reset, defaultValues, users])
 
   const handleClose = () => {
     reset(defaultValues)
@@ -128,6 +144,7 @@ export function StructuralUnitSectionDrawer({
         structuralUnitId,
         values,
         editingSection,
+        users,
         addSection,
         updateSection,
       )
@@ -197,6 +214,36 @@ export function StructuralUnitSectionDrawer({
               <Input
                 {...field}
                 placeholder={t('structuralUnit.section.placeholders.shortName')}
+              />
+            )}
+          />
+        </Form.Item>
+
+        <Form.Item
+          label={t('structuralUnit.section.fields.headUser')}
+          validateStatus={errors.headUserId ? 'error' : undefined}
+          help={getError(errors.headUserId?.message)}
+        >
+          <Controller
+            name="headUserId"
+            control={control}
+            render={({ field }) => (
+              <Select
+                allowClear
+                showSearch
+                optionFilterProp="label"
+                filterOption={(input, option) =>
+                  filterHeadUserSelectOption(
+                    input,
+                    headUserOptions.find((item) => item.value === option?.value),
+                  )
+                }
+                value={field.value || undefined}
+                onChange={(value) => field.onChange(value ?? '')}
+                onBlur={field.onBlur}
+                placeholder={t('structuralUnit.section.placeholders.headUser')}
+                options={headUserOptions}
+                notFoundContent={t('structuralUnit.placeholders.headUserEmpty')}
               />
             )}
           />

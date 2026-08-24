@@ -76,8 +76,20 @@ export function StructuralUnitDetail({
       }
     }
 
-    return structuralUnit.headFullName
+    return structuralUnit.headFullName?.trim() || '—'
   }, [structuralUnit, users])
+
+  const resolveSectionHeadLabel = (section: StructuralUnitSection) => {
+    if (section.headUserId) {
+      const headUser = users.find((user) => user.id === section.headUserId)
+
+      if (headUser) {
+        return getUserFullName(headUser)
+      }
+    }
+
+    return section.headFullName?.trim() || undefined
+  }
 
   const sections = useMemo(
     () =>
@@ -229,6 +241,7 @@ export function StructuralUnitDetail({
                       key={section.id}
                       originalName={section.originalName}
                       shortName={section.shortName}
+                      headFullName={resolveSectionHeadLabel(section)}
                       documents={section.documents}
                       onEdit={
                         canManageSections && onEditSection

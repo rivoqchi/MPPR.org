@@ -25,11 +25,21 @@ export function normalizeStructuralUnitSection(
   }
 
   const now = new Date().toISOString()
+  const headUserId =
+    typeof value.headUserId === 'string' && value.headUserId.trim()
+      ? value.headUserId.trim()
+      : undefined
+  const headFullName =
+    typeof value.headFullName === 'string' && value.headFullName.trim()
+      ? value.headFullName.trim()
+      : undefined
 
   return {
     id,
     originalName,
     shortName,
+    ...(headUserId ? { headUserId } : {}),
+    ...(headFullName ? { headFullName } : {}),
     documents: normalizeStructuralUnitDocuments(value.documents),
     createdAt: typeof value.createdAt === 'string' && value.createdAt ? value.createdAt : now,
     updatedAt: typeof value.updatedAt === 'string' && value.updatedAt ? value.updatedAt : now,
@@ -82,14 +92,21 @@ export function mergeStructuralUnitSections(
 }
 
 export function createStructuralUnitSection(
-  data: Pick<StructuralUnitSection, 'originalName' | 'shortName' | 'documents'>,
+  data: Pick<StructuralUnitSection, 'originalName' | 'shortName' | 'documents'> & {
+    headUserId?: string
+    headFullName?: string
+  },
 ): StructuralUnitSection {
   const now = new Date().toISOString()
+  const headUserId = data.headUserId?.trim() || undefined
+  const headFullName = data.headFullName?.trim() || undefined
 
   return {
     id: crypto.randomUUID(),
     originalName: data.originalName.trim(),
     shortName: data.shortName.trim(),
+    ...(headUserId ? { headUserId } : {}),
+    ...(headFullName ? { headFullName } : {}),
     documents: normalizeStructuralUnitDocuments(data.documents),
     createdAt: now,
     updatedAt: now,

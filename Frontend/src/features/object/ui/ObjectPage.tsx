@@ -5,9 +5,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { RegisteredObject } from '@/entities/object/model/types'
 import { useObjectsStore } from '@/entities/object/model/objects-store'
-import { filterByStructuralUnitScope } from '@/entities/user/lib/structural-unit-scope'
 import { useRolePermissions } from '@/shared/hooks/useRolePermissions'
-import { useStructuralUnitScope } from '@/shared/hooks/useStructuralUnitScope'
+import { RequirePageView } from '@/shared/ui/RequirePageView'
 import {
   applyObjectFilters,
   getObjectFilterOptions,
@@ -33,22 +32,11 @@ export function ObjectPage() {
   const objects = useObjectsStore((state) => state.objects)
   const isObjectsHydrated = useObjectsStore((state) => state.isHydrated)
   const deleteObject = useObjectsStore((state) => state.deleteObject)
-  const { currentUser, users, canViewAll } = useStructuralUnitScope()
   const { canCreate, canEdit, canDelete } = useRolePermissions()
   const pageKey = '/registration/objects'
-  const canManage = canCreate(pageKey) || canEdit(pageKey) || canDelete(pageKey)
-
-  const scopedObjects = useMemo(
-    () =>
-      filterByStructuralUnitScope(
-        objects,
-        (item) => item.createdByUserId,
-        currentUser,
-        users,
-        canViewAll,
-      ),
-    [objects, currentUser, users, canViewAll],
-  )
+  const canAdd = canCreate(pageKey)
+  const canModify = canEdit(pageKey)
+  const canRemove = canDelete(pageKey)
 
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editingObject, setEditingObject] = useState<RegisteredObject | null>(null)
@@ -58,23 +46,23 @@ export function ObjectPage() {
   const [originalNameFilter, setOriginalNameFilter] = useState<string>()
   const [page, setPage] = useState(1)
 
-  const filterOptions = useMemo(() => getObjectFilterOptions(scopedObjects), [scopedObjects])
+  const filterOptions = useMemo(() => getObjectFilterOptions(objects), [objects])
 
   const filteredObjects = useMemo(
     () =>
-      applyObjectFilters(scopedObjects, {
+      applyObjectFilters(objects, {
         search: searchValue,
         shortName: shortNameFilter,
         originalName: originalNameFilter,
       }),
-    [scopedObjects, searchValue, shortNameFilter, originalNameFilter],
+    [objects, searchValue, shortNameFilter, originalNameFilter],
   )
 
   const activeObjectId = selectedObjectId ?? filteredObjects[0]?.id
 
   const selectedObject = useMemo(
-    () => scopedObjects.find((item) => item.id === activeObjectId),
-    [activeObjectId, scopedObjects],
+    () => objects.find((item) => item.id === activeObjectId),
+    [activeObjectId, objects],
   )
 
   useEffect(() => {
@@ -178,6 +166,7 @@ export function ObjectPage() {
   }
 
   return (
+    <RequirePageView pageKey={pageKey}>
     <>
       <div style={fullHeightPageStyle}>
         <div style={pageToolbarStyle}>
@@ -215,7 +204,7 @@ export function ObjectPage() {
               )}
             </Space>
 
-            {canManage && (
+            {canAdd && (
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
@@ -256,14 +245,14 @@ export function ObjectPage() {
       <div style={{ ...splitPanelShellStyle, flex: 1 }}>
             <ObjectDetail
               object={selectedObject}
-              canManage={canManage}
+              canManage={canModify || canRemove}
               onEdit={
-                canManage && selectedObject
+                canModify && selectedObject
                   ? () => handleOpenEdit(selectedObject)
                   : undefined
               }
               onDelete={
-                canManage && selectedObject
+                canRemove && selectedObject
                   ? () => handleDelete(selectedObject.id)
                   : undefined
               }
@@ -272,7 +261,7 @@ export function ObjectPage() {
         </div>
       </div>
 
-      {canManage && (
+      {(canAdd || canModify) && (
         <ObjectDrawer
           key={editingObject?.id ?? 'create'}
           open={drawerOpen}
@@ -282,5 +271,6 @@ export function ObjectPage() {
         />
       )}
     </>
+    </RequirePageView>
   )
 }

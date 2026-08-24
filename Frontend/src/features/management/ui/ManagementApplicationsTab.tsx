@@ -27,7 +27,8 @@ export function ManagementApplicationsTab({
   subtab,
   onSubtabChange,
 }: ManagementApplicationsTabProps) {
-  const pageKey = '/applications/submit'
+  const submitPageKey = '/applications/submit'
+  const incomingPageKey = '/applications/incoming'
   const { t } = useTranslation()
   const { notification } = App.useApp()
   const { canCreate, canEdit, canDelete } = useRolePermissions()
@@ -136,20 +137,20 @@ export function ManagementApplicationsTab({
                 applications={submittedApplications}
                 selectedApplicationId={activeSubmittedApplicationId}
                 onSelect={setSelectedSubmittedApplicationId}
-                onSend={canCreate(pageKey) ? handleOpenSend : undefined}
+                onSend={canCreate(submitPageKey) ? handleOpenSend : undefined}
               />
 
               <ApplicationDetail
                 application={selectedSubmittedApplication}
                 onEdit={
-                  canEdit(pageKey) &&
+                  canEdit(submitPageKey) &&
                   selectedSubmittedApplication &&
                   !isApplicationFinalized(selectedSubmittedApplication)
                     ? handleOpenEdit
                     : undefined
                 }
                 onDelete={
-                  canDelete(pageKey) &&
+                  canDelete(submitPageKey) &&
                   selectedSubmittedApplication &&
                   !isApplicationFinalized(selectedSubmittedApplication)
                     ? handleDelete
@@ -168,7 +169,7 @@ export function ManagementApplicationsTab({
               />
             </div>
 
-            {(canCreate(pageKey) || canEdit(pageKey)) && (
+            {(canCreate(submitPageKey) || canEdit(submitPageKey)) && (
               <ApplicationSendDrawer
                 key={editingApplication?.id ?? 'create'}
                 open={drawerOpen}
@@ -203,6 +204,7 @@ export function ManagementApplicationsTab({
               canViewAll={canViewAll}
               onOpenWorkflow={
                 selectedIncomingApplication &&
+                canEdit(incomingPageKey) &&
                 canAccessApplicationWorkflow(
                   selectedIncomingApplication,
                   currentUser?.structuralUnitId,

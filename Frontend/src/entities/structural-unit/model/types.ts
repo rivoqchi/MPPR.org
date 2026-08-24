@@ -10,6 +10,8 @@ export interface StructuralUnitSection {
   id: string
   originalName: string
   shortName: string
+  headFullName?: string
+  headUserId?: string
   documents: StructuralUnitDocument[]
   createdAt: string
   updatedAt: string
@@ -31,7 +33,7 @@ export interface StructuralUnit {
 export interface StructuralUnitFormValues {
   originalName: string
   shortName: string
-  headUserId: string
+  headUserId?: string
   documents: StructuralUnitDocument[]
 }
 
@@ -42,5 +44,7 @@ export interface StructuralUnitPatchPayload extends Partial<StructuralUnitFormVa
 export interface StructuralUnitSectionFormValues {
   originalName: string
   shortName: string
+  headUserId?: string
+  headFullName?: string
   documents: StructuralUnitDocument[]
 }

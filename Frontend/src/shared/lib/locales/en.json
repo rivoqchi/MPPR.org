@@ -124,7 +124,8 @@
     "profile": "My profile",
     "fields": {
       "phone": "Phone number",
-      "password": "Password"
+      "password": "Password",
+      "rememberMe": "Remember me"
     },
     "placeholders": {
       "password": "Enter your password"
@@ -154,7 +155,8 @@
     "loading": "Loading...",
     "yes": "Yes",
     "no": "No",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "forbidden": "You do not have permission to view this page"
   },
   "errors": {
     "unauthorized": "Your session has expired or you are not signed in. Please sign in again.",
@@ -497,6 +499,8 @@
     },
     "actions": {
       "add": "Add",
+      "move": "Move",
+      "finishMoving": "Finish moving",
       "submitMonth": "Submit month",
       "clearMonth": "Clear",
       "executePpr": "Execute PPR",
@@ -566,6 +570,18 @@
       "hint": "After you click Yes, I confirm, the month will be marked as finally approved.",
       "yes": "Yes, I confirm",
       "no": "No"
+    },
+    "move": {
+      "pickSource": "First select a PPR entry from the calendar to move.",
+      "pickTarget": "PPR selected. Now click another date to move it. Current date: {{date}}.",
+      "selectEntryFirst": "First select the PPR entry to move.",
+      "sameMonthOnly": "PPR can only be moved to another date within the current month.",
+      "sameDate": "This PPR is already on that date.",
+      "entrySelected": "PPR selected: {{date}}. Now click the new date.",
+      "confirmTitle": "Move PPR",
+      "confirmMessage": "Move this PPR from {{fromDate}} to {{toDate}}?",
+      "confirmYes": "Yes, move",
+      "confirmNo": "No"
     },
     "incomingApprovalsModal": {
       "title": "Incoming approvals",
@@ -1028,7 +1044,8 @@
       "originalName": "For example: Information technology service",
       "shortName": "For example: ITS",
       "headFullName": "For example: Karimov Vali Aliyevich",
-      "headUser": "Search and select a user"
+      "headUser": "Search and select a user (optional)",
+      "headUserEmpty": "No users found"
     },
     "filters": {
       "search": "Search (full name, short name, head name)",
@@ -1077,11 +1094,13 @@
       "fields": {
         "originalName": "Section full name",
         "shortName": "Short name",
+        "headUser": "Section head",
         "documents": "Files"
       },
       "placeholders": {
         "originalName": "For example: Information security section",
-        "shortName": "For example: ISS"
+        "shortName": "For example: ISS",
+        "headUser": "Search and select a user (optional)"
       },
       "validation": {
         "originalNameMin": "Section full name must be at least 2 characters",
@@ -1253,6 +1272,7 @@
       "ppr_calendar_submitted": "PPR calendar",
       "ppr_calendar_approved": "PPR approved",
       "ppr_calendar_rejected": "PPR rejected",
+      "ppr_calendar_entry_moved": "PPR moved",
       "application_created": "New application",
       "application_workflow_message": "Application message",
       "application_workflow_status": "Application status",

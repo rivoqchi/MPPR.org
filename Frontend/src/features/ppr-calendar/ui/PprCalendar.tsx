@@ -1,5 +1,5 @@
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
-import { Button, Tag, theme } from 'antd'
+import { Button, theme } from 'antd'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -17,8 +17,6 @@ import {
   isPprExecutionOverdue,
 } from '@/features/ppr-calendar/lib/calendar-entries'
 
-const MAX_VISIBLE_EVENTS = 2
-
 interface PprCalendarProps {
   month: PprCalendarMonth | null
   visibleMonth: Dayjs
@@ -27,6 +25,8 @@ interface PprCalendarProps {
   canSubmit: boolean
   canClear: boolean
   showExecutionProgress: boolean
+  isMoveMode?: boolean
+  movingEntryId?: string | null
   onDateClick: (date: Dayjs) => void
   onEntryClick: (entry: PprCalendarEntry) => void
   onSubmitMonth: () => void
@@ -49,6 +49,8 @@ export function PprCalendar({
   canSubmit,
   canClear,
   showExecutionProgress,
+  isMoveMode = false,
+  movingEntryId = null,
   onDateClick,
   onEntryClick,
   onSubmitMonth,
@@ -78,17 +80,6 @@ export function PprCalendar({
     () => groupEntriesByDate(month?.entries ?? []),
     [month?.entries],
   )
-
-  const statusColor = useMemo(() => {
-    switch (month?.status) {
-      case 'approved':
-        return 'success'
-      case 'pending_approval':
-        return 'processing'
-      default:
-        return 'default'
-    }
-  }, [month?.status])
 
   return (
     <div
@@ -139,22 +130,17 @@ export function PprCalendar({
             </Button>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-            <div
-              style={{
-                fontSize: 28,
-                fontWeight: 700,
-                lineHeight: 1.2,
-                textAlign: 'center',
-                color: token.colorText,
-                textTransform: 'capitalize',
-              }}
-            >
-              {monthTitle}
-            </div>
-            {month?.id && month.status ? (
-              <Tag color={statusColor}>{t(`pprCalendar.status.${month.status}`)}</Tag>
-            ) : null}
+          <div
+            style={{
+              fontSize: 28,
+              fontWeight: 700,
+              lineHeight: 1.2,
+              textAlign: 'center',
+              color: token.colorText,
+              textTransform: 'capitalize',
+            }}
+          >
+            {monthTitle}
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8 }}>
@@ -225,8 +211,6 @@ export function PprCalendar({
               const normalizedDate = date.startOf('day')
               const dateKey = normalizedDate.format('YYYY-MM-DD')
               const dayEntries = getEntriesForDate(entriesByDate, dateKey)
-              const visibleEntries = dayEntries.slice(0, MAX_VISIBLE_EVENTS)
-              const hiddenCount = dayEntries.length - visibleEntries.length
               const isCurrentMonth = normalizedDate.month() === visibleMonth.month()
               const isToday = normalizedDate.isSame(today, 'day')
               const isWeekend = normalizedDate.day() === 0 || normalizedDate.day() === 6
@@ -295,11 +279,12 @@ export function PprCalendar({
                       minHeight: 0,
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: 4,
-                      overflow: 'hidden',
+                      gap: 3,
+                      overflowY: 'auto',
+                      overflowX: 'hidden',
                     }}
                   >
-                    {visibleEntries.map((entry) => {
+                    {dayEntries.map((entry) => {
                       const pprType = pprTypes.find((item) => item.id === entry.pprTypeId)
                       const label = pprType?.shortName ?? entry.pprTypeId
                       const entryPercent = showExecutionProgress
@@ -325,21 +310,33 @@ export function PprCalendar({
                           title={entry.comment || label}
                           style={{
                             width: '100%',
-                            border: isOverdue ? `1px solid ${token.colorErrorBorder}` : 'none',
+                            border:
+                              movingEntryId === entry.id
+                                ? `1px solid ${token.colorPrimary}`
+                                : isOverdue
+                                  ? `1px solid ${token.colorErrorBorder}`
+                                  : 'none',
                             borderRadius: token.borderRadiusSM,
                             margin: 0,
-                            padding: '4px 6px',
+                            padding: '3px 5px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
                             gap: 6,
                             cursor: 'pointer',
-                            background: chipBackground,
+                            background:
+                              movingEntryId === entry.id
+                                ? token.colorPrimaryBorderHover
+                                : chipBackground,
                             color: chipColor,
                             fontSize: 11,
                             fontWeight: 600,
                             lineHeight: 1.3,
                             minWidth: 0,
+                            boxShadow:
+                              isMoveMode && movingEntryId === entry.id
+                                ? `0 0 0 1px ${token.colorPrimaryBorder}`
+                                : 'none',
                           }}
                         >
                           <span
@@ -375,19 +372,6 @@ export function PprCalendar({
                         </button>
                       )
                     })}
-
-                    {hiddenCount > 0 ? (
-                      <span
-                        style={{
-                          fontSize: 11,
-                          fontWeight: 600,
-                          color: token.colorTextSecondary,
-                          paddingLeft: 4,
-                        }}
-                      >
-                        {t('pprCalendar.moreEvents', { count: hiddenCount })}
-                      </span>
-                    ) : null}
                   </div>
                 </div>
               )

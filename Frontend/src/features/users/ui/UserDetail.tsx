@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
 import { useRoleName } from '@/entities/role/lib/use-role-name'
 import { useStructuralUnitName } from '@/entities/structural-unit/lib/use-structural-unit-name'
+import { resolveMediaUrl } from '@/shared/lib/resolve-media-url'
 import { getUserFullName, getUserInitials } from '@/entities/user/lib/user-display'
 import type { User } from '@/entities/user/model/types'
 import { useUserSectionAssignmentLabel } from '@/entities/user/lib/use-user-section-assignment-label'
@@ -114,7 +115,7 @@ export function UserDetail({
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
           {user.avatar ? (
             <Image
-              src={user.avatar}
+              src={resolveMediaUrl(user.avatar)}
               alt={getUserFullName(user)}
               width={160}
               height={160}

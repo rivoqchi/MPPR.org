@@ -6,9 +6,13 @@ import { canAccessApplicationWorkflow } from '@/features/application-workflow/li
 import { ApplicationChatList } from '@/features/application-submit/ui/ApplicationChatList'
 import { ApplicationDetail } from '@/features/application-submit/ui/ApplicationDetail'
 import { useApplicationsHydration } from '@/shared/hooks/useApplicationsHydration'
+import { useRolePermissions } from '@/shared/hooks/useRolePermissions'
 import { useStructuralUnitScope } from '@/shared/hooks/useStructuralUnitScope'
 import { fullHeightPageStyle, splitPageRowStyle } from '@/shared/lib/page-layout'
+import { RequirePageView } from '@/shared/ui/RequirePageView'
 import { SubmitApplicationPageSkeleton } from '@/features/application-submit/ui/SubmitApplicationPageSkeleton'
+
+const PAGE_KEY = '/applications/incoming'
 
 export function IncomingApplicationPage() {
   const navigate = useNavigate()
@@ -16,6 +20,7 @@ export function IncomingApplicationPage() {
   const [searchParams] = useSearchParams()
   const applicationIdFromUrl = searchParams.get('applicationId')
   const { currentUser, canViewAll } = useStructuralUnitScope()
+  const { canEdit } = useRolePermissions()
   const isApplicationsHydrated = useApplicationsHydration()
   const applications = useApplicationsStore((state) => state.applications)
   const [selectedApplicationId, setSelectedApplicationId] = useState<string>()
@@ -51,43 +56,46 @@ export function IncomingApplicationPage() {
   }
 
   if (workflowOutlet) {
-    return workflowOutlet
+    return <RequirePageView pageKey={PAGE_KEY}>{workflowOutlet}</RequirePageView>
   }
 
   return (
-    <div style={fullHeightPageStyle}>
-      <div style={splitPageRowStyle}>
-        <ApplicationChatList
-          applications={incomingApplications}
-          selectedApplicationId={activeApplicationId}
-          onSelect={setSelectedApplicationId}
-          listTitleKey="applicationIncoming.listTitle"
-          emptyListKey="applicationIncoming.emptyList"
-          emptySearchKey="applicationIncoming.emptySearch"
-        />
+    <RequirePageView pageKey={PAGE_KEY}>
+      <div style={fullHeightPageStyle}>
+        <div style={splitPageRowStyle}>
+          <ApplicationChatList
+            applications={incomingApplications}
+            selectedApplicationId={activeApplicationId}
+            onSelect={setSelectedApplicationId}
+            listTitleKey="applicationIncoming.listTitle"
+            emptyListKey="applicationIncoming.emptyList"
+            emptySearchKey="applicationIncoming.emptySearch"
+          />
 
-        <ApplicationDetail
-          application={selectedApplication}
-          detailTitleKey="applicationIncoming.detailTitle"
-          selectItemKey="applicationIncoming.selectItem"
-          mode="incoming"
-          viewerStructuralUnitId={currentUser?.structuralUnitId}
-          canViewAll={canViewAll}
-          onOpenWorkflow={
-            selectedApplication &&
-            canAccessApplicationWorkflow(
-              selectedApplication,
-              currentUser?.structuralUnitId,
-              canViewAll,
-            )
-              ? () =>
-                  navigate(
-                    `workflow/${selectedApplication.id}?returnApplicationId=${selectedApplication.id}`,
-                  )
-              : undefined
-          }
-        />
+          <ApplicationDetail
+            application={selectedApplication}
+            detailTitleKey="applicationIncoming.detailTitle"
+            selectItemKey="applicationIncoming.selectItem"
+            mode="incoming"
+            viewerStructuralUnitId={currentUser?.structuralUnitId}
+            canViewAll={canViewAll}
+            onOpenWorkflow={
+              selectedApplication &&
+              canEdit(PAGE_KEY) &&
+              canAccessApplicationWorkflow(
+                selectedApplication,
+                currentUser?.structuralUnitId,
+                canViewAll,
+              )
+                ? () =>
+                    navigate(
+                      `workflow/${selectedApplication.id}?returnApplicationId=${selectedApplication.id}`,
+                    )
+                : undefined
+            }
+          />
+        </div>
       </div>
-    </div>
+    </RequirePageView>
   )
 }

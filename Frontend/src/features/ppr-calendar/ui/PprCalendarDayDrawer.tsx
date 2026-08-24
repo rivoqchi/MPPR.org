@@ -1,5 +1,5 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
-import { Button, Card, Drawer, Empty, Popconfirm, Progress, Space, theme } from 'antd'
+import { Button, Card, Drawer, Empty, Popconfirm, Progress, Space, theme, Tooltip } from 'antd'
 import type { Dayjs } from 'dayjs'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -164,17 +164,19 @@ export function PprCalendarDayDrawer({
                   {(canEdit || canDelete) ? (
                     <Space
                       wrap
-                      size={8}
+                      size={4}
                       onClick={(event) => event.stopPropagation()}
                     >
                       {canEdit ? (
-                        <Button
-                          size="small"
-                          icon={<EditOutlined />}
-                          onClick={() => onEdit(entry)}
-                        >
-                          {t('common.edit')}
-                        </Button>
+                        <Tooltip title={t('common.edit')}>
+                          <Button
+                            size="small"
+                            type="text"
+                            icon={<EditOutlined />}
+                            aria-label={t('common.edit')}
+                            onClick={() => onEdit(entry)}
+                          />
+                        </Tooltip>
                       ) : null}
                       {canDelete ? (
                         <Popconfirm
@@ -184,9 +186,15 @@ export function PprCalendarDayDrawer({
                           okButtonProps={{ danger: true }}
                           onConfirm={() => void onDelete(entry)}
                         >
-                          <Button size="small" danger icon={<DeleteOutlined />}>
-                            {t('common.delete')}
-                          </Button>
+                          <Tooltip title={t('common.delete')}>
+                            <Button
+                              size="small"
+                              type="text"
+                              danger
+                              icon={<DeleteOutlined />}
+                              aria-label={t('common.delete')}
+                            />
+                          </Tooltip>
                         </Popconfirm>
                       ) : null}
                     </Space>

@@ -9,6 +9,7 @@ export const loginFormSchema = z.object({
     })
     .transform((value) => `${PHONE_PREFIX}${getPhoneDigits(value)}`),
   password: z.string().min(1, { message: 'auth.validation.passwordRequired' }),
+  rememberMe: z.boolean(),
 })
 
 export type LoginFormSchema = z.infer<typeof loginFormSchema>

@@ -80,6 +80,7 @@ export function StructuralUnitDocumentList({
 interface StructuralUnitSectionCardProps {
   originalName: string
   shortName: string
+  headFullName?: string
   documents: StructuralUnitDocument[]
   onEdit?: () => void
   onPreview: (document: StructuralUnitDocument) => void
@@ -88,6 +89,7 @@ interface StructuralUnitSectionCardProps {
 export function StructuralUnitSectionCard({
   originalName,
   shortName,
+  headFullName,
   documents,
   onEdit,
   onPreview,
@@ -116,6 +118,11 @@ export function StructuralUnitSectionCard({
         <div style={{ minWidth: 0 }}>
           <div style={{ fontWeight: 600 }}>{originalName}</div>
           <div style={{ color: token.colorTextSecondary, marginTop: 4 }}>{shortName}</div>
+          {headFullName ? (
+            <div style={{ color: token.colorTextSecondary, marginTop: 4 }}>
+              {t('structuralUnit.section.fields.headUser')}: {headFullName}
+            </div>
+          ) : null}
         </div>
 
         {onEdit && (

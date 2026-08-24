@@ -1,5 +1,5 @@
-import { CheckOutlined, InboxOutlined } from '@ant-design/icons'
-import { Alert, App, Button, Select, Space, Tag } from 'antd'
+import { CheckOutlined, InboxOutlined, SwapOutlined } from '@ant-design/icons'
+import { Alert, App, Button, Modal, Select, Space, Tag, theme } from 'antd'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -37,10 +37,12 @@ import { usePprCalendarHydration } from '@/shared/hooks/usePprCalendarHydration'
 import { useRolePermissions } from '@/shared/hooks/useRolePermissions'
 import { useStructuralUnitScope } from '@/shared/hooks/useStructuralUnitScope'
 import { fullHeightPageStyle } from '@/shared/lib/page-layout'
+import { RequirePageView } from '@/shared/ui/RequirePageView'
 import { getAccessToken } from '@/shared/lib/token-storage'
 import { useNotifyApiError } from '@/shared/hooks/useNotifyApiError'
 
 const PAGE_KEY = '/ppr-calendar'
+const FILTER_CONTROL_MIN_WIDTH = 260
 
 type ScopeSelectValue = `structure` | `section:${string}`
 
@@ -63,6 +65,7 @@ function scopeToSectionId(scope: PprCalendarViewScope): string | undefined {
 export function PprCalendarPage() {
   const { t } = useTranslation()
   const { message } = App.useApp()
+  const { token } = theme.useToken()
   const { notifyApiError } = useNotifyApiError()
   const isHydrated = usePprCalendarHydration()
   const revisionHint = t('pprCalendar.messages.revisionHint')
@@ -105,6 +108,11 @@ export function PprCalendarPage() {
   const [isApproving, setIsApproving] = useState(false)
   const [calendarUnitIdOverride, setCalendarUnitIdOverride] = useState<string | undefined>()
   const [reviewMonthId, setReviewMonthId] = useState<string | null>(null)
+  const [isMoveMode, setIsMoveMode] = useState(false)
+  const [movingEntry, setMovingEntry] = useState<PprCalendarEntry | null>(null)
+  const [moveTargetDate, setMoveTargetDate] = useState<Dayjs | null>(null)
+  const [moveConfirmOpen, setMoveConfirmOpen] = useState(false)
+  const [isMoving, setIsMoving] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
 
   const structuralUnit = useMemo(
@@ -208,7 +216,7 @@ export function PprCalendarPage() {
       return activeMonth
     }
 
-    if (!isHeadOfSelectedUnit && activeMonth && (canCreate(PAGE_KEY) || canEdit(PAGE_KEY))) {
+    if (activeMonth && (canCreate(PAGE_KEY) || canEdit(PAGE_KEY))) {
       return activeMonth
     }
 
@@ -252,6 +260,9 @@ export function PprCalendarPage() {
 
   const isEditable = canManageMonth && !isBrowseOnly
 
+  const canManageEntries = isEditable && !isReviewingPending
+  const canMoveEntries = Boolean(displayedMonth?.id)
+
   const canSubmit = useMemo(
     () =>
       !isBrowseOnly &&
@@ -270,11 +281,11 @@ export function PprCalendarPage() {
       !isReviewingPending &&
       canClearPprCalendarMonth(
         activeMonth?.status ?? 'draft',
-        canCreate(PAGE_KEY),
+        canDelete(PAGE_KEY),
         activeMonth?.entries.length ?? 0,
         Boolean(activeMonth?.id),
       ),
-    [activeMonth, canCreate, isBrowseOnly, isReviewingPending],
+    [activeMonth, canDelete, isBrowseOnly, isReviewingPending],
   )
 
   useEffect(() => {
@@ -428,9 +439,40 @@ export function PprCalendarPage() {
       return
     }
 
+    if (isMoveMode) {
+      if (!movingEntry) {
+        message.info(t('pprCalendar.move.selectEntryFirst'))
+        return
+      }
+
+      if (
+        date.year() !== (activeMonth?.year ?? visibleMonth.year()) ||
+        date.month() + 1 !== (activeMonth?.month ?? visibleMonth.month() + 1)
+      ) {
+        message.warning(t('pprCalendar.move.sameMonthOnly'))
+        return
+      }
+
+      if (date.format('YYYY-MM-DD') === movingEntry.date) {
+        message.info(t('pprCalendar.move.sameDate'))
+        return
+      }
+
+      setMoveTargetDate(date)
+      setMoveConfirmOpen(true)
+      return
+    }
+
     setSelectedDate(date)
     setDayDrawerOpen(true)
   }
+
+  const resetMoveMode = useCallback(() => {
+    setIsMoveMode(false)
+    setMovingEntry(null)
+    setMoveTargetDate(null)
+    setMoveConfirmOpen(false)
+  }, [])
 
   const handleAddEntry = () => {
     setEditingEntry(null)
@@ -438,11 +480,24 @@ export function PprCalendarPage() {
   }
 
   const handleEditEntry = (entry: PprCalendarEntry) => {
+    setSelectedDate(dayjs(entry.date))
     setEditingEntry(entry)
+    setEntryModalOpen(false)
+    setSelectedEntry(null)
     setEntryDrawerOpen(true)
   }
 
   const handleOpenEntry = (entry: PprCalendarEntry) => {
+    if (isMoveMode) {
+      setMovingEntry(entry)
+      setSelectedEntry(null)
+      setEntryModalOpen(false)
+      setDetailEntry(null)
+      setEntryDetailOpen(false)
+      message.success(t('pprCalendar.move.entrySelected', { date: entry.date }))
+      return
+    }
+
     if (isApprovedMonth) {
       setDetailEntry(entry)
       setEntryDetailOpen(true)
@@ -477,7 +532,6 @@ export function PprCalendarPage() {
       message.success(t('pprCalendar.messages.executionSuccess'))
     } catch (error) {
       notifyApiError(error)
-      throw error
     } finally {
       setIsExecuting(false)
     }
@@ -505,6 +559,24 @@ export function PprCalendarPage() {
 
   const handleDeleteEntry = async (entry: PprCalendarEntry) => {
     await removeEntry(entry.id)
+  }
+
+  const handleMoveEntry = async () => {
+    if (!movingEntry || !moveTargetDate) {
+      return
+    }
+
+    setIsMoving(true)
+
+    try {
+      await updateEntry(movingEntry.id, { date: moveTargetDate.format('YYYY-MM-DD') })
+      message.success(t('pprCalendar.messages.updateSuccess'))
+      resetMoveMode()
+    } catch (error) {
+      notifyApiError(error)
+    } finally {
+      setIsMoving(false)
+    }
   }
 
   const handleSubmitMonth = async () => {
@@ -601,6 +673,7 @@ export function PprCalendarPage() {
   }
 
   return (
+    <RequirePageView pageKey={PAGE_KEY}>
     <div
       style={{
         ...fullHeightPageStyle,
@@ -610,12 +683,12 @@ export function PprCalendarPage() {
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-        <Space wrap>
+        <Space wrap align="center" size="middle">
           {canViewAll ? (
             <Select
               showSearch
               optionFilterProp="label"
-              style={{ minWidth: 260 }}
+              style={{ minWidth: FILTER_CONTROL_MIN_WIDTH }}
               value={calendarUnitId}
               options={structuralUnitOptions}
               placeholder={t('pprCalendar.filters.structuralUnit')}
@@ -623,13 +696,53 @@ export function PprCalendarPage() {
             />
           ) : null}
           <Select<ScopeSelectValue>
-            style={{ minWidth: 260 }}
+            style={{ minWidth: FILTER_CONTROL_MIN_WIDTH }}
             value={scopeToSelectValue(viewScope)}
             options={scopeOptions}
             onChange={(value) => setViewScope(selectValueToScope(value))}
           />
-          {displayedMonth?.id && displayedMonth.status ? (
-            <Tag color={displayedMonth.status === 'approved' ? 'success' : 'processing'}>
+          {canMoveEntries ? (
+            <Button
+              icon={<SwapOutlined />}
+              type={isMoveMode ? 'primary' : 'default'}
+              onClick={() => {
+                if (isMoveMode) {
+                  resetMoveMode()
+                  return
+                }
+
+                setIsMoveMode(true)
+                setDayDrawerOpen(false)
+                setEntryDrawerOpen(false)
+                setEntryModalOpen(false)
+                setEntryDetailOpen(false)
+              }}
+            >
+              {isMoveMode ? t('pprCalendar.actions.finishMoving') : t('pprCalendar.actions.move')}
+            </Button>
+          ) : null}
+          {displayedMonth?.status ? (
+            <Tag
+              color={
+                displayedMonth.status === 'approved'
+                  ? 'success'
+                  : displayedMonth.status === 'pending_approval'
+                    ? 'processing'
+                    : 'default'
+              }
+              style={{
+                minWidth: FILTER_CONTROL_MIN_WIDTH,
+                height: token.controlHeight,
+                margin: 0,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: token.fontSize,
+                lineHeight: 1,
+                paddingInline: 11,
+                borderRadius: token.borderRadius,
+              }}
+            >
               {t(`pprCalendar.status.${displayedMonth.status}`)}
             </Tag>
           ) : null}
@@ -654,6 +767,18 @@ export function PprCalendarPage() {
         <Alert type="info" showIcon message={t('pprCalendar.messages.reviewHint')} />
       ) : null}
 
+      {isMoveMode ? (
+        <Alert
+          type="info"
+          showIcon
+          message={
+            movingEntry
+              ? t('pprCalendar.move.pickTarget', { date: movingEntry.date })
+              : t('pprCalendar.move.pickSource')
+          }
+        />
+      ) : null}
+
       {canClear && revisionHint ? (
         <Alert type="warning" showIcon message={revisionHint} />
       ) : null}
@@ -667,6 +792,8 @@ export function PprCalendarPage() {
           canSubmit={canSubmit}
           canClear={canClear}
           showExecutionProgress={isApprovedMonth}
+          isMoveMode={isMoveMode}
+          movingEntryId={movingEntry?.id ?? null}
           onDateClick={handleDateClick}
           onEntryClick={handleOpenEntry}
           onSubmitMonth={() => setSubmitModalOpen(true)}
@@ -678,9 +805,9 @@ export function PprCalendarPage() {
         open={dayDrawerOpen}
         date={selectedDate}
         entries={dayEntries}
-        canCreate={isEditable && canCreate(PAGE_KEY) && !isReviewingPending}
-        canEdit={isEditable && canEdit(PAGE_KEY) && !isReviewingPending}
-        canDelete={isEditable && canDelete(PAGE_KEY) && !isReviewingPending}
+        canCreate={canManageEntries && canCreate(PAGE_KEY)}
+        canEdit={canManageEntries && canEdit(PAGE_KEY)}
+        canDelete={canManageEntries && canDelete(PAGE_KEY)}
         onClose={() => setDayDrawerOpen(false)}
         onAdd={handleAddEntry}
         onEdit={handleEditEntry}
@@ -704,8 +831,8 @@ export function PprCalendarPage() {
       <PprCalendarEntryModal
         open={entryModalOpen}
         entry={selectedEntry}
-        canEdit={isEditable && canEdit(PAGE_KEY) && !isReviewingPending}
-        canDelete={isEditable && canDelete(PAGE_KEY) && !isReviewingPending}
+        canEdit={canManageEntries && canEdit(PAGE_KEY)}
+        canDelete={canManageEntries && canDelete(PAGE_KEY)}
         onClose={() => {
           setEntryModalOpen(false)
           setSelectedEntry(null)
@@ -713,6 +840,32 @@ export function PprCalendarPage() {
         onEdit={handleEditEntry}
         onDelete={handleDeleteEntry}
       />
+
+      <Modal
+        open={moveConfirmOpen}
+        confirmLoading={isMoving}
+        title={t('pprCalendar.move.confirmTitle')}
+        okText={t('pprCalendar.move.confirmYes')}
+        cancelText={t('pprCalendar.move.confirmNo')}
+        onCancel={() => {
+          if (isMoving) {
+            return
+          }
+
+          setMoveConfirmOpen(false)
+          setMoveTargetDate(null)
+        }}
+        onOk={() => void handleMoveEntry()}
+      >
+        {movingEntry && moveTargetDate ? (
+          <div>
+            {t('pprCalendar.move.confirmMessage', {
+              fromDate: movingEntry.date,
+              toDate: moveTargetDate.format('YYYY-MM-DD'),
+            })}
+          </div>
+        ) : null}
+      </Modal>
 
       <PprCalendarEntryDetailDrawer
         open={entryDetailOpen}
@@ -759,5 +912,6 @@ export function PprCalendarPage() {
         onReject={handleRejectPendingMonth}
       />
     </div>
+    </RequirePageView>
   )
 }

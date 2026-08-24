@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import type {
   CreatePprCalendarEntryPayload,
   ExecutePprCalendarEntryPayload,
+  MovePprCalendarEntryPayload,
   PprCalendarEntryFormValues,
   PprCalendarMonth,
   PprCalendarMonthQuery,
@@ -30,7 +31,7 @@ interface PprCalendarState {
   createEntry: (payload: CreatePprCalendarEntryPayload) => Promise<PprCalendarMonth>
   updateEntry: (
     id: string,
-    payload: Partial<PprCalendarEntryFormValues & { entrySectionId?: string }>,
+    payload: Partial<PprCalendarEntryFormValues & MovePprCalendarEntryPayload & { entrySectionId?: string }>,
   ) => Promise<void>
   removeEntry: (id: string) => Promise<void>
   submitMonth: (id: string) => Promise<PprCalendarMonth>

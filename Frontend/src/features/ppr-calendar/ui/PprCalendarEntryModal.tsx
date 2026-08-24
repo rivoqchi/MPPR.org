@@ -7,6 +7,9 @@ import { useObjectsStore } from '@/entities/object/model/objects-store'
 import { usePprTypesStore } from '@/entities/ppr-type/model/ppr-types-store'
 import { useStructuralUnitsStore } from '@/entities/structural-unit/model/structural-units-store'
 
+/** Day drawer (1000) ustida ko'rinishi kerak */
+const ENTRY_MODAL_Z_INDEX = 1050
+
 interface PprCalendarEntryModalProps {
   open: boolean
   entry: PprCalendarEntry | null
@@ -84,6 +87,7 @@ export function PprCalendarEntryModal({
   return (
     <Modal
       open={open}
+      zIndex={ENTRY_MODAL_Z_INDEX}
       title={t('pprCalendar.entryModal.title')}
       onCancel={onClose}
       footer={
@@ -102,14 +106,7 @@ export function PprCalendarEntryModal({
             </Popconfirm>
           ) : null}
           {canEdit && entry ? (
-            <Button
-              type="primary"
-              icon={<EditOutlined />}
-              onClick={() => {
-                onEdit(entry)
-                onClose()
-              }}
-            >
+            <Button type="primary" icon={<EditOutlined />} onClick={() => onEdit(entry)}>
               {t('common.edit')}
             </Button>
           ) : null}

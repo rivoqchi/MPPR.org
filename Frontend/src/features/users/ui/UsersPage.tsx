@@ -12,12 +12,13 @@ import { useNotifyApiError } from '@/shared/hooks/useNotifyApiError'
 import { useRolePermissions } from '@/shared/hooks/useRolePermissions'
 import { useStructuralUnitScope } from '@/shared/hooks/useStructuralUnitScope'
 import { fullHeightPageStyle, splitPageRowStyle } from '@/shared/lib/page-layout'
+import { RequirePageView } from '@/shared/ui/RequirePageView'
 
 export function UsersPage() {
   const { t } = useTranslation()
   const { notification } = App.useApp()
   const { notifyApiError } = useNotifyApiError()
-  const { canCreate, canEdit } = useRolePermissions()
+  const { canCreate, canEdit, canDelete } = useRolePermissions()
   const { currentUser, canViewAll } = useStructuralUnitScope()
   const pageKey = '/management/users'
   const isUsersHydrated = useUsersStore((state) => state.isHydrated)
@@ -124,6 +125,7 @@ export function UsersPage() {
   }
 
   return (
+    <RequirePageView pageKey={pageKey}>
     <>
       <div style={fullHeightPageStyle}>
         <div style={splitPageRowStyle}>
@@ -138,7 +140,7 @@ export function UsersPage() {
             user={selectedUser}
             onEdit={canEdit(pageKey) && selectedUser ? handleOpenEdit : undefined}
             onToggleActive={canEdit(pageKey) && selectedUser ? handleToggleActive : undefined}
-            onDelete={canEdit(pageKey) && selectedUser ? handleDelete : undefined}
+            onDelete={canDelete(pageKey) && selectedUser ? handleDelete : undefined}
             isActiveToggleLoading={isActiveToggleLoading}
             isDeleteLoading={isDeleteLoading}
             canToggleActive={selectedUser?.id !== currentUser?.id}
@@ -157,5 +159,6 @@ export function UsersPage() {
         />
       )}
     </>
+    </RequirePageView>
   )
 }

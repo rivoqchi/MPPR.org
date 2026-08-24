@@ -11,6 +11,7 @@ import { useRolePermissions } from '@/shared/hooks/useRolePermissions'
 import { useApplicationsHydration } from '@/shared/hooks/useApplicationsHydration'
 import { useStructuralUnitScope } from '@/shared/hooks/useStructuralUnitScope'
 import { fullHeightPageStyle, splitPageRowStyle } from '@/shared/lib/page-layout'
+import { RequirePageView } from '@/shared/ui/RequirePageView'
 import { canAccessApplicationWorkflow } from '@/features/application-workflow/lib/workflow-access'
 import { isApplicationFinalized } from '@/features/application-submit/lib/application-status'
 import { SubmitApplicationPageSkeleton } from '@/features/application-submit/ui/SubmitApplicationPageSkeleton'
@@ -108,10 +109,11 @@ export function SubmitApplicationPage() {
   }
 
   if (workflowOutlet) {
-    return workflowOutlet
+    return <RequirePageView pageKey={pageKey}>{workflowOutlet}</RequirePageView>
   }
 
   return (
+    <RequirePageView pageKey={pageKey}>
     <>
       <div style={fullHeightPageStyle}>
         <div style={splitPageRowStyle}>
@@ -161,5 +163,6 @@ export function SubmitApplicationPage() {
         />
       )}
     </>
+    </RequirePageView>
   )
 }

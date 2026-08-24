@@ -16,16 +16,22 @@ import { PprTypeDetailModal } from '@/features/ppr-type/ui/PprTypeDetailModal'
 import { PprTypeDrawer } from '@/features/ppr-type/ui/PprTypeDrawer'
 import { PprTypePageSkeleton } from '@/features/ppr-type/ui/PprTypePageSkeleton'
 import { HighlightText } from '@/shared/ui/HighlightText'
+import { useRolePermissions } from '@/shared/hooks/useRolePermissions'
+import { RequirePageView } from '@/shared/ui/RequirePageView'
 import { useStructuralUnitScope } from '@/shared/hooks/useStructuralUnitScope'
 import { scrollablePageStyle, pageToolbarActionStyle, pageToolbarStyle } from '@/shared/lib/page-layout'
 
 const { Text } = Typography
+const PAGE_KEY = '/registration/ppr-type'
 
 export function PprTypePage() {
   const { t } = useTranslation()
   const pprTypes = usePprTypesStore((state) => state.pprTypes)
   const isPprTypesHydrated = usePprTypesStore((state) => state.isHydrated)
   const { currentUser, users, canViewAll } = useStructuralUnitScope()
+  const { canCreate, canEdit } = useRolePermissions()
+  const canAdd = canCreate(PAGE_KEY)
+  const canModify = canEdit(PAGE_KEY)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [detailOpen, setDetailOpen] = useState(false)
   const [selectedPprType, setSelectedPprType] = useState<PprType | null>(null)
@@ -148,7 +154,8 @@ export function PprTypePage() {
         key: 'actions',
         width: 120,
         align: 'center',
-        render: (_, record) => (
+        render: (_, record) =>
+          canModify ? (
           <Button
             type="link"
             icon={<EditOutlined />}
@@ -162,10 +169,10 @@ export function PprTypePage() {
           >
             {t('pprType.edit')}
           </Button>
-        ),
+          ) : null,
       },
     ],
-    [getOwnerLabel, searchValue, showOwnerColumn, t],
+    [canModify, getOwnerLabel, searchValue, showOwnerColumn, t],
   )
 
   const handleOpenCreate = () => {
@@ -215,6 +222,7 @@ export function PprTypePage() {
   }
 
   return (
+    <RequirePageView pageKey={PAGE_KEY}>
     <div style={scrollablePageStyle}>
       <div style={pageToolbarStyle}>
         <Space wrap>
@@ -254,14 +262,16 @@ export function PprTypePage() {
           )}
         </Space>
 
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          style={pageToolbarActionStyle}
-          onClick={handleOpenCreate}
-        >
-          {t('pprType.add')}
-        </Button>
+        {canAdd && (
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            style={pageToolbarActionStyle}
+            onClick={handleOpenCreate}
+          >
+            {t('pprType.add')}
+          </Button>
+        )}
       </div>
 
       <Table<PprType>
@@ -284,15 +294,18 @@ export function PprTypePage() {
           selectedPprType ? getOwnerLabel(selectedPprType.createdByUserId) : undefined
         }
         onClose={handleCloseDetail}
-        onEdit={handleEditFromDetail}
+        onEdit={canModify ? handleEditFromDetail : undefined}
       />
 
-      <PprTypeDrawer
-        open={drawerOpen}
-        editingPprType={editingPprType}
-        onClose={handleCloseDrawer}
-        onSaved={handleSaved}
-      />
+      {(canAdd || canModify) && (
+        <PprTypeDrawer
+          open={drawerOpen}
+          editingPprType={editingPprType}
+          onClose={handleCloseDrawer}
+          onSaved={handleSaved}
+        />
+      )}
     </div>
+    </RequirePageView>
   )
 }

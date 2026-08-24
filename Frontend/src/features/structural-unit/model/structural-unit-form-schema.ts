@@ -10,7 +10,7 @@ export const structuralUnitFormSchema = z.object({
     .string()
     .trim()
     .min(2, 'structuralUnit.validation.shortNameMin'),
-  headUserId: z.string().trim().min(1, 'structuralUnit.validation.headRequired'),
+  headUserId: z.string().trim().optional().default(''),
   documents: z.array(
     z.custom<UploadFile>((value) => value !== null && typeof value === 'object'),
   ),

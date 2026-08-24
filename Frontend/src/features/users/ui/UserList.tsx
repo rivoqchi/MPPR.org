@@ -2,6 +2,7 @@ import { PlusOutlined, UserOutlined } from '@ant-design/icons'
 import { Avatar, Button, Empty, Input, Pagination, theme } from 'antd'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { resolveMediaUrl } from '@/shared/lib/resolve-media-url'
 import { getUserFullName, getUserInitials } from '@/entities/user/lib/user-display'
 import type { User } from '@/entities/user/model/types'
 import { filterUsers } from '@/features/users/lib/filter-users'
@@ -126,7 +127,7 @@ export function UserList({ users, selectedUserId, onSelect, onAdd }: UserListPro
                   opacity: user.isActive === false ? 0.55 : 1,
                 }}
               >
-                <Avatar src={user.avatar} size="large" icon={<UserOutlined />}>
+                <Avatar src={resolveMediaUrl(user.avatar)} size="large" icon={<UserOutlined />}>
                   {!user.avatar ? getUserInitials(user) : null}
                 </Avatar>
 
