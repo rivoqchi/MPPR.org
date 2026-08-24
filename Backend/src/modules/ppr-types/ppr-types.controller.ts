@@ -46,13 +46,17 @@ export class PprTypesController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update PPR type' })
-  update(@Param('id') id: string, @Body() dto: UpdatePprTypeDto) {
-    return this.pprTypesService.update(id, dto);
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdatePprTypeDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.pprTypesService.update(id, dto, user.id);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete PPR type' })
-  remove(@Param('id') id: string) {
-    return this.pprTypesService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.pprTypesService.remove(id, user.id);
   }
 }

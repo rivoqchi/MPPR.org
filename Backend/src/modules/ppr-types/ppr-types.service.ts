@@ -1,5 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import {
+  assertPagePermission,
+  PAGE_KEYS,
+} from '../../common/lib/assert-page-permission';
 import { RealtimeService } from '../../shared/realtime/realtime.service';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { ErrorCode } from '../../common/constants/error-codes';
@@ -39,17 +43,22 @@ export class PprTypesService {
     return this.mapPprType(pprType);
   }
 
-  async create(dto: CreatePprTypeDto, createdByUserId?: string) {
-    const creator = createdByUserId
-      ? await this.prisma.user.findUnique({
-          where: { id: createdByUserId },
-          select: {
-            structuralUnitId: true,
-            withoutSectionAccess: true,
-            structuralUnitSectionId: true,
-          },
-        })
-      : null;
+  async create(dto: CreatePprTypeDto, createdByUserId: string) {
+    await assertPagePermission(
+      this.prisma,
+      createdByUserId,
+      PAGE_KEYS.pprType,
+      'canCreate',
+    );
+
+    const creator = await this.prisma.user.findUnique({
+      where: { id: createdByUserId },
+      select: {
+        structuralUnitId: true,
+        withoutSectionAccess: true,
+        structuralUnitSectionId: true,
+      },
+    });
 
     const scopeType = creator?.withoutSectionAccess ? 'structure' : 'section';
     const sectionId =
@@ -73,7 +82,8 @@ export class PprTypesService {
     return this.mapPprType(pprType);
   }
 
-  async update(id: string, dto: UpdatePprTypeDto) {
+  async update(id: string, dto: UpdatePprTypeDto, actorId: string) {
+    await assertPagePermission(this.prisma, actorId, PAGE_KEYS.pprType, 'canEdit');
     await this.findOne(id);
 
     const pprType = await this.prisma.pprType.update({
@@ -95,7 +105,8 @@ export class PprTypesService {
     return this.mapPprType(pprType);
   }
 
-  async remove(id: string) {
+  async remove(id: string, actorId: string) {
+    await assertPagePermission(this.prisma, actorId, PAGE_KEYS.pprType, 'canDelete');
     const pprType = await this.findOne(id);
 
     await this.prisma.pprType.delete({ where: { id } });

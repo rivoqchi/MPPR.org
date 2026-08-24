@@ -6,6 +6,10 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { ErrorCode } from '../../common/constants/error-codes';
+import {
+  assertPagePermission,
+  PAGE_KEYS,
+} from '../../common/lib/assert-page-permission';
 import { AuthenticatedUser } from '../../common/types';
 import { RealtimeService } from '../../shared/realtime/realtime.service';
 import { PrismaService } from '../../shared/prisma/prisma.service';
@@ -195,6 +199,14 @@ export class ApplicationWorkflowService {
     dto: UpdateWorkflowStatusDto,
     user: AuthenticatedUser,
   ) {
+    await assertPagePermission(
+      this.prisma,
+      user.id,
+      PAGE_KEYS.applicationsIncoming,
+      'canEdit',
+      ErrorCode.APPLICATION_WORKFLOW_FORBIDDEN,
+    );
+
     const existingApplication = await this.assertWorkflowAccess(applicationId, user);
     this.assertWorkflowNotFinalized(existingApplication.workflowStatus);
 

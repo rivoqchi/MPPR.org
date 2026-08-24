@@ -6,6 +6,10 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import {
+  assertPagePermission,
+  PAGE_KEYS,
+} from '../../common/lib/assert-page-permission';
 import { RealtimeService } from '../../shared/realtime/realtime.service';
 import { ErrorCode } from '../../common/constants/error-codes';
 import { PrismaService } from '../../shared/prisma/prisma.service';
@@ -109,7 +113,14 @@ export class UsersService {
     return this.enrichUser(user);
   }
 
-  async create(dto: CreateUserDto) {
+  async create(dto: CreateUserDto, actorId: string) {
+    await assertPagePermission(
+      this.prisma,
+      actorId,
+      PAGE_KEYS.managementUsers,
+      'canCreate',
+    );
+
     const existing = await this.prisma.user.findUnique({
       where: { phone: dto.phone },
     });
@@ -157,6 +168,25 @@ export class UsersService {
 
     if (dto.isActive === false && actorId && actorId === id) {
       throw new BadRequestException(ErrorCode.USER_CANNOT_DEACTIVATE_SELF);
+    }
+
+    const isSelfUpdate = Boolean(actorId && actorId === id);
+    const hasAdminFields =
+      dto.roleId !== undefined ||
+      dto.structuralUnitId !== undefined ||
+      dto.withoutSectionAccess !== undefined ||
+      dto.structuralUnitSectionId !== undefined ||
+      dto.isActive !== undefined ||
+      dto.tabelNumber !== undefined ||
+      dto.position !== undefined;
+
+    if (actorId && !(isSelfUpdate && !hasAdminFields)) {
+      await assertPagePermission(
+        this.prisma,
+        actorId,
+        PAGE_KEYS.managementUsers,
+        'canEdit',
+      );
     }
 
     if (dto.phone) {
@@ -280,7 +310,14 @@ export class UsersService {
     return this.enrichUser(user);
   }
 
-  async remove(id: string) {
+  async remove(id: string, actorId: string) {
+    await assertPagePermission(
+      this.prisma,
+      actorId,
+      PAGE_KEYS.managementUsers,
+      'canDelete',
+    );
+
     const user = await this.findOne(id);
 
     await this.prisma.user.delete({ where: { id } });

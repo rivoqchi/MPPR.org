@@ -48,13 +48,17 @@ export class RegisteredObjectsController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update registered object' })
-  update(@Param('id') id: string, @Body() dto: UpdateRegisteredObjectDto) {
-    return this.registeredObjectsService.update(id, dto);
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateRegisteredObjectDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.registeredObjectsService.update(id, dto, user.id);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete registered object' })
-  remove(@Param('id') id: string) {
-    return this.registeredObjectsService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.registeredObjectsService.remove(id, user.id);
   }
 }

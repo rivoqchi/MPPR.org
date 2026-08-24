@@ -37,8 +37,11 @@ export class UsersController {
 
   @Post()
   @ApiOperation({ summary: 'Create user' })
-  create(@Body() dto: CreateUserDto) {
-    return this.usersService.create(dto);
+  create(
+    @Body() dto: CreateUserDto,
+    @CurrentUser() actor: AuthenticatedUser,
+  ) {
+    return this.usersService.create(dto, actor.id);
   }
 
   @Patch(':id')
@@ -53,7 +56,10 @@ export class UsersController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete user' })
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  remove(
+    @Param('id') id: string,
+    @CurrentUser() actor: AuthenticatedUser,
+  ) {
+    return this.usersService.remove(id, actor.id);
   }
 }

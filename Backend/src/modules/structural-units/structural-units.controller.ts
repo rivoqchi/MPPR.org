@@ -48,13 +48,17 @@ export class StructuralUnitsController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update structural unit' })
-  update(@Param('id') id: string, @Body() dto: UpdateStructuralUnitDto) {
-    return this.structuralUnitsService.update(id, dto);
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateStructuralUnitDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.structuralUnitsService.update(id, dto, user.id);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete structural unit' })
-  remove(@Param('id') id: string) {
-    return this.structuralUnitsService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.structuralUnitsService.remove(id, user.id);
   }
 }

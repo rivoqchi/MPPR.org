@@ -43,13 +43,17 @@ export class ApplicationsController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update application' })
-  update(@Param('id') id: string, @Body() dto: UpdateApplicationDto) {
-    return this.applicationsService.update(id, dto);
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateApplicationDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.applicationsService.update(id, dto, user.id);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete application' })
-  remove(@Param('id') id: string) {
-    return this.applicationsService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.applicationsService.remove(id, user.id);
   }
 }

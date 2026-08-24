@@ -1,6 +1,10 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, StructuralUnit } from '@prisma/client';
 import { ErrorCode } from '../../common/constants/error-codes';
+import {
+  assertPagePermission,
+  PAGE_KEYS,
+} from '../../common/lib/assert-page-permission';
 import { RealtimeService } from '../../shared/realtime/realtime.service';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { CreateStructuralUnitDto } from './dto/create-structural-unit.dto';
@@ -21,9 +25,18 @@ export class StructuralUnitsService {
     };
   }
 
-  private async resolveHeadUser(headUserId: string) {
+  private async resolveHeadUser(headUserId?: string | null) {
+    const normalizedHeadUserId = headUserId?.trim() || null;
+
+    if (!normalizedHeadUserId) {
+      return {
+        headUserId: null as string | null,
+        headFullName: '',
+      };
+    }
+
     const user = await this.prisma.user.findUnique({
-      where: { id: headUserId },
+      where: { id: normalizedHeadUserId },
       select: {
         id: true,
         firstName: true,
@@ -59,7 +72,14 @@ export class StructuralUnitsService {
     return this.mapStructuralUnit(unit);
   }
 
-  async create(dto: CreateStructuralUnitDto, createdByUserId?: string) {
+  async create(dto: CreateStructuralUnitDto, createdByUserId: string) {
+    await assertPagePermission(
+      this.prisma,
+      createdByUserId,
+      PAGE_KEYS.structuralUnits,
+      'canCreate',
+    );
+
     const head = await this.resolveHeadUser(dto.headUserId);
 
     const unit = await this.prisma.structuralUnit.create({
@@ -79,7 +99,13 @@ export class StructuralUnitsService {
     return this.mapStructuralUnit(unit);
   }
 
-  async update(id: string, dto: UpdateStructuralUnitDto) {
+  async update(id: string, dto: UpdateStructuralUnitDto, actorId: string) {
+    await assertPagePermission(
+      this.prisma,
+      actorId,
+      PAGE_KEYS.structuralUnits,
+      'canEdit',
+    );
     await this.findOne(id);
 
     const head =
@@ -92,7 +118,7 @@ export class StructuralUnitsService {
           originalName: dto.originalName,
         }),
         ...(dto.shortName !== undefined && { shortName: dto.shortName }),
-        ...(head && {
+        ...(head !== null && {
           headUserId: head.headUserId,
           headFullName: head.headFullName,
         }),
@@ -110,7 +136,13 @@ export class StructuralUnitsService {
     return this.mapStructuralUnit(unit);
   }
 
-  async remove(id: string) {
+  async remove(id: string, actorId: string) {
+    await assertPagePermission(
+      this.prisma,
+      actorId,
+      PAGE_KEYS.structuralUnits,
+      'canDelete',
+    );
     const unit = await this.findOne(id);
 
     const assignedUsersCount = await this.prisma.user.count({

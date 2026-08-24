@@ -1,6 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { ErrorCode } from '../../common/constants/error-codes';
+import {
+  assertPagePermission,
+  PAGE_KEYS,
+} from '../../common/lib/assert-page-permission';
 import { RealtimeService } from '../../shared/realtime/realtime.service';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { CreateRegisteredObjectDto } from './dto/create-registered-object.dto';
@@ -31,7 +35,14 @@ export class RegisteredObjectsService {
     return object;
   }
 
-  async create(dto: CreateRegisteredObjectDto, createdByUserId?: string) {
+  async create(dto: CreateRegisteredObjectDto, createdByUserId: string) {
+    await assertPagePermission(
+      this.prisma,
+      createdByUserId,
+      PAGE_KEYS.objects,
+      'canCreate',
+    );
+
     const object = await this.prisma.registeredObject.create({
       data: {
         originalName: dto.originalName,
@@ -47,7 +58,8 @@ export class RegisteredObjectsService {
     return object;
   }
 
-  async update(id: string, dto: UpdateRegisteredObjectDto) {
+  async update(id: string, dto: UpdateRegisteredObjectDto, actorId: string) {
+    await assertPagePermission(this.prisma, actorId, PAGE_KEYS.objects, 'canEdit');
     await this.findOne(id);
 
     const object = await this.prisma.registeredObject.update({
@@ -71,7 +83,8 @@ export class RegisteredObjectsService {
     return object;
   }
 
-  async remove(id: string) {
+  async remove(id: string, actorId: string) {
+    await assertPagePermission(this.prisma, actorId, PAGE_KEYS.objects, 'canDelete');
     const object = await this.findOne(id);
 
     await this.prisma.registeredObject.delete({ where: { id } });

@@ -4,6 +4,8 @@ interface SectionInput {
   id?: unknown;
   originalName?: unknown;
   shortName?: unknown;
+  headFullName?: unknown;
+  headUserId?: unknown;
   documents?: unknown;
   createdAt?: unknown;
   updatedAt?: unknown;
@@ -58,6 +60,12 @@ export function normalizeStructuralUnitSections(value: unknown): Prisma.InputJso
         id,
         originalName,
         shortName,
+        ...(typeof section.headUserId === 'string' && section.headUserId.trim()
+          ? { headUserId: section.headUserId.trim() }
+          : {}),
+        ...(typeof section.headFullName === 'string' && section.headFullName.trim()
+          ? { headFullName: section.headFullName.trim() }
+          : {}),
         documents: normalizeDocuments(section.documents),
         createdAt:
           typeof section.createdAt === 'string' && section.createdAt

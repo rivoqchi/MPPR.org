@@ -1,6 +1,10 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { ErrorCode } from '../../common/constants/error-codes';
+import {
+  assertPagePermission,
+  PAGE_KEYS,
+} from '../../common/lib/assert-page-permission';
 import { RealtimeService } from '../../shared/realtime/realtime.service';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -49,6 +53,13 @@ export class ApplicationsService {
   }
 
   async create(dto: CreateApplicationDto, createdByUserId: string) {
+    await assertPagePermission(
+      this.prisma,
+      createdByUserId,
+      PAGE_KEYS.applicationsSubmit,
+      'canCreate',
+    );
+
     const creator = await this.prisma.user.findUnique({
       where: { id: createdByUserId },
       select: {
@@ -106,7 +117,14 @@ export class ApplicationsService {
     return mapped;
   }
 
-  async update(id: string, dto: UpdateApplicationDto) {
+  async update(id: string, dto: UpdateApplicationDto, actorId: string) {
+    await assertPagePermission(
+      this.prisma,
+      actorId,
+      PAGE_KEYS.applicationsSubmit,
+      'canEdit',
+    );
+
     const existing = await this.prisma.application.findUnique({ where: { id } });
 
     if (!existing) {
@@ -166,7 +184,14 @@ export class ApplicationsService {
     return mapped;
   }
 
-  async remove(id: string) {
+  async remove(id: string, actorId: string) {
+    await assertPagePermission(
+      this.prisma,
+      actorId,
+      PAGE_KEYS.applicationsSubmit,
+      'canDelete',
+    );
+
     const existing = await this.prisma.application.findUnique({ where: { id } });
 
     if (!existing) {

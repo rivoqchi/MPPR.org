@@ -51,7 +51,12 @@ export class AuthService {
 
     this.loginAttemptGuard.reset(phoneKey);
 
-    const tokens = await this.generateTokens(user.id, user.phone, user.roleId);
+    const tokens = await this.generateTokens(
+      user.id,
+      user.phone,
+      user.roleId,
+      dto.rememberMe === true,
+    );
 
     const publicUser = await this.prisma.user.findUnique({
       where: { id: user.id },
@@ -88,7 +93,12 @@ export class AuthService {
         throw new UnauthorizedException(ErrorCode.INVALID_REFRESH_TOKEN);
       }
 
-      return this.generateTokens(user.id, user.phone, user.roleId);
+      return this.generateTokens(
+        user.id,
+        user.phone,
+        user.roleId,
+        payload.rememberMe !== false,
+      );
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw error;
@@ -107,26 +117,23 @@ export class AuthService {
     return { message: 'Logged out successfully' };
   }
 
-  private async generateTokens(userId: string, phone: string, roleId: string) {
-    const payload: JwtPayload = { sub: userId, phone, roleId };
-
-    const accessExpires = this.configService.get<string>(
-      'JWT_ACCESS_EXPIRES',
-      '365d',
-    ) as `${number}${'s' | 'm' | 'h' | 'd'}`;
-    const refreshExpires = this.configService.get<string>(
-      'JWT_REFRESH_EXPIRES',
-      '365d',
-    ) as `${number}${'s' | 'm' | 'h' | 'd'}`;
+  private async generateTokens(
+    userId: string,
+    phone: string,
+    roleId: string,
+    rememberMe: boolean,
+  ) {
+    const payload: JwtPayload = { sub: userId, phone, roleId, rememberMe };
+    const expiresIn = (rememberMe ? '365d' : '30d') as `${number}${'s' | 'm' | 'h' | 'd'}`;
 
     const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
-      expiresIn: accessExpires,
+      expiresIn,
     });
 
     const refreshToken = this.jwtService.sign(payload, {
       secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-      expiresIn: refreshExpires,
+      expiresIn,
       jwtid: randomBytes(16).toString('hex'),
     });
 

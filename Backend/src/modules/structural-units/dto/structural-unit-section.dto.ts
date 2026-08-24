@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsString,
   MinLength,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { StoredDocumentDto } from '../../../common/dto/stored-document.dto';
@@ -24,6 +25,18 @@ export class StructuralUnitSectionDto {
   @IsString()
   @MinLength(1)
   shortName!: string;
+
+  @ApiPropertyOptional({ example: 'Ali Valiyev' })
+  @IsOptional()
+  @IsString()
+  headFullName?: string;
+
+  @ApiPropertyOptional({ example: 'user-uuid', nullable: true })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== '' && value != null)
+  @IsString()
+  @MinLength(1)
+  headUserId?: string | null;
 
   @ApiPropertyOptional({ type: [StoredDocumentDto] })
   @IsOptional()

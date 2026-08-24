@@ -1,9 +1,12 @@
 import {
-  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { ErrorCode } from '../../common/constants/error-codes';
+import {
+  assertPagePermission,
+  PAGE_KEYS,
+} from '../../common/lib/assert-page-permission';
 import { Prisma } from '@prisma/client';
 import { RealtimeService } from '../../shared/realtime/realtime.service';
 import { PrismaService } from '../../shared/prisma/prisma.service';
@@ -52,7 +55,14 @@ export class AppRolesService {
     };
   }
 
-  async create(dto: CreateAppRoleDto) {
+  async create(dto: CreateAppRoleDto, actorId: string) {
+    await assertPagePermission(
+      this.prisma,
+      actorId,
+      PAGE_KEYS.managementRoles,
+      'canCreate',
+    );
+
     const permissions = normalizePermissions(dto.permissions);
     const documents = normalizeDocuments(dto.documents);
 
@@ -76,7 +86,14 @@ export class AppRolesService {
     };
   }
 
-  async update(id: string, dto: UpdateAppRoleDto) {
+  async update(id: string, dto: UpdateAppRoleDto, actorId: string) {
+    await assertPagePermission(
+      this.prisma,
+      actorId,
+      PAGE_KEYS.managementRoles,
+      'canEdit',
+    );
+
     const previousRole = await this.findOne(id);
     const previousPermissions = normalizePermissions(previousRole.permissions);
 
@@ -131,7 +148,14 @@ export class AppRolesService {
     };
   }
 
-  async remove(id: string) {
+  async remove(id: string, actorId: string) {
+    await assertPagePermission(
+      this.prisma,
+      actorId,
+      PAGE_KEYS.managementRoles,
+      'canDelete',
+    );
+
     const role = await this.findOne(id);
 
     await this.prisma.appRole.delete({ where: { id } });

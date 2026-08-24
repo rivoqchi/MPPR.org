@@ -93,6 +93,12 @@ export class CreatePprCalendarEntryDto {
 }
 
 export class UpdatePprCalendarEntryDto {
+  @ApiPropertyOptional({ example: '2026-07-15' })
+  @IsOptional()
+  @IsString()
+  @MinLength(10)
+  date?: string;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()

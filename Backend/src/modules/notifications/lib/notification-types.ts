@@ -2,6 +2,7 @@ export const NOTIFICATION_TYPES = {
   PPR_CALENDAR_SUBMITTED: 'ppr_calendar_submitted',
   PPR_CALENDAR_APPROVED: 'ppr_calendar_approved',
   PPR_CALENDAR_REJECTED: 'ppr_calendar_rejected',
+  PPR_CALENDAR_ENTRY_MOVED: 'ppr_calendar_entry_moved',
   APPLICATION_CREATED: 'application_created',
   APPLICATION_WORKFLOW_MESSAGE: 'application_workflow_message',
   APPLICATION_WORKFLOW_STATUS: 'application_workflow_status',

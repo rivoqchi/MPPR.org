@@ -30,6 +30,8 @@ import { AuthModule } from './modules/auth/auth.module';
 
 import { GuideVideosModule } from './modules/guide-videos/guide-videos.module';
 
+import { FilesModule } from './modules/files/files.module';
+
 import { HealthModule } from './modules/health/health.module';
 
 import { NotificationsModule } from './modules/notifications/notifications.module';
@@ -144,6 +146,8 @@ import { RedisModule } from './shared/redis/redis.module';
     ErrorLogsModule,
 
     GuideVideosModule,
+
+    FilesModule,
 
     WebsocketModule,
 

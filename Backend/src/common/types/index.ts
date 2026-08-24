@@ -33,6 +33,7 @@ export interface JwtPayload {
   sub: string;
   phone: string;
   roleId: string;
+  rememberMe?: boolean;
 }
 
 export interface AuthenticatedUser {

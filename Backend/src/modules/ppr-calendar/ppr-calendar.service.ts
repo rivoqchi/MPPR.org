@@ -6,6 +6,10 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { ErrorCode } from '../../common/constants/error-codes';
+import {
+  assertPagePermission,
+  PAGE_KEYS,
+} from '../../common/lib/assert-page-permission';
 import type { AuthenticatedUser } from '../../common/types';
 import { RealtimeService } from '../../shared/realtime/realtime.service';
 import { PrismaService } from '../../shared/prisma/prisma.service';
@@ -337,6 +341,13 @@ export class PprCalendarService {
   }
 
   async createEntry(dto: CreatePprCalendarEntryDto, user: AuthenticatedUser) {
+    await assertPagePermission(
+      this.prisma,
+      user.id,
+      PAGE_KEYS.pprCalendar,
+      'canCreate',
+      ErrorCode.PPR_CALENDAR_FORBIDDEN,
+    );
     await this.assertUnitMemberAccess(user.id, dto.structuralUnitId);
     this.validateEntryScope(dto.scopeType, dto.entrySectionId);
 
@@ -389,10 +400,27 @@ export class PprCalendarService {
   }
 
   async updateEntry(id: string, dto: UpdatePprCalendarEntryDto, user: AuthenticatedUser) {
+    const isDateOnlyMove = this.isDateOnlyMove(dto);
+
+    await assertPagePermission(
+      this.prisma,
+      user.id,
+      PAGE_KEYS.pprCalendar,
+      isDateOnlyMove ? 'canView' : 'canEdit',
+      ErrorCode.PPR_CALENDAR_FORBIDDEN,
+    );
     const entry = await this.getEntryOrThrow(id);
 
-    await this.assertUnitMemberAccess(user.id, entry.month.structuralUnitId);
-    this.assertMonthEditable(entry.month.status);
+    if (isDateOnlyMove) {
+      await this.assertUnitViewAccess(user.id, entry.month.structuralUnitId);
+    } else {
+      await this.assertUnitMemberAccess(user.id, entry.month.structuralUnitId);
+      this.assertMonthEditable(entry.month.status);
+    }
+
+    if (dto.date && !this.isDateInMonth(dto.date, entry.month.year, entry.month.month)) {
+      throw new BadRequestException(ErrorCode.VALIDATION_FAILED);
+    }
 
     if (dto.scopeType) {
       this.validateEntryScope(dto.scopeType, dto.entrySectionId);
@@ -419,6 +447,7 @@ export class PprCalendarService {
     await this.prisma.pprCalendarEntry.update({
       where: { id },
       data: {
+        ...(dto.date !== undefined && { date: dto.date }),
         ...(dto.pprTypeId !== undefined && { pprTypeId: dto.pprTypeId }),
         ...(dto.objectIds !== undefined && {
           objectIds: normalizeObjectIds(dto.objectIds) as unknown as Prisma.InputJsonValue,
@@ -441,10 +470,170 @@ export class PprCalendarService {
       throw new NotFoundException(ErrorCode.PPR_CALENDAR_ENTRY_NOT_FOUND);
     }
 
+    if (dto.date && dto.date !== entry.date) {
+      await this.notifyEntryMoved({
+        actorUserId: user.id,
+        fromDate: entry.date,
+        toDate: dto.date,
+        month: updatedMonth,
+        entrySectionId: updatedEntry.sectionId,
+        entryScopeType: updatedEntry.scopeType,
+      });
+    }
+
     return updatedEntry;
   }
 
+  private isDateOnlyMove(dto: UpdatePprCalendarEntryDto) {
+    return (
+      dto.date !== undefined &&
+      dto.pprTypeId === undefined &&
+      dto.objectIds === undefined &&
+      dto.scopeType === undefined &&
+      dto.entrySectionId === undefined &&
+      dto.comment === undefined
+    );
+  }
+
+  private isDateInMonth(date: string, year: number, month: number) {
+    const [dateYear, dateMonth] = date.split('-').map(Number);
+
+    return dateYear === year && dateMonth === month;
+  }
+
+  private async notifyEntryMoved(params: {
+    actorUserId: string;
+    fromDate: string;
+    toDate: string;
+    month: {
+      id: string;
+      year: number;
+      month: number;
+      structuralUnitId: string;
+      sectionId: string | null;
+    };
+    entrySectionId?: string;
+    entryScopeType: string;
+  }) {
+    const actor = await this.getUserContext(params.actorUserId);
+    const actorName = `${actor.firstName} ${actor.lastName}`.trim();
+    const unit = await this.getStructuralUnitOrThrow(params.month.structuralUnitId);
+    const recipientIds = new Set<string>();
+
+    const unitHeadId = await this.resolveHeadUserId(unit);
+
+    if (unitHeadId) {
+      recipientIds.add(unitHeadId);
+    }
+
+    const sectionId =
+      params.month.sectionId ||
+      (params.entryScopeType === 'section' ? params.entrySectionId : undefined);
+
+    if (sectionId) {
+      const sectionHeadId = await this.resolveSectionHeadUserId(unit, sectionId);
+
+      if (sectionHeadId) {
+        recipientIds.add(sectionHeadId);
+      }
+    }
+
+    recipientIds.delete(params.actorUserId);
+
+    if (recipientIds.size === 0) {
+      return;
+    }
+
+    const linkPath = buildPprCalendarLinkPath({
+      year: params.month.year,
+      month: params.month.month,
+      structuralUnitId: params.month.structuralUnitId,
+      sectionId: params.month.sectionId,
+    });
+
+    await this.notificationsService.createMany(
+      [...recipientIds].map((userId) => ({
+        userId,
+        type: NOTIFICATION_TYPES.PPR_CALENDAR_ENTRY_MOVED,
+        title: 'PPR ko‘chirildi',
+        message: `${actorName} PPR ni ${params.fromDate} sanadan ${params.toDate} sanaga ko‘chirdi.`,
+        linkPath,
+        metadata: {
+          monthId: params.month.id,
+          year: params.month.year,
+          month: params.month.month,
+          structuralUnitId: params.month.structuralUnitId,
+          sectionId: params.month.sectionId || sectionId || undefined,
+          fromDate: params.fromDate,
+          toDate: params.toDate,
+          movedByUserId: params.actorUserId,
+        },
+      })),
+    );
+  }
+
+  private async resolveSectionHeadUserId(
+    unit: { id: string; sections: Prisma.JsonValue },
+    sectionId: string,
+  ): Promise<string | null> {
+    if (!Array.isArray(unit.sections)) {
+      return null;
+    }
+
+    const section = unit.sections.find((item) => {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) {
+        return false;
+      }
+
+      return String((item as { id?: unknown }).id ?? '') === sectionId;
+    }) as { headUserId?: unknown; headFullName?: unknown } | undefined;
+
+    if (!section) {
+      return null;
+    }
+
+    const headUserId =
+      typeof section.headUserId === 'string' && section.headUserId.trim()
+        ? section.headUserId.trim()
+        : null;
+    const headFullName =
+      typeof section.headFullName === 'string' ? section.headFullName.trim().toLowerCase() : '';
+
+    if (headUserId) {
+      const linkedHead = await this.prisma.user.findUnique({
+        where: { id: headUserId },
+        select: { id: true },
+      });
+
+      if (linkedHead) {
+        return linkedHead.id;
+      }
+    }
+
+    if (!headFullName) {
+      return null;
+    }
+
+    const unitUsers = await this.prisma.user.findMany({
+      where: { structuralUnitId: unit.id },
+      select: { id: true, firstName: true, lastName: true },
+    });
+
+    const match = unitUsers.find(
+      (item) => `${item.firstName} ${item.lastName}`.trim().toLowerCase() === headFullName,
+    );
+
+    return match?.id ?? null;
+  }
+
   async removeEntry(id: string, user: AuthenticatedUser) {
+    await assertPagePermission(
+      this.prisma,
+      user.id,
+      PAGE_KEYS.pprCalendar,
+      'canDelete',
+      ErrorCode.PPR_CALENDAR_FORBIDDEN,
+    );
     const entry = await this.getEntryOrThrow(id);
 
     await this.assertUnitMemberAccess(user.id, entry.month.structuralUnitId);
@@ -460,6 +649,13 @@ export class PprCalendarService {
   }
 
   async submitMonth(id: string, user: AuthenticatedUser) {
+    await assertPagePermission(
+      this.prisma,
+      user.id,
+      PAGE_KEYS.pprCalendar,
+      'canCreate',
+      ErrorCode.PPR_CALENDAR_FORBIDDEN,
+    );
     const month = await this.getMonthOrThrow(id);
 
     await this.assertUnitMemberAccess(user.id, month.structuralUnitId);
@@ -619,6 +815,13 @@ export class PprCalendarService {
   }
 
   async clearMonth(id: string, user: AuthenticatedUser) {
+    await assertPagePermission(
+      this.prisma,
+      user.id,
+      PAGE_KEYS.pprCalendar,
+      'canDelete',
+      ErrorCode.PPR_CALENDAR_FORBIDDEN,
+    );
     const month = await this.getMonthOrThrow(id);
 
     await this.assertUnitMemberAccess(user.id, month.structuralUnitId);
