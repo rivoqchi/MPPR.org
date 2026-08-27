@@ -1,20 +1,34 @@
 import type { Application, ApplicationSpecialMessage } from '@/entities/application/model/types'
+import type { StructuralUnit } from '@/entities/structural-unit/model/types'
+import type { User } from '@/entities/user/model/types'
+import { canReceiveIncomingApplication } from '@/features/application-submit/lib/application-targeting'
 
 export function filterIncomingApplications(
   applications: Application[],
-  structuralUnitId?: string,
-  canViewAll = false,
+  options: {
+    structuralUnitId?: string
+    userId?: string
+    canViewAll?: boolean
+    structuralUnits: StructuralUnit[]
+    users?: User[]
+  },
 ): Application[] {
-  if (canViewAll) {
+  if (options.canViewAll) {
     return applications
   }
 
-  if (!structuralUnitId) {
+  if (!options.structuralUnitId) {
     return []
   }
 
   return applications.filter((application) =>
-    application.structuralUnitIds.includes(structuralUnitId),
+    canReceiveIncomingApplication(application, {
+      structuralUnitId: options.structuralUnitId,
+      userId: options.userId,
+      canViewAll: false,
+      structuralUnits: options.structuralUnits,
+      users: options.users,
+    }),
   )
 }
 

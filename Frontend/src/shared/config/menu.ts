@@ -26,6 +26,12 @@ export const MENU_CONFIG: MenuItemConfig[] = [
     icon: 'settings',
   },
   {
+    key: '/chat',
+    path: '/chat',
+    labelKey: 'menu.chat',
+    icon: 'message',
+  },
+  {
     key: 'applications',
     labelKey: 'menu.applications',
     icon: 'file',
@@ -151,6 +157,10 @@ export function resolveMenuPathname(pathname: string): string {
 
   if (pathname.match(/^\/management\/ppr\/[^/]+$/)) {
     return '/management/ppr'
+  }
+
+  if (pathname.match(/^\/chat\/[^/]+$/)) {
+    return '/chat'
   }
 
   return pathname

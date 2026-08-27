@@ -21,19 +21,32 @@ export function SidebarSkeleton({ collapsed = false }: SidebarSkeletonProps) {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <div
         style={{
-          height: 64,
+          minHeight: collapsed ? 64 : 120,
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
+          gap: collapsed ? 0 : 10,
+          padding: collapsed ? '12px 8px' : '16px',
           borderBottom: `1px solid ${token.colorBorderSecondary}`,
           flexShrink: 0,
         }}
       >
-        <Skeleton.Input
-          active
-          size="small"
-          style={{ width: collapsed ? 44 : 148, minWidth: collapsed ? 44 : 148 }}
-        />
+        <Skeleton.Avatar active size={collapsed ? 36 : 48} />
+        {!collapsed && (
+          <>
+            <Skeleton.Input
+              active
+              size="small"
+              style={{ width: 168, minWidth: 168 }}
+            />
+            <Skeleton.Input
+              active
+              size="small"
+              style={{ width: 200, minWidth: 200, height: 28 }}
+            />
+          </>
+        )}
       </div>
 
       <div

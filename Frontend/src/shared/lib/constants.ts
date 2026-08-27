@@ -7,8 +7,10 @@ export const ANT_COMPONENT_SIZES = ['small', 'middle', 'large'] as const
 export const SIDEBAR_POSITIONS = ['left', 'right'] as const
 export const DEFAULT_SIDEBAR_POSITION = 'left' as const
 
-export const APP_LOGO_SHORT = 'MPPR'
-export const APP_NAME = 'MPPR tizimi'
+export const APP_LOGO_SHORT = 'YTN'
+export const APP_NAME = 'Yagona texnik nazorat'
+export const APP_TAGLINE =
+  'PPR rejalashtirish va tarkibiy tuzilmalararo hujjat aylanish tizimi'
 
 export const APP_LOCALES = ['uz', 'uzc', 'ru', 'en'] as const
 
@@ -22,6 +24,8 @@ export const LOCALE_LABELS: Record<(typeof APP_LOCALES)[number], string> = {
 export const NOTIFICATION_CONFIG = {
   placement: 'bottom' as const,
   bottom: 24,
+  maxCount: 4,
+  duration: 6,
 }
 
 export const TABLE_PAGE_SIZE = 100

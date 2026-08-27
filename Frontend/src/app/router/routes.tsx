@@ -2,6 +2,7 @@ import type { RouteObject } from 'react-router-dom'
 import {
   ApplicationCalendarPage,
   ApplicationWorkflowPage,
+  ChatPage,
   GuidePage,
   HomePage,
   IncomingApplicationPage,
@@ -15,18 +16,22 @@ import {
   StructuralUnitPage,
   SubmitApplicationPage,
   applicationCalendarRouteFallback,
+  errorLogsRouteFallback,
+  homeRouteFallback,
   lazyRoute,
   objectRouteFallback,
   pprCalendarRouteFallback,
   pprTypeRouteFallback,
+  rolesRouteFallback,
   structuralUnitRouteFallback,
   submitApplicationRouteFallback,
+  usersRouteFallback,
 } from '@/app/router/lazy-route'
 
 export const appRoutes: RouteObject[] = [
   {
     index: true,
-    element: lazyRoute(<HomePage />),
+    element: lazyRoute(<HomePage />, homeRouteFallback),
     handle: { titleKey: 'menu.home' },
   },
   {
@@ -38,6 +43,16 @@ export const appRoutes: RouteObject[] = [
     path: 'settings',
     element: lazyRoute(<SettingsPage />),
     handle: { titleKey: 'menu.settings' },
+  },
+  {
+    path: 'chat',
+    element: lazyRoute(<ChatPage />),
+    handle: { titleKey: 'menu.chat' },
+  },
+  {
+    path: 'chat/:conversationId',
+    element: lazyRoute(<ChatPage />),
+    handle: { titleKey: 'menu.chat' },
   },
   {
     path: 'profile',
@@ -95,7 +110,7 @@ export const appRoutes: RouteObject[] = [
   },
   {
     path: 'management',
-    element: lazyRoute(<ManagementPage />),
+    element: lazyRoute(<ManagementPage />, pprCalendarRouteFallback),
     handle: { titleKey: 'menu.management.hub' },
   },
   {
@@ -110,17 +125,17 @@ export const appRoutes: RouteObject[] = [
   },
   {
     path: 'management/users',
-    element: lazyRoute(<ManagementPage />),
+    element: lazyRoute(<ManagementPage />, usersRouteFallback),
     handle: { titleKey: 'menu.management.users' },
   },
   {
     path: 'management/roles',
-    element: lazyRoute(<ManagementPage />),
+    element: lazyRoute(<ManagementPage />, rolesRouteFallback),
     handle: { titleKey: 'menu.management.roles' },
   },
   {
     path: 'management/employees',
-    element: lazyRoute(<ManagementPage />),
+    element: lazyRoute(<ManagementPage />, usersRouteFallback),
     handle: { titleKey: 'menu.management.employees' },
   },
   {
@@ -130,7 +145,7 @@ export const appRoutes: RouteObject[] = [
   },
   {
     path: 'management/errors',
-    element: lazyRoute(<ManagementPage />),
+    element: lazyRoute(<ManagementPage />, errorLogsRouteFallback),
     handle: { titleKey: 'menu.management.errors' },
   },
   {

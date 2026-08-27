@@ -24,6 +24,7 @@ interface UiState {
   warningColorPreset: UiColorPreset
   errorColorPreset: UiColorPreset
   browserNotificationsEnabled: boolean
+  inAppRealtimeNotificationsEnabled: boolean
   autoMarkNotificationsAsRead: boolean
   setTheme: (theme: ThemeMode) => void
   toggleTheme: () => void
@@ -33,6 +34,7 @@ interface UiState {
   setComponentSize: (size: AntComponentSize) => void
   setColorPreset: (key: UiSemanticColorKey, color: UiColorPreset) => void
   setBrowserNotificationsEnabled: (enabled: boolean) => void
+  setInAppRealtimeNotificationsEnabled: (enabled: boolean) => void
   setAutoMarkNotificationsAsRead: (enabled: boolean) => void
 }
 
@@ -49,6 +51,7 @@ export const useUiStore = create<UiState>()(
       warningColorPreset: DEFAULT_UI_COLOR_PRESETS.warning,
       errorColorPreset: DEFAULT_UI_COLOR_PRESETS.error,
       browserNotificationsEnabled: false,
+      inAppRealtimeNotificationsEnabled: true,
       autoMarkNotificationsAsRead: false,
       setTheme: (theme) => set({ theme }),
       toggleTheme: () =>
@@ -66,6 +69,8 @@ export const useUiStore = create<UiState>()(
         }),
       setBrowserNotificationsEnabled: (browserNotificationsEnabled) =>
         set({ browserNotificationsEnabled }),
+      setInAppRealtimeNotificationsEnabled: (inAppRealtimeNotificationsEnabled) =>
+        set({ inAppRealtimeNotificationsEnabled }),
       setAutoMarkNotificationsAsRead: (autoMarkNotificationsAsRead) =>
         set({ autoMarkNotificationsAsRead }),
     }),
@@ -82,6 +87,7 @@ export const useUiStore = create<UiState>()(
         warningColorPreset: state.warningColorPreset,
         errorColorPreset: state.errorColorPreset,
         browserNotificationsEnabled: state.browserNotificationsEnabled,
+        inAppRealtimeNotificationsEnabled: state.inAppRealtimeNotificationsEnabled,
         autoMarkNotificationsAsRead: state.autoMarkNotificationsAsRead,
       }),
       merge: (persistedState, currentState) => ({
@@ -105,6 +111,13 @@ export const useUiStore = create<UiState>()(
         sidebarPosition:
           (persistedState as Partial<UiState> | undefined)?.sidebarPosition ??
           DEFAULT_SIDEBAR_POSITION,
+        inAppRealtimeNotificationsEnabled:
+          (persistedState as Partial<UiState> | undefined)?.inAppRealtimeNotificationsEnabled ??
+          true,
+        browserNotificationsEnabled:
+          (persistedState as Partial<UiState> | undefined)?.browserNotificationsEnabled ?? false,
+        autoMarkNotificationsAsRead:
+          (persistedState as Partial<UiState> | undefined)?.autoMarkNotificationsAsRead ?? false,
       }),
     },
   ),

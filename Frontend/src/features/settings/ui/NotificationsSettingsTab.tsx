@@ -11,6 +11,12 @@ import { useUiStore } from '@/shared/stores/ui-store'
 
 export function NotificationsSettingsTab() {
   const { t } = useTranslation()
+  const inAppRealtimeNotificationsEnabled = useUiStore(
+    (state) => state.inAppRealtimeNotificationsEnabled,
+  )
+  const setInAppRealtimeNotificationsEnabled = useUiStore(
+    (state) => state.setInAppRealtimeNotificationsEnabled,
+  )
   const browserNotificationsEnabled = useUiStore((state) => state.browserNotificationsEnabled)
   const setBrowserNotificationsEnabled = useUiStore((state) => state.setBrowserNotificationsEnabled)
   const autoMarkNotificationsAsRead = useUiStore((state) => state.autoMarkNotificationsAsRead)
@@ -20,6 +26,8 @@ export function NotificationsSettingsTab() {
 
   const isSupported = isBrowserNotificationSupported()
   const permission = getBrowserNotificationPermission()
+  const switchAllowed = t('settingsPage.notifications.switchAllowed')
+  const switchDenied = t('settingsPage.notifications.switchDenied')
 
   useEffect(() => {
     if (browserNotificationsEnabled && permission !== 'granted') {
@@ -32,6 +40,15 @@ export function NotificationsSettingsTab() {
     : permission === 'denied'
       ? t('settingsPage.notifications.denied')
       : t('settingsPage.notifications.description')
+
+  const handleInAppRealtimeToggle = (checked: boolean) => {
+    setInAppRealtimeNotificationsEnabled(checked)
+    message.success(
+      checked
+        ? t('settingsPage.notifications.inAppRealtimeEnabled')
+        : t('settingsPage.notifications.inAppRealtimeDisabled'),
+    )
+  }
 
   const handleBrowserToggle = async (checked: boolean) => {
     if (!checked) {
@@ -67,11 +84,25 @@ export function NotificationsSettingsTab() {
 
   return (
     <Card title={t('settingsPage.notifications.title')} style={{ width: '100%' }}>
+      <SettingRow
+        label={t('settingsPage.notifications.inAppRealtime')}
+        description={t('settingsPage.notifications.inAppRealtimeDescription')}
+      >
+        <Switch
+          checked={inAppRealtimeNotificationsEnabled}
+          checkedChildren={switchAllowed}
+          unCheckedChildren={switchDenied}
+          onChange={handleInAppRealtimeToggle}
+        />
+      </SettingRow>
+
+      <Divider />
+
       <SettingRow label={t('settingsPage.notifications.browser')} description={browserDescription}>
         <Switch
           checked={browserNotificationsEnabled}
-          checkedChildren="On"
-          unCheckedChildren="Off"
+          checkedChildren={switchAllowed}
+          unCheckedChildren={switchDenied}
           disabled={!isSupported || permission === 'denied'}
           onChange={(checked) => void handleBrowserToggle(checked)}
         />
@@ -85,8 +116,8 @@ export function NotificationsSettingsTab() {
       >
         <Switch
           checked={autoMarkNotificationsAsRead}
-          checkedChildren="On"
-          unCheckedChildren="Off"
+          checkedChildren={switchAllowed}
+          unCheckedChildren={switchDenied}
           onChange={handleAutoMarkToggle}
         />
       </SettingRow>

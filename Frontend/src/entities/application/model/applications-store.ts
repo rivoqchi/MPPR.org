@@ -17,9 +17,12 @@ function normalizeApplication(application: Application): Application {
     ...application,
     status: application.status ?? DEFAULT_APPLICATION_STATUS,
     workflowStatus: application.workflowStatus ?? DEFAULT_WORKFLOW_STATUS,
+    applicationNumber: application.applicationNumber ?? null,
+    submissionMode: application.submissionMode === 'single' ? 'single' : 'combined',
     structuralUnitIds: Array.isArray(application.structuralUnitIds)
       ? application.structuralUnitIds
       : [],
+    structuralUnitSectionId: application.structuralUnitSectionId ?? null,
     images: Array.isArray(application.images) ? application.images : [],
     files: Array.isArray(application.files) ? application.files : [],
     specialMessages: Array.isArray(application.specialMessages)

@@ -16,6 +16,7 @@ const currentUser = {
 
 const baseApplication: Application = {
   id: 'app-1',
+  submissionMode: 'combined',
   structuralUnitIds: ['unit-a'],
   type: 'execution',
   status: 'in_progress',

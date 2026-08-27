@@ -1,5 +1,6 @@
 import { lazy, Suspense, type ReactNode } from 'react'
 import { ErrorLogsPageSkeleton } from '@/features/error-logs/ui/ErrorLogsPageSkeleton'
+import { HomePageSkeleton } from '@/features/home/ui/HomePageSkeleton'
 import { PprCalendarPageSkeleton } from '@/features/ppr-calendar/ui/PprCalendarPageSkeleton'
 import { ApplicationCalendarPageSkeleton } from '@/features/application-calendar/ui/ApplicationCalendarPageSkeleton'
 import { SubmitApplicationPageSkeleton } from '@/features/application-submit/ui/SubmitApplicationPageSkeleton'
@@ -61,6 +62,12 @@ export const GuidePage = lazy(() =>
 export const ProfilePage = lazy(() =>
   import('@/features/profile/ui/ProfilePage').then((module) => ({
     default: module.ProfilePage,
+  })),
+)
+
+export const ChatPage = lazy(() =>
+  import('@/features/chat/ui/ChatPage').then((module) => ({
+    default: module.ChatPage,
   })),
 )
 
@@ -134,6 +141,7 @@ export function lazyRoute(element: ReactNode, fallback: ReactNode = <RouteFallba
   return <Suspense fallback={fallback}>{element}</Suspense>
 }
 
+export const homeRouteFallback = <HomePageSkeleton variant="full" />
 export const usersRouteFallback = <UsersPageSkeleton />
 export const pprTypeRouteFallback = <PprTypePageSkeleton />
 export const structuralUnitRouteFallback = <StructuralUnitPageSkeleton />

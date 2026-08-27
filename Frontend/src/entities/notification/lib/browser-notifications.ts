@@ -1,3 +1,4 @@
+import { appRouter } from '@/app/router'
 import type { Notification } from '@/entities/notification/model/types'
 
 export function isBrowserNotificationSupported(): boolean {
@@ -12,7 +13,9 @@ export function getBrowserNotificationPermission(): NotificationPermission | 'un
   return Notification.permission
 }
 
-export async function requestBrowserNotificationPermission(): Promise<NotificationPermission | 'unsupported'> {
+export async function requestBrowserNotificationPermission(): Promise<
+  NotificationPermission | 'unsupported'
+> {
   if (!isBrowserNotificationSupported()) {
     return 'unsupported'
   }
@@ -43,7 +46,7 @@ export function showBrowserNotification(notification: Notification): void {
     browserNotification.close()
 
     if (notification.linkPath) {
-      window.location.assign(notification.linkPath)
+      void appRouter.navigate(notification.linkPath)
     }
   }
 }

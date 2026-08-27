@@ -4,6 +4,7 @@ import {
   ControlOutlined,
   FileTextOutlined,
   HomeOutlined,
+  MessageOutlined,
   SettingOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons'
@@ -17,6 +18,7 @@ const iconMap: Record<string, ReactNode> = {
   home: <HomeOutlined />,
   book: <BookOutlined />,
   settings: <SettingOutlined />,
+  message: <MessageOutlined />,
   file: <FileTextOutlined />,
   calendar: <CalendarOutlined />,
   list: <UnorderedListOutlined />,

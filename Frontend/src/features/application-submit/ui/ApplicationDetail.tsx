@@ -1,5 +1,5 @@
-import { DeleteOutlined, DownloadOutlined, EditOutlined, EyeOutlined, FileOutlined, MessageOutlined } from '@ant-design/icons'
-import { Alert, App, Button, Descriptions, Empty, Image, List, Popconfirm, Space, Steps, Tag, theme } from 'antd'
+import { CopyOutlined, DeleteOutlined, DownloadOutlined, EditOutlined, EyeOutlined, FileOutlined, MessageOutlined } from '@ant-design/icons'
+import { Alert, App, Button, Descriptions, Empty, Image, List, Popconfirm, Space, Steps, Tag, Typography, theme } from 'antd'
 import dayjs from 'dayjs'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -14,6 +14,7 @@ import {
   isImageAttachment,
   isPreviewableAttachment,
 } from '@/features/application-submit/lib/attachment-utils'
+import { copyTextToClipboard } from '@/features/application-submit/lib/application-number'
 import { getApplicationStatusTagColor, hasApplicationWorkflow, isApplicationFinalized } from '@/features/application-submit/lib/application-status'
 import { getSpecialMessageForUnit } from '@/features/application-submit/lib/incoming-applications'
 import { ApplicationWorkflowUnitStatusList } from '@/features/application-workflow/ui/ApplicationWorkflowUnitStatusList'
@@ -38,6 +39,21 @@ interface ApplicationDetailProps {
   canViewAll?: boolean
 }
 
+const headerActionStyle = {
+  margin: 0,
+  height: 22,
+  fontSize: 12,
+  paddingInline: 8,
+} as const
+
+const headerTagStyle = {
+  ...headerActionStyle,
+  flexShrink: 0,
+  lineHeight: '20px',
+  display: 'inline-flex',
+  alignItems: 'center',
+} as const
+
 export function ApplicationDetail({
   application,
   onEdit,
@@ -55,6 +71,17 @@ export function ApplicationDetail({
   const structuralUnits = useStructuralUnitsStore((state) => state.structuralUnits)
   const users = useUsersStore((state) => state.users)
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
+
+  const handleCopyApplicationNumber = async (value: string) => {
+    const copied = await copyTextToClipboard(value)
+
+    if (copied) {
+      notification.success({ message: t('applicationSubmit.messages.numberCopied') })
+      return
+    }
+
+    notification.error({ message: t('applicationSubmit.messages.numberCopyFailed') })
+  }
 
   useEffect(() => {
     return () => {
@@ -172,6 +199,19 @@ export function ApplicationDetail({
     })
     .join(', ')
 
+  const sectionLabel = (() => {
+    if (application.submissionMode !== 'single' || !application.structuralUnitSectionId) {
+      return null
+    }
+
+    const unit = structuralUnits.find((item) => item.id === application.structuralUnitIds[0])
+    const section = unit?.sections.find(
+      (item) => item.id === application.structuralUnitSectionId,
+    )
+
+    return section ? section.shortName || section.originalName : application.structuralUnitSectionId
+  })()
+
   const viewerSpecialMessage =
     mode === 'incoming' && !canViewAll
       ? getSpecialMessageForUnit(application, viewerStructuralUnitId)
@@ -287,6 +327,23 @@ export function ApplicationDetail({
             }}
           >
             <div>
+              {application.applicationNumber ? (
+                <Space size={6} style={{ marginBottom: 6 }}>
+                  <Typography.Text
+                    strong
+                    style={{ fontSize: 15, color: token.colorPrimary, letterSpacing: 0.2 }}
+                  >
+                    № {application.applicationNumber}
+                  </Typography.Text>
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<CopyOutlined />}
+                    onClick={() => void handleCopyApplicationNumber(application.applicationNumber!)}
+                    aria-label={t('applicationSubmit.copyNumber')}
+                  />
+                </Space>
+              ) : null}
               <div style={{ fontSize: 22, fontWeight: 700 }}>{t(detailTitleKey)}</div>
               <div style={{ marginTop: 8, color: token.colorTextSecondary }}>
                 {dayjs(application.createdAt).format('DD.MM.YYYY HH:mm')}
@@ -296,7 +353,7 @@ export function ApplicationDetail({
               <Space size={8} wrap style={{ justifyContent: 'flex-end' }}>
                 <Tag
                   color={application.type === 'execution' ? 'orange' : 'blue'}
-                  style={{ margin: 0, flexShrink: 0 }}
+                  style={headerTagStyle}
                 >
                   {t(`applicationSubmit.types.${application.type}`)}
                 </Tag>
@@ -306,19 +363,31 @@ export function ApplicationDetail({
                       ? getWorkflowStatusTagColor(application.workflowStatus)
                       : getApplicationStatusTagColor(application.status)
                   }
-                  style={{ margin: 0, flexShrink: 0 }}
+                  style={headerTagStyle}
                 >
                   {showWorkflowStatus
                     ? t(`applicationWorkflow.status.${application.workflowStatus}`)
                     : t(`applicationSubmit.status.${application.status}`)}
                 </Tag>
                 {onOpenWorkflow && (
-                  <Button icon={<MessageOutlined />} onClick={onOpenWorkflow}>
+                  <Button
+                    type="primary"
+                    size="small"
+                    icon={<MessageOutlined />}
+                    onClick={onOpenWorkflow}
+                    style={headerActionStyle}
+                  >
                     {t('applicationWorkflow.open')}
                   </Button>
                 )}
                 {onEdit && (
-                  <Button type="primary" icon={<EditOutlined />} onClick={onEdit}>
+                  <Button
+                    type="primary"
+                    size="small"
+                    icon={<EditOutlined />}
+                    onClick={onEdit}
+                    style={headerActionStyle}
+                  >
                     {t('applicationSubmit.edit')}
                   </Button>
                 )}
@@ -329,7 +398,12 @@ export function ApplicationDetail({
                     cancelText={t('common.cancel')}
                     onConfirm={onDelete}
                   >
-                    <Button danger icon={<DeleteOutlined />}>
+                    <Button
+                      danger
+                      size="small"
+                      icon={<DeleteOutlined />}
+                      style={headerActionStyle}
+                    >
                       {t('applicationSubmit.delete')}
                     </Button>
                   </Popconfirm>
@@ -394,6 +468,28 @@ export function ApplicationDetail({
             }}
             items={[
               {
+                key: 'applicationNumber',
+                label: t('applicationSubmit.fields.applicationNumber'),
+                children: application.applicationNumber ? (
+                  <Space size={6}>
+                    <span>{application.applicationNumber}</span>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<CopyOutlined />}
+                      onClick={() => void handleCopyApplicationNumber(application.applicationNumber!)}
+                    />
+                  </Space>
+                ) : (
+                  '—'
+                ),
+              },
+              {
+                key: 'submissionMode',
+                label: t('applicationSubmit.fields.submissionMode'),
+                children: t(`applicationSubmit.submissionModes.${application.submissionMode}`),
+              },
+              {
                 key: 'submitter',
                 label: t('applicationSubmit.fields.submittedBy'),
                 children: submitterName,
@@ -405,9 +501,21 @@ export function ApplicationDetail({
               },
               {
                 key: 'units',
-                label: t('applicationSubmit.fields.structuralUnits'),
+                label:
+                  application.submissionMode === 'single'
+                    ? t('applicationSubmit.fields.structuralUnit')
+                    : t('applicationSubmit.fields.structuralUnits'),
                 children: unitLabels,
               },
+              ...(sectionLabel
+                ? [
+                    {
+                      key: 'section',
+                      label: t('applicationSubmit.fields.section'),
+                      children: sectionLabel,
+                    },
+                  ]
+                : []),
               {
                 key: 'deadline',
                 label: t('applicationSubmit.fields.deadline'),

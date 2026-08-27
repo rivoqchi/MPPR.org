@@ -1,4 +1,5 @@
 import {
+  CloseOutlined,
   DownloadOutlined,
   EyeOutlined,
   PaperClipOutlined,
@@ -228,6 +229,14 @@ export function WorkflowChatComposer({ onSend, sending = false, disabled = false
     setFileList([])
   }
 
+  const handleFileListChange = (nextFileList: UploadFile[]) => {
+    setFileList(nextFileList)
+  }
+
+  const removeFile = (uid: string) => {
+    setFileList((current) => current.filter((file) => file.uid !== uid))
+  }
+
   return (
     <div
       style={{
@@ -236,42 +245,104 @@ export function WorkflowChatComposer({ onSend, sending = false, disabled = false
         padding: `${PAGE_CONTENT_PADDING}px ${PAGE_CONTENT_PADDING}px`,
         background: token.colorBgContainer,
         display: 'flex',
+        flexDirection: 'column',
         gap: 8,
-        alignItems: 'flex-end',
+        minWidth: 0,
       }}
     >
-      <Upload
-        multiple
-        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.rar"
-        showUploadList={{ showRemoveIcon: true }}
-        beforeUpload={() => false}
-        fileList={fileList}
-        onChange={({ fileList: nextFileList }) => setFileList(nextFileList)}
-        disabled={disabled}
-      >
-        <Button icon={<PaperClipOutlined />} disabled={disabled} />
-      </Upload>
-      <Input.TextArea
-        value={content}
-        onChange={(event) => setContent(event.target.value)}
-        placeholder={t('applicationWorkflow.messagePlaceholder')}
-        autoSize={{ minRows: 1, maxRows: 5 }}
-        disabled={disabled}
-        onPressEnter={(event) => {
-          if (!event.shiftKey) {
-            event.preventDefault()
-            void handleSend()
-          }
+      {fileList.length > 0 ? (
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4,
+            width: '100%',
+            minWidth: 0,
+          }}
+        >
+          {fileList.map((file) => (
+            <div
+              key={file.uid}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                minWidth: 0,
+                padding: '6px 10px',
+                borderRadius: token.borderRadius,
+                background: token.colorFillTertiary,
+                border: `1px solid ${token.colorBorderSecondary}`,
+              }}
+            >
+              <PaperClipOutlined style={{ flexShrink: 0, color: token.colorTextSecondary }} />
+              <span
+                title={file.name}
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  fontSize: 13,
+                }}
+              >
+                {file.name}
+              </span>
+              <Button
+                type="text"
+                size="small"
+                icon={<CloseOutlined />}
+                disabled={disabled}
+                onClick={() => removeFile(file.uid)}
+                aria-label={t('common.delete')}
+              />
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      <div
+        style={{
+          display: 'flex',
+          gap: 8,
+          alignItems: 'flex-end',
+          minWidth: 0,
+          width: '100%',
         }}
-        style={{ flex: 1 }}
-      />
-      <Button
-        type="primary"
-        icon={<SendOutlined />}
-        loading={sending}
-        disabled={disabled}
-        onClick={() => void handleSend()}
-      />
+      >
+        <Upload
+          multiple
+          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.rar"
+          showUploadList={false}
+          beforeUpload={() => false}
+          fileList={fileList}
+          onChange={({ fileList: nextFileList }) => handleFileListChange(nextFileList)}
+          disabled={disabled}
+        >
+          <Button icon={<PaperClipOutlined />} disabled={disabled} />
+        </Upload>
+        <Input.TextArea
+          value={content}
+          onChange={(event) => setContent(event.target.value)}
+          placeholder={t('applicationWorkflow.messagePlaceholder')}
+          autoSize={{ minRows: 1, maxRows: 5 }}
+          disabled={disabled}
+          onPressEnter={(event) => {
+            if (!event.shiftKey) {
+              event.preventDefault()
+              void handleSend()
+            }
+          }}
+          style={{ flex: 1, minWidth: 0 }}
+        />
+        <Button
+          type="primary"
+          icon={<SendOutlined />}
+          loading={sending}
+          disabled={disabled}
+          onClick={() => void handleSend()}
+        />
+      </div>
     </div>
   )
 }

@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useOutlet, useSearchParams } from 'react-router-dom'
 import type { Application } from '@/entities/application/model/types'
 import { useApplicationsStore } from '@/entities/application/model/applications-store'
+import { useStructuralUnitsStore } from '@/entities/structural-unit/model/structural-units-store'
+import { useUsersStore } from '@/entities/user/model/users-store'
 import { ApplicationChatList } from '@/features/application-submit/ui/ApplicationChatList'
 import { ApplicationDetail } from '@/features/application-submit/ui/ApplicationDetail'
 import { ApplicationSendDrawer } from '@/features/application-submit/ui/ApplicationSendDrawer'
@@ -26,6 +28,8 @@ export function SubmitApplicationPage() {
   const isApplicationsHydrated = useApplicationsHydration()
   const applications = useApplicationsStore((state) => state.applications)
   const removeApplication = useApplicationsStore((state) => state.removeApplication)
+  const structuralUnits = useStructuralUnitsStore((state) => state.structuralUnits)
+  const users = useUsersStore((state) => state.users)
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const applicationIdFromUrl = searchParams.get('applicationId')
@@ -142,6 +146,11 @@ export function SubmitApplicationPage() {
                 selectedApplication,
                 currentUser?.structuralUnitId,
                 canViewAll,
+                {
+                  userId: currentUser?.id,
+                  structuralUnits,
+                  users,
+                },
               )
                 ? () =>
                     navigate(

@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useOutlet, useSearchParams } from 'react-router-dom'
 import { useApplicationsStore } from '@/entities/application/model/applications-store'
+import { useStructuralUnitsStore } from '@/entities/structural-unit/model/structural-units-store'
+import { useUsersStore } from '@/entities/user/model/users-store'
 import { filterIncomingApplications } from '@/features/application-submit/lib/incoming-applications'
 import { canAccessApplicationWorkflow } from '@/features/application-workflow/lib/workflow-access'
 import { ApplicationChatList } from '@/features/application-submit/ui/ApplicationChatList'
@@ -23,11 +25,27 @@ export function IncomingApplicationPage() {
   const { canEdit } = useRolePermissions()
   const isApplicationsHydrated = useApplicationsHydration()
   const applications = useApplicationsStore((state) => state.applications)
+  const structuralUnits = useStructuralUnitsStore((state) => state.structuralUnits)
+  const users = useUsersStore((state) => state.users)
   const [selectedApplicationId, setSelectedApplicationId] = useState<string>()
 
   const incomingApplications = useMemo(
-    () => filterIncomingApplications(applications, currentUser?.structuralUnitId, canViewAll),
-    [applications, canViewAll, currentUser?.structuralUnitId],
+    () =>
+      filterIncomingApplications(applications, {
+        structuralUnitId: currentUser?.structuralUnitId,
+        userId: currentUser?.id,
+        canViewAll,
+        structuralUnits,
+        users,
+      }),
+    [
+      applications,
+      canViewAll,
+      currentUser?.id,
+      currentUser?.structuralUnitId,
+      structuralUnits,
+      users,
+    ],
   )
 
   const activeApplicationId = selectedApplicationId ?? incomingApplications[0]?.id
@@ -86,6 +104,11 @@ export function IncomingApplicationPage() {
                 selectedApplication,
                 currentUser?.structuralUnitId,
                 canViewAll,
+                {
+                  userId: currentUser?.id,
+                  structuralUnits,
+                  users,
+                },
               )
                 ? () =>
                     navigate(

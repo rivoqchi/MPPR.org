@@ -8,6 +8,8 @@ import type {
   ApplicationWorkflowMessage,
 } from '@/entities/application/model/types'
 import { useApplicationsStore } from '@/entities/application/model/applications-store'
+import { useStructuralUnitsStore } from '@/entities/structural-unit/model/structural-units-store'
+import { useUsersStore } from '@/entities/user/model/users-store'
 import {
   cancelApplicationWorkflow,
   confirmApplicationWorkflow,
@@ -53,6 +55,8 @@ export function ApplicationWorkflowWorkspace({
   const { currentUser, canViewAll } = useStructuralUnitScope()
   const applications = useApplicationsStore((state) => state.applications)
   const setApplications = useApplicationsStore((state) => state.setApplications)
+  const structuralUnits = useStructuralUnitsStore((state) => state.structuralUnits)
+  const users = useUsersStore((state) => state.users)
 
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
@@ -139,8 +143,20 @@ export function ApplicationWorkflowWorkspace({
       return false
     }
 
-    return canAccessApplicationWorkflow(target, currentUser?.structuralUnitId, canViewAll)
-  }, [application, applicationFromStore, canViewAll, currentUser?.structuralUnitId])
+    return canAccessApplicationWorkflow(target, currentUser?.structuralUnitId, canViewAll, {
+      userId: currentUser?.id,
+      structuralUnits,
+      users,
+    })
+  }, [
+    application,
+    applicationFromStore,
+    canViewAll,
+    currentUser?.id,
+    currentUser?.structuralUnitId,
+    structuralUnits,
+    users,
+  ])
 
   const workflowTarget = application ?? applicationFromStore
 

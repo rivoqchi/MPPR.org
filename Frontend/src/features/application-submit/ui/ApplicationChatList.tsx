@@ -78,6 +78,24 @@ export function ApplicationChatList({
     return unit ? unit.shortName : unitId
   }
 
+  const getApplicationTargetLabel = (application: Application) => {
+    const unitPart = application.structuralUnitIds.map(getUnitLabel).join(', ')
+
+    if (application.submissionMode !== 'single' || !application.structuralUnitSectionId) {
+      return unitPart
+    }
+
+    const unit = structuralUnits.find((item) => item.id === application.structuralUnitIds[0])
+    const section = unit?.sections.find(
+      (item) => item.id === application.structuralUnitSectionId,
+    )
+    const sectionLabel = section
+      ? section.shortName || section.originalName
+      : application.structuralUnitSectionId
+
+    return `${unitPart} · ${sectionLabel}`
+  }
+
   return (
     <div
       style={{
@@ -220,7 +238,9 @@ export function ApplicationChatList({
                       textOverflow: 'ellipsis',
                     }}
                   >
-                    {application.structuralUnitIds.map(getUnitLabel).join(', ')}
+                    {application.applicationNumber
+                      ? `№ ${application.applicationNumber} · ${getApplicationTargetLabel(application)}`
+                      : getApplicationTargetLabel(application)}
                   </div>
 
                   <div

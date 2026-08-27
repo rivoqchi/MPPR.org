@@ -3,6 +3,8 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Application } from '@/entities/application/model/types'
 import { useApplicationsStore } from '@/entities/application/model/applications-store'
+import { useStructuralUnitsStore } from '@/entities/structural-unit/model/structural-units-store'
+import { useUsersStore } from '@/entities/user/model/users-store'
 import { ApplicationWorkflowWorkspace } from '@/features/application-workflow/ui/ApplicationWorkflowWorkspace'
 import { canAccessApplicationWorkflow } from '@/features/application-workflow/lib/workflow-access'
 import { filterIncomingApplications } from '@/features/application-submit/lib/incoming-applications'
@@ -36,6 +38,8 @@ export function ManagementApplicationsTab({
   const isApplicationsHydrated = useApplicationsHydration()
   const applications = useApplicationsStore((state) => state.applications)
   const removeApplication = useApplicationsStore((state) => state.removeApplication)
+  const structuralUnits = useStructuralUnitsStore((state) => state.structuralUnits)
+  const users = useUsersStore((state) => state.users)
 
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editingApplication, setEditingApplication] = useState<Application | null>(null)
@@ -53,8 +57,22 @@ export function ManagementApplicationsTab({
   )
 
   const incomingApplications = useMemo(
-    () => filterIncomingApplications(applications, currentUser?.structuralUnitId, canViewAll),
-    [applications, canViewAll, currentUser?.structuralUnitId],
+    () =>
+      filterIncomingApplications(applications, {
+        structuralUnitId: currentUser?.structuralUnitId,
+        userId: currentUser?.id,
+        canViewAll,
+        structuralUnits,
+        users,
+      }),
+    [
+      applications,
+      canViewAll,
+      currentUser?.id,
+      currentUser?.structuralUnitId,
+      structuralUnits,
+      users,
+    ],
   )
 
   const activeSubmittedApplicationId =
@@ -162,6 +180,11 @@ export function ManagementApplicationsTab({
                     selectedSubmittedApplication,
                     currentUser?.structuralUnitId,
                     canViewAll,
+                    {
+                      userId: currentUser?.id,
+                      structuralUnits,
+                      users,
+                    },
                   )
                     ? () => openWorkflow(selectedSubmittedApplication, 'submitted')
                     : undefined
@@ -209,6 +232,11 @@ export function ManagementApplicationsTab({
                   selectedIncomingApplication,
                   currentUser?.structuralUnitId,
                   canViewAll,
+                  {
+                    userId: currentUser?.id,
+                    structuralUnits,
+                    users,
+                  },
                 )
                   ? () => openWorkflow(selectedIncomingApplication, 'incoming')
                   : undefined

@@ -35,7 +35,7 @@ import {
 } from '@/features/users/lib/phone'
 import { useNotifyApiError } from '@/shared/hooks/useNotifyApiError'
 import { resolveApiError } from '@/shared/lib/api-error'
-import { APP_NAME } from '@/shared/lib/constants'
+import { AppBrandHeader } from '@/shared/ui/AppBrand'
 
 const LOGIN_BG_URL = '/login-bg.png'
 const LOGIN_BG_OVERLAY =
@@ -112,11 +112,14 @@ function LoginPageContent({
           color: token.colorText,
         }}
       >
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <Typography.Title level={2} style={{ marginBottom: 8, color: token.colorPrimary }}>
-            {APP_NAME}
-          </Typography.Title>
-          <Typography.Text type="secondary">{t('auth.subtitle')}</Typography.Text>
+        <div style={{ marginBottom: 20 }}>
+          <AppBrandHeader compact showBorder={false} />
+          <Typography.Text
+            type="secondary"
+            style={{ display: 'block', textAlign: 'center', marginTop: 8 }}
+          >
+            {t('auth.subtitle')}
+          </Typography.Text>
         </div>
 
         {isLocked && (

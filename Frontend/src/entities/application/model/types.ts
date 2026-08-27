@@ -1,5 +1,9 @@
 export type ApplicationType = 'execution' | 'information'
 
+export type ApplicationSubmissionMode = 'single' | 'combined'
+
+export type ApplicationNumberMode = 'auto' | 'manual'
+
 export type ApplicationStatus = 'in_progress' | 'completed' | 'cancelled'
 
 export type ApplicationWorkflowStatus =
@@ -31,7 +35,10 @@ export interface ApplicationSpecialMessage {
 
 export interface Application {
   id: string
+  applicationNumber?: string | null
+  submissionMode: ApplicationSubmissionMode
   structuralUnitIds: string[]
+  structuralUnitSectionId?: string | null
   type: ApplicationType
   status: ApplicationStatus
   workflowStatus: ApplicationWorkflowStatus
@@ -51,7 +58,11 @@ export interface Application {
 }
 
 export interface ApplicationFormValues {
+  submissionMode: ApplicationSubmissionMode
+  numberMode: ApplicationNumberMode
+  applicationNumber?: string | null
   structuralUnitIds: string[]
+  structuralUnitSectionId?: string | null
   type: ApplicationType
   deadline?: string
   images: ApplicationAttachment[]

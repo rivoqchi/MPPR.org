@@ -1,5 +1,11 @@
 import type { Application } from '@/entities/application/model/types'
 import type { ApplicationWorkflowStatus } from '@/entities/application/model/types'
+import type { StructuralUnit } from '@/entities/structural-unit/model/types'
+import type { User } from '@/entities/user/model/types'
+import {
+  isSingleApplicationHeadRecipient,
+  normalizeApplicationSubmissionMode,
+} from '@/features/application-submit/lib/application-targeting'
 
 export const WORKFLOW_STATUSES: ApplicationWorkflowStatus[] = [
   'returned',
@@ -17,6 +23,11 @@ export function canAccessApplicationWorkflow(
   application: Application,
   structuralUnitId?: string,
   canViewAll = false,
+  options?: {
+    userId?: string
+    structuralUnits?: StructuralUnit[]
+    users?: User[]
+  },
 ): boolean {
   if (canViewAll) {
     return true
@@ -30,7 +41,20 @@ export function canAccessApplicationWorkflow(
     return true
   }
 
-  return application.structuralUnitIds.includes(structuralUnitId)
+  if (!application.structuralUnitIds.includes(structuralUnitId)) {
+    return false
+  }
+
+  if (normalizeApplicationSubmissionMode(application.submissionMode) !== 'single') {
+    return true
+  }
+
+  return isSingleApplicationHeadRecipient(
+    application,
+    options?.userId,
+    options?.structuralUnits ?? [],
+    options?.users ?? [],
+  )
 }
 
 export function getWorkflowStatusTagColor(status: ApplicationWorkflowStatus): string {
