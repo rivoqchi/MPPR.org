@@ -6,9 +6,9 @@ import type { ChatConversation, ChatMediaItem } from '@/entities/chat/model/type
 import { getUserFullName, getUserInitials } from '@/entities/user/lib/user-display'
 import {
   formatChatBytes,
-  formatVoiceDuration,
   getChatAttachmentUrl,
 } from '@/features/chat/lib/chat-attachments'
+import { VoiceMessagePlayer } from '@/features/chat/ui/VoiceMessagePlayer'
 import { fetchChatMedia } from '@/shared/api/chat-api'
 import { getStoredFileUrl } from '@/shared/api/files-api'
 
@@ -16,6 +16,67 @@ interface ChatProfileDrawerProps {
   open: boolean
   conversation: ChatConversation | null
   onClose: () => void
+}
+
+function ChatMediaGrid({
+  items,
+  tab,
+  fillColor,
+}: {
+  items: ChatMediaItem[]
+  tab: string
+  fillColor: string
+}) {
+  const grid = (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+        gap: 8,
+      }}
+    >
+      {items.map((item) => (
+        <div
+          key={item.id}
+          style={{
+            aspectRatio: '1',
+            overflow: 'hidden',
+            borderRadius: 10,
+            background: fillColor,
+          }}
+        >
+          {item.kind === 'image' ? (
+            <Image
+              src={getChatAttachmentUrl(item)}
+              alt={item.name}
+              preview
+              width="100%"
+              height="100%"
+              style={{ objectFit: 'cover' }}
+            />
+          ) : (
+            <video
+              controls
+              src={getChatAttachmentUrl(item)}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
+                background: '#000',
+              }}
+            />
+          )}
+        </div>
+      ))}
+    </div>
+  )
+
+  if (tab === 'image') {
+    return <Image.PreviewGroup>{grid}</Image.PreviewGroup>
+  }
+
+  return grid
 }
 
 export function ChatProfileDrawer({ open, conversation, onClose }: ChatProfileDrawerProps) {
@@ -34,6 +95,7 @@ export function ChatProfileDrawer({ open, conversation, onClose }: ChatProfileDr
   }, [open, conversation])
 
   const filtered = media.filter((item) => (tab === 'all' ? true : item.kind === tab))
+  const isGridTab = tab === 'image' || tab === 'video'
 
   return (
     <Drawer
@@ -71,43 +133,23 @@ export function ChatProfileDrawer({ open, conversation, onClose }: ChatProfileDr
 
           {filtered.length === 0 ? (
             <Empty description={t('chat.noMedia')} />
+          ) : isGridTab ? (
+            <ChatMediaGrid items={filtered} tab={tab} fillColor={token.colorFillQuaternary} />
           ) : (
             <List
+              split={tab !== 'voice'}
               dataSource={filtered}
               renderItem={(item) => {
-                if (item.kind === 'image') {
-                  return (
-                    <List.Item>
-                      <Image src={getChatAttachmentUrl(item)} alt={item.name} width="100%" style={{ borderRadius: 8 }} />
-                    </List.Item>
-                  )
-                }
-
-                if (item.kind === 'video') {
-                  return (
-                    <List.Item>
-                      <video controls src={getChatAttachmentUrl(item)} style={{ width: '100%', borderRadius: 8 }} />
-                    </List.Item>
-                  )
-                }
-
                 if (item.kind === 'voice') {
                   return (
-                    <List.Item
-                      actions={[
-                        <a key="dl" href={getChatAttachmentUrl(item)} download={item.name}>
-                          <DownloadOutlined />
-                        </a>,
-                      ]}
-                    >
-                      <List.Item.Meta
-                        title={t('chat.voiceMessage')}
-                        description={
-                          <div>
-                            <audio controls src={getChatAttachmentUrl(item)} style={{ width: '100%' }} />
-                            <div>{formatVoiceDuration(item.durationSec)}</div>
-                          </div>
-                        }
+                    <List.Item style={{ padding: '6px 0', borderBlockEnd: 'none' }}>
+                      <VoiceMessagePlayer
+                        variant="media"
+                        src={getChatAttachmentUrl(item)}
+                        durationSec={item.durationSec}
+                        seed={item.id}
+                        createdAt={item.createdAt}
+                        downloadHref={getChatAttachmentUrl(item)}
                       />
                     </List.Item>
                   )

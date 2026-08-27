@@ -6,6 +6,7 @@ const applications: Application[] = [
   {
     id: 'a1',
     submissionMode: 'combined',
+    recipientUserIds: [],
     structuralUnitIds: ['unit-a'],
     type: 'information',
     status: 'in_progress',
@@ -16,6 +17,7 @@ const applications: Application[] = [
     specialMessages: [],
     confirmationFiles: [],
     workflowUnitStatuses: [],
+    workflowAssignments: [],
     createdByUserId: 'u1',
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',
@@ -23,6 +25,7 @@ const applications: Application[] = [
   {
     id: 'a2',
     submissionMode: 'combined',
+    recipientUserIds: [],
     structuralUnitIds: ['unit-b'],
     type: 'execution',
     status: 'in_progress',
@@ -33,6 +36,7 @@ const applications: Application[] = [
     specialMessages: [],
     confirmationFiles: [],
     workflowUnitStatuses: [],
+    workflowAssignments: [],
     createdByUserId: 'u2',
     createdAt: '2024-01-02T00:00:00.000Z',
     updatedAt: '2024-01-02T00:00:00.000Z',
@@ -40,6 +44,7 @@ const applications: Application[] = [
   {
     id: 'a3',
     submissionMode: 'single',
+    recipientUserIds: [],
     structuralUnitIds: ['unit-a'],
     structuralUnitSectionId: 'section-1',
     type: 'information',
@@ -51,9 +56,29 @@ const applications: Application[] = [
     specialMessages: [],
     confirmationFiles: [],
     workflowUnitStatuses: [],
+    workflowAssignments: [],
     createdByUserId: 'u3',
     createdAt: '2024-01-03T00:00:00.000Z',
     updatedAt: '2024-01-03T00:00:00.000Z',
+  },
+  {
+    id: 'a4',
+    submissionMode: 'combined',
+    recipientUserIds: ['user-recipient'],
+    structuralUnitIds: ['unit-b'],
+    type: 'information',
+    status: 'in_progress',
+    workflowStatus: 'in_progress_work',
+    comment: 'Recipient based',
+    images: [],
+    files: [],
+    specialMessages: [],
+    confirmationFiles: [],
+    workflowUnitStatuses: [],
+    workflowAssignments: [],
+    createdByUserId: 'u4',
+    createdAt: '2024-01-04T00:00:00.000Z',
+    updatedAt: '2024-01-04T00:00:00.000Z',
   },
 ]
 
@@ -89,7 +114,7 @@ describe('filterIncomingApplications', () => {
         canViewAll: true,
         structuralUnits,
       }),
-    ).toHaveLength(3)
+    ).toHaveLength(4)
   })
 
   it('filters combined applications by structural unit for scoped users', () => {
@@ -121,6 +146,26 @@ describe('filterIncomingApplications', () => {
         structuralUnits,
       }),
     ).toEqual([applications[0], applications[2]])
+  })
+
+  it('shows recipient-targeted applications only to selected users', () => {
+    expect(
+      filterIncomingApplications(applications, {
+        structuralUnitId: 'unit-b',
+        userId: 'user-recipient',
+        canViewAll: false,
+        structuralUnits,
+      }),
+    ).toEqual([applications[1], applications[3]])
+
+    expect(
+      filterIncomingApplications(applications, {
+        structuralUnitId: 'unit-b',
+        userId: 'other-user',
+        canViewAll: false,
+        structuralUnits,
+      }),
+    ).toEqual([applications[1]])
   })
 
   it('returns empty list when structural unit is missing for scoped users', () => {

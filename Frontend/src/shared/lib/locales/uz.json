@@ -3,6 +3,7 @@
     "name": "Yagona texnik nazorat",
     "tagline": "PPR rejalashtirish va tarkibiy tuzilmalararo hujjat aylanish tizimi",
     "hello": "Yagona texnik nazorat tizimiga xush kelibsiz",
+    "newApplication": "Yangi ariza",
     "dashboard": "Bosh sahifa",
     "theme": "Mavzu",
     "language": "Til",
@@ -10,7 +11,8 @@
     "dark": "Qorong'u"
   },
   "layout": {
-    "openMenu": "Menyuni ochish"
+    "openMenu": "Menyuni ochish",
+    "structuralUnitNumber": "Tuzilma raqami : {{number}}"
   },
   "api": {
     "errors": {
@@ -41,6 +43,9 @@
       "NOTIFICATION_NOT_FOUND": "Bildirishnoma topilmadi",
       "APPLICATION_NOT_FOUND": "Ariza topilmadi",
       "APPLICATION_CANNOT_TARGET_OWN_STRUCTURAL_UNIT": "O'z tarkibiy tuzilmangizga ariza yubora olmaysiz",
+      "APPLICATION_CANNOT_TARGET_SELF": "O'zingizni qabul qiluvchi qilib tanlay olmaysiz",
+      "APPLICATION_RECIPIENTS_REQUIRED": "Kamida bitta qabul qiluvchini tanlang",
+      "APPLICATION_RECIPIENTS_INVALID": "Tanlangan qabul qiluvchilar noto'g'ri yoki faol emas",
       "APPLICATION_SECTION_REQUIRED": "Tanlangan tuzilma uchun bo'limni tanlang",
       "APPLICATION_SECTION_INVALID": "Tanlangan bo'lim noto'g'ri",
       "APPLICATION_SINGLE_UNIT_REQUIRED": "Yakka ariza uchun faqat bitta tuzilma tanlanadi",
@@ -49,6 +54,14 @@
       "APPLICATION_WORKFLOW_FORBIDDEN": "Bu ariza bo'yicha ishlov berishga ruxsatingiz yo'q",
       "APPLICATION_WORKFLOW_CONFIRMATION_FILES_REQUIRED": "Tasdiqlash uchun kamida bitta fayl biriktiring",
       "APPLICATION_WORKFLOW_FINALIZED": "Tasdiqlangan yoki yakunlangan arizani tahrirlab bo'lmaydi",
+      "APPLICATION_WORKFLOW_NOT_READY_FOR_FINALIZATION": "Arizani yakunlash uchun hali tayyor emas",
+      "APPLICATION_WORKFLOW_ACCEPT_REQUIRED": "Avval arizani qabul qiling",
+      "APPLICATION_WORKFLOW_ALREADY_ACCEPTED": "Ariza allaqachon qabul qilingan",
+      "APPLICATION_WORKFLOW_ALREADY_REPLIED": "Javob allaqachon yuborilgan",
+      "APPLICATION_WORKFLOW_REPLY_NOT_FOUND": "Javob topilmadi",
+      "APPLICATION_WORKFLOW_FORWARD_INVALID": "Yo'naltirish noto'g'ri",
+      "APPLICATION_WORKFLOW_RELEASE_NOT_ALLOWED": "Hozir nazoratdan yechib bo'lmaydi",
+      "APPLICATION_WORKFLOW_ASSIGNMENT_NOT_FOUND": "Sizga yo'naltirilgan ariza topilmadi",
       "PPR_CALENDAR_MONTH_NOT_FOUND": "PPR taqvim oyi topilmadi",
       "PPR_CALENDAR_ENTRY_NOT_FOUND": "PPR taqvim yozuvi topilmadi",
       "PPR_CALENDAR_FORBIDDEN": "PPR taqvimiga kirish yoki tahrirlashga ruxsat yo'q",
@@ -98,6 +111,9 @@
         "STRUCTURAL_UNIT_IN_USE": "Avval foydalanuvchilarni boshqa tarkibiy tuzilmaga o'tkazing, keyin o'chiring",
         "APPLICATION_WORKFLOW_FORBIDDEN": "Ariza sizning tarkibiy tuzilmangizga tegishli emas yoki ruxsat yetarli emas",
         "APPLICATION_CANNOT_TARGET_OWN_STRUCTURAL_UNIT": "Boshqa tarkibiy tuzilmani tanlang",
+        "APPLICATION_CANNOT_TARGET_SELF": "O'zingizdan boshqa qabul qiluvchini tanlang",
+        "APPLICATION_RECIPIENTS_REQUIRED": "Kamida bitta qabul qiluvchini tanlang",
+        "APPLICATION_RECIPIENTS_INVALID": "Faol foydalanuvchilardan qabul qiluvchini tanlang",
         "APPLICATION_SECTION_REQUIRED": "Tuzilma bo'limlarini ochib, kerakli bo'limni tanlang",
         "APPLICATION_SECTION_INVALID": "Mavjud bo'limlardan birini tanlang",
         "APPLICATION_SINGLE_UNIT_REQUIRED": "Yakka arizada faqat bitta tuzilmani qoldiring",
@@ -476,14 +492,15 @@
     "today": "Bugun",
     "previousMonth": "Oldingi oy",
     "nextMonth": "Keyingi oy",
+    "onlySubmittedByMe": "Men yuborgan arizalar",
     "weekdays": {
-      "sunday": "Yak",
-      "monday": "Dush",
-      "tuesday": "Sesh",
-      "wednesday": "Chor",
-      "thursday": "Pay",
-      "friday": "Jum",
-      "saturday": "Shan"
+      "sunday": "yakshanba",
+      "monday": "dushanba",
+      "tuesday": "seshanba",
+      "wednesday": "chorshanba",
+      "thursday": "payshanba",
+      "friday": "juma",
+      "saturday": "shanba"
     },
     "months": {
       "0": "Yanvar",
@@ -500,6 +517,19 @@
       "11": "Dekabr"
     },
     "moreEvents": "+{{count}} ta yana",
+    "dayPanel": {
+      "title": "{{date}} — muddatli arizalar",
+      "empty": "Bu kunda ariza yo'q",
+      "columns": {
+        "number": "Hujjat raqami",
+        "type": "Hujjat turi",
+        "summary": "Qisqacha mazmuni",
+        "sender": "Jo'natuvchi",
+        "executor": "Asosiy ijrochi",
+        "status": "Status",
+        "files": "Fayllar"
+      }
+    },
     "modal": {
       "title": "Ariza ma'lumotlari",
       "viewDetails": "Arizani batafsil",
@@ -514,13 +544,13 @@
     "nextMonth": "Keyingi oy",
     "moreEvents": "+{{count}} ta yana",
     "weekdays": {
-      "sunday": "Yak",
-      "monday": "Dush",
-      "tuesday": "Sesh",
-      "wednesday": "Chor",
-      "thursday": "Pay",
-      "friday": "Jum",
-      "saturday": "Shan"
+      "sunday": "yakshanba",
+      "monday": "dushanba",
+      "tuesday": "seshanba",
+      "wednesday": "chorshanba",
+      "thursday": "payshanba",
+      "friday": "juma",
+      "saturday": "shanba"
     },
     "months": {
       "0": "Yanvar",
@@ -890,6 +920,18 @@
     "selectItem": "Arizani tanlang",
     "emptyList": "Hali ariza yuborilmagan",
     "emptySearch": "Qidiruv bo'yicha natija topilmadi",
+    "statusTabs": {
+      "label": "Ariza holati filtrlari",
+      "all": "Barchasi",
+      "completed": "Bajarilgan",
+      "not_completed": "Bajarilmagan",
+      "in_progress": "Bajarilmoqda",
+      "completed_late": "Muddatidan kech bajarilgan",
+      "pending_confirmation": "Tasdiqlashda",
+      "unseen": "Ko'rilmagan",
+      "co_executor": "Hamijrochi"
+    },
+    "emptyStatusFilter": "Ushbu holat bo'yicha ariza topilmadi",
     "uploadImages": "Rasm yuklash",
     "uploadFiles": "Fayl yuklash",
     "drawer": {
@@ -901,6 +943,7 @@
       "submitterStructuralUnit": "Ariza yuboruvchi tuzilma",
       "submissionMode": "Ariza turi (yo'nalish)",
       "applicationNumber": "Ariza raqami",
+      "recipients": "Ariza qabul qiluvchi",
       "structuralUnit": "Tarkibiy tuzilma",
       "structuralUnits": "Tarkibiy tuzilmalar",
       "section": "Bo'lim",
@@ -914,6 +957,7 @@
       "structuralUnit": "Tuzilmani tanlang",
       "structuralUnits": "Bir yoki bir nechta tuzilmani tanlang",
       "section": "Bo'limni tanlang",
+      "recipients": "Bir yoki bir nechta foydalanuvchini tanlang",
       "applicationNumber": "Ariza raqamini kiriting",
       "type": "Ariza turini tanlang",
       "deadline": "Muddatni tanlang",
@@ -931,10 +975,8 @@
       "auto": "Avtomatik",
       "manual": "Qo'lda"
     },
-    "hints": {
-      "autoNumber": "Avtomatik format: {{preview}}"
-    },
     "copyNumber": "Ariza raqamini nusxalash",
+    "changeDeadline": "Ijro muddatini o'zgartirish",
     "types": {
       "execution": "Ijro uchun",
       "information": "Ma'lumot uchun"
@@ -952,8 +994,10 @@
       "structuralUnitsRequired": "Kamida bitta tarkibiy tuzilmani tanlang",
       "singleStructuralUnitRequired": "Yakka ariza uchun bitta tuzilmani tanlang",
       "sectionRequired": "Tanlangan tuzilma uchun bo'limni tanlang",
+      "recipientsRequired": "Kamida bitta qabul qiluvchini tanlang",
       "applicationNumberRequired": "Ariza raqamini kamida 3 ta belgidan kiriting",
       "cannotTargetOwnStructuralUnit": "O'z tarkibiy tuzilmangizga ariza yubora olmaysiz",
+      "cannotTargetSelf": "O'zingizni qabul qiluvchi qilib tanlay olmaysiz",
       "deadlineRequired": "Ijro uchun muddatni tanlang",
       "commentMin": "Izoh kamida 3 ta belgidan iborat bo'lishi kerak"
     },
@@ -964,6 +1008,7 @@
       "error": "Arizani yuborishda xatolik yuz berdi",
       "numberCopied": "Ariza raqami nusxalandi",
       "numberCopyFailed": "Ariza raqamini nusxalab bo'lmadi",
+      "deadlineUpdated": "Ijro muddati yangilandi",
       "finalizedHint": "Ariza tasdiqlangan",
       "cancelledLockedHint": "Bekor qilingan arizani tahrirlab yoki o'chirib bo'lmaydi"
     },
@@ -994,6 +1039,7 @@
     "selectItem": "Arizani tanlang",
     "emptyList": "Hali kelgan ariza yo'q",
     "emptySearch": "Qidiruv bo'yicha natija topilmadi",
+    "emptyStatusFilter": "Ushbu holat bo'yicha ariza topilmadi",
     "specialMessage": {
       "badge": "Maxsus habar",
       "highlightTitle": "Siz uchun maxsus habar"
@@ -1017,35 +1063,44 @@
     },
     "actions": {
       "confirm": "Tasdiqlash",
-      "cancel": "Bekor qilish"
+      "cancel": "Bekor qilish",
+      "accept": "Qabul qilish",
+      "forward": "Xodimga yo'naltirish",
+      "forwardConfirm": "Yo'naltirish",
+      "reply": "Javob berish",
+      "editReply": "Javobni tahrirlash",
+      "saveReply": "Saqlash",
+      "sendReply": "Yuborish",
+      "attach": "Fayl/rasm",
+      "release": "Nazoratdan yechish",
+      "releaseAndClose": "Nazoratdan yechish va yopish"
     },
-    "finalizeModal": {
-      "no": "Yo'q",
-      "confirm": {
-        "title": "Arizani tasdiqlash",
-        "yes": "Ha, tasdiqlash",
-        "message": "Barcha tarkibiy tuzilmalar javob berdi. Arizani yakuniy tasdiqlaysizmi?",
-        "hint": ""
-      },
-      "cancel": {
-        "title": "Arizani bekor qilish",
-        "yes": "Ha, bekor qilish",
-        "message": "Barcha tarkibiy tuzilmalar javob berdi. Arizani bekor qilasizmi?",
-        "hint": "Bekor qilingandan keyin arizaga yangi ma'lumot qo'shib bo'lmaydi."
-      }
+    "assignmentStatus": {
+      "pending_accept": "Qabul qilish kutilmoqda",
+      "accepted": "Qabul qilindi",
+      "replied": "Javob berildi",
+      "forwarded": "Yo'naltirildi",
+      "released": "Nazoratdan yechildi"
     },
-    "unitStatuses": {
-      "title": "Tarkibiy tuzilmalar bo'yicha joriy statuslar"
+    "placeholders": {
+      "forwardUser": "Xodimni tanlang"
     },
-    "confirmationFiles": {
-      "title": "Tasdiqlash fayllarini yuklash",
-      "hint": "Tasdiqlanmoqda statusiga o'tish uchun kamida bitta fayl yuklang.",
-      "upload": "Fayllarni yuklash",
-      "confirm": "Saqlash va statusni o'zgartirish",
-      "required": "Kamida bitta fayl yuklash shart"
+    "releaseModal": {
+      "title": "Nazoratdan yechish",
+      "message": "Rostdan ham bu arizani nazoratdan yechmoqchimisiz?",
+      "closeTitle": "Arizani yopish",
+      "closeMessage": "Rostdan ham arizani nazoratdan yechib, yakunlamoqchimisiz?",
+      "ok": "Ha, yechish"
     },
     "messages": {
       "loadError": "Ish jarayonini yuklab bo'lmadi",
+      "error": "Amalni bajarib bo'lmadi",
+      "accepted": "Ariza qabul qilindi",
+      "forwarded": "Ariza xodimga yo'naltirildi",
+      "replied": "Javob yuborildi",
+      "replyUpdated": "Javob yangilandi",
+      "released": "Nazoratdan yechildi",
+      "closed": "Ariza tasdiqlanib yopildi",
       "sendError": "Xabarni yuborib bo'lmadi",
       "statusUpdated": "Status muvaffaqiyatli yangilandi",
       "statusError": "Statusni yangilab bo'lmadi",

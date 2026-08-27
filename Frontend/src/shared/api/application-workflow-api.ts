@@ -15,6 +15,53 @@ export async function fetchApplicationWorkflow(
   return unwrapApiResponse<ApplicationWorkflowData>(response)
 }
 
+export async function acceptApplicationWorkflow(
+  applicationId: string,
+): Promise<{ application: Application }> {
+  const response = await api.post(`/applications/${applicationId}/workflow/accept`)
+  return unwrapApiResponse<{ application: Application }>(response)
+}
+
+export async function forwardApplicationWorkflow(
+  applicationId: string,
+  toUserId: string,
+): Promise<{ application: Application }> {
+  const response = await api.post(`/applications/${applicationId}/workflow/forward`, { toUserId })
+  return unwrapApiResponse<{ application: Application }>(response)
+}
+
+export async function replyApplicationWorkflow(
+  applicationId: string,
+  data: { content?: string; attachments?: ApplicationAttachment[] },
+): Promise<{ application: Application; message: ApplicationWorkflowMessage }> {
+  const response = await api.post(`/applications/${applicationId}/workflow/reply`, data)
+  return unwrapApiResponse<{ application: Application; message: ApplicationWorkflowMessage }>(
+    response,
+  )
+}
+
+export async function updateWorkflowReplyMessage(
+  applicationId: string,
+  messageId: string,
+  data: { content?: string; attachments?: ApplicationAttachment[] },
+): Promise<ApplicationWorkflowMessage> {
+  const response = await api.patch(
+    `/applications/${applicationId}/workflow/messages/${messageId}`,
+    data,
+  )
+  return unwrapApiResponse<ApplicationWorkflowMessage>(response)
+}
+
+export async function releaseApplicationWorkflow(
+  applicationId: string,
+  assignmentId?: string,
+): Promise<{ application: Application }> {
+  const response = await api.post(`/applications/${applicationId}/workflow/release`, {
+    assignmentId,
+  })
+  return unwrapApiResponse<{ application: Application }>(response)
+}
+
 export async function sendWorkflowMessage(
   applicationId: string,
   data: { content?: string; attachments?: ApplicationAttachment[] },

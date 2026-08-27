@@ -21,7 +21,7 @@ export function SidebarSkeleton({ collapsed = false }: SidebarSkeletonProps) {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <div
         style={{
-          minHeight: collapsed ? 64 : 120,
+          minHeight: collapsed ? 64 : 160,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -44,6 +44,12 @@ export function SidebarSkeleton({ collapsed = false }: SidebarSkeletonProps) {
               active
               size="small"
               style={{ width: 200, minWidth: 200, height: 28 }}
+            />
+            <Skeleton.Button
+              active
+              shape="round"
+              block
+              style={{ width: '100%', height: 40, marginTop: 4 }}
             />
           </>
         )}
@@ -85,6 +91,24 @@ export function SidebarSkeleton({ collapsed = false }: SidebarSkeletonProps) {
             )}
           </div>
         ))}
+      </div>
+
+      <div
+        style={{
+          flexShrink: 0,
+          padding: collapsed ? '12px 8px' : '14px 16px 16px',
+          borderTop: `1px solid ${token.colorBorderSecondary}`,
+        }}
+      >
+        <Skeleton.Input
+          active
+          size="small"
+          style={{
+            width: collapsed ? 40 : 180,
+            minWidth: collapsed ? 40 : 180,
+            margin: collapsed ? '0 auto' : undefined,
+          }}
+        />
       </div>
     </div>
   )

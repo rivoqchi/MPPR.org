@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useApplicationsStore } from '@/entities/application/model/applications-store'
 import {
   filterCalendarApplications,
@@ -14,12 +14,15 @@ export function ApplicationCalendarPage() {
   const isApplicationsHydrated = useApplicationsHydration()
   const applications = useApplicationsStore((state) => state.applications)
   const { currentUser, canViewAll } = useStructuralUnitScope()
+  const [onlySubmittedByMe, setOnlySubmittedByMe] = useState(false)
 
   const applicationsByDeadline = useMemo(() => {
-    const scopedApplications = filterCalendarApplications(applications, currentUser, canViewAll)
+    const scopedApplications = filterCalendarApplications(applications, currentUser, canViewAll, {
+      onlySubmittedByMe,
+    })
 
     return groupApplicationsByDeadline(scopedApplications)
-  }, [applications, canViewAll, currentUser])
+  }, [applications, canViewAll, currentUser, onlySubmittedByMe])
 
   if (!isApplicationsHydrated) {
     return <ApplicationCalendarPageSkeleton />
@@ -33,7 +36,11 @@ export function ApplicationCalendarPage() {
         height: '100%',
       }}
     >
-      <ApplicationCalendar applicationsByDeadline={applicationsByDeadline} />
+      <ApplicationCalendar
+        applicationsByDeadline={applicationsByDeadline}
+        onlySubmittedByMe={onlySubmittedByMe}
+        onOnlySubmittedByMeChange={setOnlySubmittedByMe}
+      />
     </div>
   )
 }

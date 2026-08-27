@@ -33,12 +33,38 @@ export function canAccessApplicationWorkflow(
     return true
   }
 
+  const assignments = application.workflowAssignments ?? []
+
+  if (options?.userId && assignments.some((item) => item.userId === options.userId || item.assignedByUserId === options.userId)) {
+    return true
+  }
+
+  if (application.createdByUserId === options?.userId) {
+    return true
+  }
+
+  const explicitRecipients = application.recipientUserIds ?? []
+
+  if (explicitRecipients.length > 0 && options?.userId) {
+    if (explicitRecipients.includes(options.userId)) {
+      return true
+    }
+
+    if (application.createdByUserId === options.userId) {
+      return true
+    }
+  }
+
   if (!structuralUnitId) {
     return false
   }
 
   if (application.createdByStructuralUnitId === structuralUnitId) {
     return true
+  }
+
+  if (explicitRecipients.length > 0) {
+    return Boolean(options?.userId && explicitRecipients.includes(options.userId))
   }
 
   if (!application.structuralUnitIds.includes(structuralUnitId)) {

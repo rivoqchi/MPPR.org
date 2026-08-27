@@ -6,24 +6,19 @@ export type MenuItemConfig = {
   children?: MenuItemConfig[]
 }
 
+export const SETTINGS_MENU_ITEM: MenuItemConfig = {
+  key: '/settings',
+  path: '/settings',
+  labelKey: 'menu.settings',
+  icon: 'settings',
+}
+
 export const MENU_CONFIG: MenuItemConfig[] = [
   {
     key: '/',
     path: '/',
     labelKey: 'menu.home',
     icon: 'home',
-  },
-  {
-    key: '/guide',
-    path: '/guide',
-    labelKey: 'menu.guide',
-    icon: 'book',
-  },
-  {
-    key: '/settings',
-    path: '/settings',
-    labelKey: 'menu.settings',
-    icon: 'settings',
   },
   {
     key: '/chat',
@@ -58,28 +53,6 @@ export const MENU_CONFIG: MenuItemConfig[] = [
     path: '/ppr-calendar',
     labelKey: 'menu.pprCalendar',
     icon: 'calendar',
-  },
-  {
-    key: 'registration',
-    labelKey: 'menu.registration',
-    icon: 'list',
-    children: [
-      {
-        key: '/registration/ppr-type',
-        path: '/registration/ppr-type',
-        labelKey: 'menu.registration.pprType',
-      },
-      {
-        key: '/registration/structural-units',
-        path: '/registration/structural-units',
-        labelKey: 'menu.registration.structuralUnits',
-      },
-      {
-        key: '/registration/objects',
-        path: '/registration/objects',
-        labelKey: 'menu.registration.objects',
-      },
-    ],
   },
   {
     key: 'management',
@@ -127,6 +100,34 @@ export const MENU_CONFIG: MenuItemConfig[] = [
         labelKey: 'menu.management.changes',
       },
     ],
+  },
+  {
+    key: 'registration',
+    labelKey: 'menu.registration',
+    icon: 'list',
+    children: [
+      {
+        key: '/registration/ppr-type',
+        path: '/registration/ppr-type',
+        labelKey: 'menu.registration.pprType',
+      },
+      {
+        key: '/registration/structural-units',
+        path: '/registration/structural-units',
+        labelKey: 'menu.registration.structuralUnits',
+      },
+      {
+        key: '/registration/objects',
+        path: '/registration/objects',
+        labelKey: 'menu.registration.objects',
+      },
+    ],
+  },
+  {
+    key: '/guide',
+    path: '/guide',
+    labelKey: 'menu.guide',
+    icon: 'book',
   },
 ]
 
@@ -194,6 +195,10 @@ export function flattenMenuPaths(items: MenuItemConfig[]): string[] {
 
 export function getMenuBreadcrumbTrail(pathname: string): MenuItemConfig[] {
   const resolvedPathname = resolveMenuPathname(pathname)
+
+  if (resolvedPathname === SETTINGS_MENU_ITEM.path) {
+    return [SETTINGS_MENU_ITEM]
+  }
 
   function findTrail(
     items: MenuItemConfig[],

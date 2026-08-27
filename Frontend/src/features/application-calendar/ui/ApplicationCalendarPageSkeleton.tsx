@@ -34,24 +34,22 @@ export function ApplicationCalendarPageSkeleton() {
         <div
           style={{
             flexShrink: 0,
-            display: 'grid',
-            gridTemplateColumns: '1fr auto 1fr',
+            display: 'flex',
             alignItems: 'center',
+            justifyContent: 'space-between',
             gap: 16,
-            padding: '16px 20px',
+            padding: '14px 20px',
             borderBottom: `1px solid ${token.colorBorderSecondary}`,
-            background: token.colorFillAlter,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Skeleton.Button active size="default" style={{ width: 32 }} />
-            <Skeleton.Button active size="default" style={{ width: 72 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Skeleton.Input active size="default" style={{ width: 160, height: 28 }} />
+            <Skeleton.Avatar active size={22} shape="circle" />
           </div>
 
-          <Skeleton.Input active size="large" style={{ width: 220, height: 34 }} />
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Skeleton.Button active size="default" style={{ width: 32 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <Skeleton.Input active size="small" style={{ width: 200, minWidth: 200 }} />
+            <Skeleton.Button active size="small" style={{ width: 96 }} />
           </div>
         </div>
 
@@ -70,19 +68,18 @@ export function ApplicationCalendarPageSkeleton() {
               display: 'grid',
               gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
               borderBottom: `1px solid ${token.colorBorderSecondary}`,
-              background: token.colorFillQuaternary,
             }}
           >
             {Array.from({ length: WEEKDAY_COUNT }, (_, index) => (
               <div
                 key={index}
                 style={{
-                  padding: '12px 8px',
+                  padding: '10px 8px',
                   display: 'flex',
                   justifyContent: 'center',
                 }}
               >
-                <Skeleton.Input active size="small" style={{ width: 36, minWidth: 36 }} />
+                <Skeleton.Input active size="small" style={{ width: 56, minWidth: 56 }} />
               </div>
             ))}
           </div>
@@ -102,16 +99,18 @@ export function ApplicationCalendarPageSkeleton() {
                 style={{
                   borderRight: `1px solid ${token.colorBorderSecondary}`,
                   borderBottom: `1px solid ${token.colorBorderSecondary}`,
-                  padding: '10px 8px',
+                  padding: '8px 10px',
                   display: 'flex',
                   flexDirection: 'column',
-                  alignItems: 'flex-start',
-                  gap: 6,
+                  justifyContent: 'space-between',
                   overflow: 'hidden',
                   background: token.colorBgContainer,
                 }}
               >
-                <Skeleton.Avatar active size={30} shape="circle" />
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <Skeleton.Button active size="small" style={{ width: 18, minWidth: 18, height: 16 }} />
+                </div>
+                <Skeleton.Avatar active size={9} shape="circle" />
               </div>
             ))}
           </div>

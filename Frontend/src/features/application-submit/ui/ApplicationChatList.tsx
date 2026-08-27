@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Application } from '@/entities/application/model/types'
 import { useStructuralUnitsStore } from '@/entities/structural-unit/model/structural-units-store'
+import { getUserFullName } from '@/entities/user/lib/user-display'
+import { useUsersStore } from '@/entities/user/model/users-store'
 import { getApplicationTypeFilterOptions } from '@/features/application-submit/lib/filter-applications'
 import { getApplicationStatusTagColor, hasApplicationWorkflow } from '@/features/application-submit/lib/application-status'
 import { getWorkflowStatusTagColor } from '@/features/application-workflow/lib/workflow-access'
@@ -34,6 +36,7 @@ export function ApplicationChatList({
   const { token } = theme.useToken()
   const { t } = useTranslation()
   const structuralUnits = useStructuralUnitsStore((state) => state.structuralUnits)
+  const users = useUsersStore((state) => state.users)
   const [searchValue, setSearchValue] = useState('')
   const [typeFilter, setTypeFilter] = useState<Application['type']>()
   const [page, setPage] = useState(1)
@@ -79,6 +82,18 @@ export function ApplicationChatList({
   }
 
   const getApplicationTargetLabel = (application: Application) => {
+    const recipientIds = application.recipientUserIds ?? []
+
+    if (recipientIds.length > 0) {
+      return recipientIds
+        .map((userId) => {
+          const user = users.find((item) => item.id === userId)
+
+          return user ? getUserFullName(user) : userId
+        })
+        .join(', ')
+    }
+
     const unitPart = application.structuralUnitIds.map(getUnitLabel).join(', ')
 
     if (application.submissionMode !== 'single' || !application.structuralUnitSectionId) {

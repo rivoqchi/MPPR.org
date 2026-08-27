@@ -5,7 +5,6 @@ import {
   FileTextOutlined,
   HomeOutlined,
   MessageOutlined,
-  SettingOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons'
 import type { MenuProps } from 'antd'
@@ -17,7 +16,6 @@ import { MENU_CONFIG, type MenuItemConfig } from '@/shared/config/menu'
 const iconMap: Record<string, ReactNode> = {
   home: <HomeOutlined />,
   book: <BookOutlined />,
-  settings: <SettingOutlined />,
   message: <MessageOutlined />,
   file: <FileTextOutlined />,
   calendar: <CalendarOutlined />,

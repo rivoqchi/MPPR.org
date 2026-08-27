@@ -14,7 +14,7 @@ export async function createApplication(data: ApplicationFormValues): Promise<Ap
 
 export async function updateApplication(
   id: string,
-  data: ApplicationFormValues,
+  data: Partial<ApplicationFormValues>,
 ): Promise<Application> {
   const response = await api.patch(`/applications/${id}`, data)
   return unwrapApiResponse<Application>(response)

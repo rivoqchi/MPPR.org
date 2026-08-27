@@ -1,9 +1,11 @@
-import { CopyOutlined, DeleteOutlined, DownloadOutlined, EditOutlined, EyeOutlined, FileOutlined, MessageOutlined } from '@ant-design/icons'
-import { Alert, App, Button, Descriptions, Empty, Image, List, Popconfirm, Space, Steps, Tag, Typography, theme } from 'antd'
+import { CalendarOutlined, CopyOutlined, DeleteOutlined, DownloadOutlined, EditOutlined, EyeOutlined, FileOutlined } from '@ant-design/icons'
+import { Alert, App, Button, DatePicker, Descriptions, Empty, Image, List, Popconfirm, Space, Tag, Typography, theme } from 'antd'
+import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Application, ApplicationAttachment } from '@/entities/application/model/types'
+import { useApplicationsStore } from '@/entities/application/model/applications-store'
 import { useStructuralUnitsStore } from '@/entities/structural-unit/model/structural-units-store'
 import { getUserFullName } from '@/entities/user/lib/user-display'
 import { useUsersStore } from '@/entities/user/model/users-store'
@@ -15,12 +17,12 @@ import {
   isPreviewableAttachment,
 } from '@/features/application-submit/lib/attachment-utils'
 import { copyTextToClipboard } from '@/features/application-submit/lib/application-number'
-import { getApplicationStatusTagColor, hasApplicationWorkflow, isApplicationFinalized } from '@/features/application-submit/lib/application-status'
+import { getApplicationStatusTagColor, isApplicationFinalized } from '@/features/application-submit/lib/application-status'
 import { getSpecialMessageForUnit } from '@/features/application-submit/lib/incoming-applications'
-import { ApplicationWorkflowUnitStatusList } from '@/features/application-workflow/ui/ApplicationWorkflowUnitStatusList'
 import { getWorkflowStatusTagColor } from '@/features/application-workflow/lib/workflow-access'
-import { ensureApplicationWorkflowUnitStatuses } from '@/features/application-workflow/lib/workflow-unit-status'
 import { ApplicationSpecialMessageCard } from '@/features/application-submit/ui/ApplicationSpecialMessageCard'
+import { ApplicationWorkflowPanel } from '@/features/application-workflow/ui/ApplicationWorkflowPanel'
+import { useNotifyApiError } from '@/shared/hooks/useNotifyApiError'
 import {
   getDetailPanelCardStyle,
   splitPanelScrollStyle,
@@ -31,12 +33,12 @@ interface ApplicationDetailProps {
   application?: Application
   onEdit?: () => void
   onDelete?: () => void
-  onOpenWorkflow?: () => void
   detailTitleKey?: string
   selectItemKey?: string
   mode?: 'submit' | 'incoming'
   viewerStructuralUnitId?: string
   canViewAll?: boolean
+  showWorkflowPanel?: boolean
 }
 
 const headerActionStyle = {
@@ -58,19 +60,24 @@ export function ApplicationDetail({
   application,
   onEdit,
   onDelete,
-  onOpenWorkflow,
   detailTitleKey = 'applicationSubmit.detailTitle',
   selectItemKey = 'applicationSubmit.selectItem',
   mode = 'submit',
   viewerStructuralUnitId,
   canViewAll = false,
+  showWorkflowPanel = true,
 }: ApplicationDetailProps) {
   const { token } = theme.useToken()
   const { t } = useTranslation()
   const { notification } = App.useApp()
+  const { notifyApiError } = useNotifyApiError()
   const structuralUnits = useStructuralUnitsStore((state) => state.structuralUnits)
   const users = useUsersStore((state) => state.users)
+  const updateApplication = useApplicationsStore((state) => state.updateApplication)
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
+  const [deadlineEditorOpen, setDeadlineEditorOpen] = useState(false)
+  const [deadlineSaving, setDeadlineSaving] = useState(false)
+  const [deadlineDraft, setDeadlineDraft] = useState<Dayjs | null>(null)
 
   const handleCopyApplicationNumber = async (value: string) => {
     const copied = await copyTextToClipboard(value)
@@ -90,6 +97,11 @@ export function ApplicationDetail({
       }
     }
   }, [imagePreviewUrl])
+
+  useEffect(() => {
+    setDeadlineEditorOpen(false)
+    setDeadlineDraft(null)
+  }, [application?.id, application?.deadline])
 
   const submitter = useMemo(() => {
     if (!application) {
@@ -117,55 +129,8 @@ export function ApplicationDetail({
     }
   }, [application, users])
 
-  const workflowUnitStatuses = useMemo(
-    () => (application ? ensureApplicationWorkflowUnitStatuses(application) : []),
-    [application],
-  )
-
-  const showWorkflowStatus = application ? hasApplicationWorkflow(application) : false
   const isFinalized = application ? isApplicationFinalized(application) : false
-  const progressStepItems = useMemo(
-    () => {
-      if (!application) {
-        return []
-      }
-
-      return [
-        { key: 'submitted', title: t('applicationSubmit.progress.submitted') },
-        {
-          key: 'in_progress_work',
-          title: t('applicationSubmit.progress.inProgress'),
-          description:
-            application.workflowStatus === 'returned'
-              ? t('applicationWorkflow.status.returned')
-              : application.workflowStatus === 'in_progress_work' ||
-                  application.workflowStatus === 'pending_confirmation'
-                ? showWorkflowStatus
-                  ? t(`applicationWorkflow.status.${application.workflowStatus}`)
-                  : t(`applicationSubmit.status.${application.status}`)
-                : undefined,
-          status:
-            application.workflowStatus === 'returned'
-              ? ('error' as const)
-              : application.workflowStatus === 'in_progress_work' ||
-                  application.workflowStatus === 'pending_confirmation'
-                ? ('process' as const)
-                : ('finish' as const),
-        },
-        {
-          key: 'finalized',
-          title: t('applicationSubmit.progress.finalized'),
-          status:
-            application.workflowStatus === 'confirmed'
-              ? ('finish' as const)
-              : application.workflowStatus === 'cancelled'
-                ? ('error' as const)
-                : ('wait' as const),
-        },
-      ]
-    },
-    [application, showWorkflowStatus, t],
-  )
+  const showWorkflowStatus = Boolean(application?.workflowAssignments?.length)
 
   if (!application) {
     return (
@@ -199,18 +164,48 @@ export function ApplicationDetail({
     })
     .join(', ')
 
-  const sectionLabel = (() => {
-    if (application.submissionMode !== 'single' || !application.structuralUnitSectionId) {
-      return null
+  const recipientLabels = (application.recipientUserIds ?? [])
+    .map((userId) => {
+      const user = users.find((item) => item.id === userId)
+
+      return user ? getUserFullName(user) : userId
+    })
+    .join(', ')
+
+  const canChangeDeadline =
+    mode === 'submit' &&
+    application.type === 'execution' &&
+    !isFinalized &&
+    Boolean(onEdit)
+
+  const openDeadlineEditor = () => {
+    setDeadlineDraft(application.deadline ? dayjs(application.deadline) : dayjs())
+    setDeadlineEditorOpen(true)
+  }
+
+  const handleDeadlineSave = async (value: Dayjs | null) => {
+    if (!value) {
+      return
     }
 
-    const unit = structuralUnits.find((item) => item.id === application.structuralUnitIds[0])
-    const section = unit?.sections.find(
-      (item) => item.id === application.structuralUnitSectionId,
-    )
+    setDeadlineSaving(true)
 
-    return section ? section.shortName || section.originalName : application.structuralUnitSectionId
-  })()
+    try {
+      await updateApplication(application.id, {
+        deadline: value.format('YYYY-MM-DD'),
+      })
+      setDeadlineDraft(value)
+      setDeadlineEditorOpen(false)
+      notification.success({ message: t('applicationSubmit.messages.deadlineUpdated') })
+    } catch (error) {
+      notifyApiError(error, { fallbackKey: 'applicationSubmit.messages.error' })
+    } finally {
+      setDeadlineSaving(false)
+    }
+  }
+
+  const disablePastDate = (current: Dayjs) =>
+    current ? current.isBefore(dayjs().startOf('day')) : false
 
   const viewerSpecialMessage =
     mode === 'incoming' && !canViewAll
@@ -369,17 +364,6 @@ export function ApplicationDetail({
                     ? t(`applicationWorkflow.status.${application.workflowStatus}`)
                     : t(`applicationSubmit.status.${application.status}`)}
                 </Tag>
-                {onOpenWorkflow && (
-                  <Button
-                    type="primary"
-                    size="small"
-                    icon={<MessageOutlined />}
-                    onClick={onOpenWorkflow}
-                    style={headerActionStyle}
-                  >
-                    {t('applicationWorkflow.open')}
-                  </Button>
-                )}
                 {onEdit && (
                   <Button
                     type="primary"
@@ -431,18 +415,6 @@ export function ApplicationDetail({
             />
           )}
 
-          <div style={{ marginBottom: 24 }}>
-            <Steps
-              responsive
-              current={
-                application.workflowStatus === 'confirmed' || application.workflowStatus === 'cancelled'
-                  ? 2
-                  : 1
-              }
-              items={progressStepItems}
-            />
-          </div>
-
           {viewerSpecialMessage && (
             <div style={{ marginBottom: 24 }}>
               <ApplicationSpecialMessageCard message={viewerSpecialMessage} />
@@ -485,11 +457,6 @@ export function ApplicationDetail({
                 ),
               },
               {
-                key: 'submissionMode',
-                label: t('applicationSubmit.fields.submissionMode'),
-                children: t(`applicationSubmit.submissionModes.${application.submissionMode}`),
-              },
-              {
                 key: 'submitter',
                 label: t('applicationSubmit.fields.submittedBy'),
                 children: submitterName,
@@ -500,19 +467,16 @@ export function ApplicationDetail({
                 children: submitterUnitLabel,
               },
               {
-                key: 'units',
-                label:
-                  application.submissionMode === 'single'
-                    ? t('applicationSubmit.fields.structuralUnit')
-                    : t('applicationSubmit.fields.structuralUnits'),
-                children: unitLabels,
+                key: 'recipients',
+                label: t('applicationSubmit.fields.recipients'),
+                children: recipientLabels || '—',
               },
-              ...(sectionLabel
+              ...(unitLabels
                 ? [
                     {
-                      key: 'section',
-                      label: t('applicationSubmit.fields.section'),
-                      children: sectionLabel,
+                      key: 'units',
+                      label: t('applicationSubmit.fields.structuralUnits'),
+                      children: unitLabels,
                     },
                   ]
                 : []),
@@ -532,11 +496,44 @@ export function ApplicationDetail({
             ]}
           />
 
-          {workflowUnitStatuses.length > 0 && (
-            <ApplicationWorkflowUnitStatusList
-              application={application}
-              highlightStructuralUnitId={mode === 'incoming' ? viewerStructuralUnitId : undefined}
-            />
+          {canChangeDeadline && (
+            <div style={{ marginTop: 24, position: 'relative' }}>
+              {!deadlineEditorOpen ? (
+                <Button
+                  icon={<CalendarOutlined />}
+                  onClick={openDeadlineEditor}
+                  style={{ margin: 0 }}
+                >
+                  {t('applicationSubmit.changeDeadline')}
+                </Button>
+              ) : (
+                <Space wrap size={8} align="center">
+                  <DatePicker
+                    value={deadlineDraft}
+                    onChange={(value) => {
+                      setDeadlineDraft(value)
+                      void handleDeadlineSave(value)
+                    }}
+                    disabledDate={disablePastDate}
+                    format="DD.MM.YYYY"
+                    allowClear={false}
+                    open
+                    disabled={deadlineSaving}
+                    placeholder={t('applicationSubmit.placeholders.deadline')}
+                    getPopupContainer={(trigger) => trigger.parentElement ?? document.body}
+                  />
+                  <Button
+                    disabled={deadlineSaving}
+                    onClick={() => {
+                      setDeadlineEditorOpen(false)
+                      setDeadlineDraft(null)
+                    }}
+                  >
+                    {t('common.cancel')}
+                  </Button>
+                </Space>
+              )}
+            </div>
           )}
 
           <div style={{ marginTop: 24 }}>
@@ -581,6 +578,8 @@ export function ApplicationDetail({
               </Space>
             </div>
           )}
+
+          {showWorkflowPanel ? <ApplicationWorkflowPanel application={application} /> : null}
         </div>
       </div>
 

@@ -13,10 +13,31 @@ export type ApplicationWorkflowStatus =
   | 'confirmed'
   | 'cancelled'
 
+export type WorkflowAssignmentStatus =
+  | 'pending_accept'
+  | 'accepted'
+  | 'replied'
+  | 'forwarded'
+  | 'released'
+
 export interface ApplicationWorkflowUnitStatus {
   structuralUnitId: string
   workflowStatus: ApplicationWorkflowStatus
   confirmationFiles: ApplicationAttachment[]
+}
+
+export interface WorkflowAssignment {
+  id: string
+  userId: string
+  assignedByUserId: string
+  parentAssignmentId: string | null
+  status: WorkflowAssignmentStatus
+  replyMessageId?: string | null
+  forwardedToAssignmentId?: string | null
+  acceptedAt?: string | null
+  repliedAt?: string | null
+  releasedAt?: string | null
+  createdAt: string
 }
 
 export interface ApplicationAttachment {
@@ -37,12 +58,14 @@ export interface Application {
   id: string
   applicationNumber?: string | null
   submissionMode: ApplicationSubmissionMode
+  recipientUserIds: string[]
   structuralUnitIds: string[]
   structuralUnitSectionId?: string | null
   type: ApplicationType
   status: ApplicationStatus
   workflowStatus: ApplicationWorkflowStatus
   workflowUnitStatuses: ApplicationWorkflowUnitStatus[]
+  workflowAssignments: WorkflowAssignment[]
   deadline?: string
   images: ApplicationAttachment[]
   files: ApplicationAttachment[]
@@ -58,10 +81,11 @@ export interface Application {
 }
 
 export interface ApplicationFormValues {
-  submissionMode: ApplicationSubmissionMode
+  submissionMode?: ApplicationSubmissionMode
   numberMode: ApplicationNumberMode
   applicationNumber?: string | null
-  structuralUnitIds: string[]
+  recipientUserIds: string[]
+  structuralUnitIds?: string[]
   structuralUnitSectionId?: string | null
   type: ApplicationType
   deadline?: string
@@ -80,7 +104,9 @@ export interface ApplicationWorkflowMessage {
   authorStructuralUnitId?: string
   content: string
   attachments: ApplicationAttachment[]
+  assignmentId?: string | null
   createdAt: string
+  updatedAt?: string
 }
 
 export interface ApplicationWorkflowData {

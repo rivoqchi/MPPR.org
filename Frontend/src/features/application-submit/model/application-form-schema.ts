@@ -5,11 +5,9 @@ import type { ApplicationType } from '@/entities/application/model/types'
 
 export const applicationFormSchema = z
   .object({
-    submissionMode: z.enum(['single', 'combined']),
     numberMode: z.enum(['auto', 'manual']),
     applicationNumber: z.string().optional(),
-    structuralUnitIds: z.array(z.string()),
-    structuralUnitSectionId: z.string().optional(),
+    recipientUserIds: z.array(z.string()),
     type: z.enum(['execution', 'information']),
     deadline: z.custom<Dayjs | undefined>().optional(),
     images: z.array(
@@ -21,19 +19,11 @@ export const applicationFormSchema = z
     comment: z.string().trim().min(3, 'applicationSubmit.validation.commentMin'),
   })
   .superRefine((values, context) => {
-    if (values.submissionMode === 'single') {
-      if (values.structuralUnitIds.length !== 1) {
-        context.addIssue({
-          code: 'custom',
-          path: ['structuralUnitIds'],
-          message: 'applicationSubmit.validation.singleStructuralUnitRequired',
-        })
-      }
-    } else if (values.structuralUnitIds.length < 1) {
+    if (values.recipientUserIds.length < 1) {
       context.addIssue({
         code: 'custom',
-        path: ['structuralUnitIds'],
-        message: 'applicationSubmit.validation.structuralUnitsRequired',
+        path: ['recipientUserIds'],
+        message: 'applicationSubmit.validation.recipientsRequired',
       })
     }
 

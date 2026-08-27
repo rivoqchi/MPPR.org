@@ -788,6 +788,7 @@ export function PprCalendarPage() {
           month={calendarMonth}
           visibleMonth={visibleMonth}
           onVisibleMonthChange={setVisibleMonth}
+          selectedDate={selectedDate}
           isEditable={isEditable}
           canSubmit={canSubmit}
           canClear={canClear}
@@ -795,7 +796,6 @@ export function PprCalendarPage() {
           isMoveMode={isMoveMode}
           movingEntryId={movingEntry?.id ?? null}
           onDateClick={handleDateClick}
-          onEntryClick={handleOpenEntry}
           onSubmitMonth={() => setSubmitModalOpen(true)}
           onClearMonth={() => setClearModalOpen(true)}
         />

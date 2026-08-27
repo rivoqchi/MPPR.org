@@ -20,6 +20,16 @@ export function buildMonthGrid(visibleMonth: Dayjs): Dayjs[] {
   return Array.from({ length: CALENDAR_GRID_SIZE }, (_, index) => start.add(index, 'day'))
 }
 
+export function chunkMonthGridIntoWeeks(monthDays: Dayjs[]): Dayjs[][] {
+  const weeks: Dayjs[][] = []
+
+  for (let index = 0; index < monthDays.length; index += 7) {
+    weeks.push(monthDays.slice(index, index + 7))
+  }
+
+  return weeks
+}
+
 export function getWeekdayLabels(
   referenceDate: Dayjs,
   getLabel: (dayKey: WeekdayKey) => string,

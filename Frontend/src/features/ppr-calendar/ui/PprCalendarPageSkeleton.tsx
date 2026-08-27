@@ -36,43 +36,71 @@ export function PprCalendarPageSkeleton() {
         <div
           style={{
             flexShrink: 0,
-            display: 'grid',
-            gridTemplateColumns: '1fr auto 1fr',
+            display: 'flex',
             alignItems: 'center',
+            justifyContent: 'space-between',
             gap: 16,
-            padding: '16px 20px',
+            padding: '14px 20px',
             borderBottom: `1px solid ${token.colorBorderSecondary}`,
-            background: token.colorFillAlter,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Skeleton.Button active size="default" style={{ width: 32 }} />
-            <Skeleton.Button active size="default" style={{ width: 72 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Skeleton.Input active size="default" style={{ width: 160, height: 28 }} />
+            <Skeleton.Avatar active size={22} shape="circle" />
           </div>
-          <Skeleton.Input active size="large" style={{ width: 220, height: 34 }} />
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Skeleton.Button active size="default" style={{ width: 32 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Skeleton.Button active size="small" style={{ width: 88 }} />
+            <Skeleton.Button active size="small" style={{ width: 96 }} />
           </div>
         </div>
+
+        <div
+          style={{
+            flexShrink: 0,
+            display: 'grid',
+            gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
+            borderBottom: `1px solid ${token.colorBorderSecondary}`,
+          }}
+        >
+          {Array.from({ length: WEEKDAY_COUNT }, (_, index) => (
+            <div
+              key={index}
+              style={{
+                padding: '10px 8px',
+                display: 'flex',
+                justifyContent: 'center',
+              }}
+            >
+              <Skeleton.Input active size="small" style={{ width: 56, minWidth: 56 }} />
+            </div>
+          ))}
+        </div>
+
         <div
           style={{
             flex: 1,
             minHeight: 0,
             display: 'grid',
             gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
-            gridTemplateRows: `repeat(${CALENDAR_ROW_COUNT + 1}, minmax(0, 1fr))`,
+            gridTemplateRows: `repeat(${CALENDAR_ROW_COUNT}, minmax(0, 1fr))`,
           }}
         >
-          {Array.from({ length: WEEKDAY_COUNT * (CALENDAR_ROW_COUNT + 1) }, (_, index) => (
+          {Array.from({ length: WEEKDAY_COUNT * CALENDAR_ROW_COUNT }, (_, index) => (
             <div
               key={index}
               style={{
                 borderRight: `1px solid ${token.colorBorderSecondary}`,
                 borderBottom: `1px solid ${token.colorBorderSecondary}`,
-                padding: 8,
+                padding: '8px 10px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
               }}
             >
-              <Skeleton.Avatar active size={30} shape="circle" />
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Skeleton.Button active size="small" style={{ width: 18, minWidth: 18, height: 16 }} />
+              </div>
+              <Skeleton.Avatar active size={9} shape="circle" />
             </div>
           ))}
         </div>

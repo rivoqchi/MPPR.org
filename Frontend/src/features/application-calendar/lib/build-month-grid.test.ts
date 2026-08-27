@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildMonthGrid,
   CALENDAR_GRID_SIZE,
+  chunkMonthGridIntoWeeks,
   formatCalendarMonthTitle,
   getWeekdayLabels,
 } from '@/features/application-calendar/lib/build-month-grid'
@@ -54,5 +55,12 @@ describe('buildMonthGrid', () => {
     expect(
       formatCalendarMonthTitle(dayjs('2026-07-01'), (monthIndex) => monthLabels[monthIndex]!),
     ).toBe('July 2026')
+  })
+
+  it('chunks the month grid into six weeks of seven days', () => {
+    const weeks = chunkMonthGridIntoWeeks(buildMonthGrid(dayjs('2026-08-01')))
+
+    expect(weeks).toHaveLength(6)
+    expect(weeks.every((week) => week.length === 7)).toBe(true)
   })
 })

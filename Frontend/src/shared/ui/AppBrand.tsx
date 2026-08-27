@@ -1,5 +1,7 @@
-import { theme, Typography } from 'antd'
+import { PlusOutlined } from '@ant-design/icons'
+import { Button, theme, Typography } from 'antd'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 
 interface AppBrandMarkProps {
   size?: number
@@ -35,17 +37,27 @@ interface AppBrandHeaderProps {
   collapsed?: boolean
   compact?: boolean
   showBorder?: boolean
+  showAction?: boolean
+  onActionClick?: () => void
 }
 
 export function AppBrandHeader({
   collapsed = false,
   compact = false,
   showBorder = true,
+  showAction = false,
+  onActionClick,
 }: AppBrandHeaderProps) {
   const { token } = theme.useToken()
   const { t } = useTranslation()
+  const navigate = useNavigate()
 
   const markSize = collapsed ? 36 : compact ? 56 : 48
+
+  const handleActionClick = () => {
+    navigate('/applications/submit')
+    onActionClick?.()
+  }
 
   return (
     <div
@@ -59,35 +71,54 @@ export function AppBrandHeader({
         minHeight: collapsed ? 64 : undefined,
         flexShrink: 0,
         textAlign: 'center',
+        width: '100%',
       }}
     >
       <AppBrandMark size={markSize} />
       {!collapsed && (
-        <div style={{ maxWidth: '100%' }}>
-          <Typography.Text
-            strong
-            style={{
-              display: 'block',
-              color: token.colorText,
-              fontSize: compact ? 20 : 16,
-              lineHeight: 1.3,
-              fontWeight: 700,
-            }}
-          >
-            {t('app.name')}
-          </Typography.Text>
-          <Typography.Text
-            style={{
-              display: 'block',
-              marginTop: 4,
-              color: token.colorTextSecondary,
-              fontSize: compact ? 13 : 11,
-              lineHeight: 1.35,
-            }}
-          >
-            {t('app.tagline')}
-          </Typography.Text>
-        </div>
+        <>
+          <div style={{ maxWidth: '100%' }}>
+            <Typography.Text
+              strong
+              style={{
+                display: 'block',
+                color: token.colorText,
+                fontSize: compact ? 20 : 16,
+                lineHeight: 1.3,
+                fontWeight: 700,
+              }}
+            >
+              {t('app.name')}
+            </Typography.Text>
+            <Typography.Text
+              style={{
+                display: 'block',
+                marginTop: 4,
+                color: token.colorTextSecondary,
+                fontSize: compact ? 13 : 11,
+                lineHeight: 1.35,
+              }}
+            >
+              {t('app.tagline')}
+            </Typography.Text>
+          </div>
+          {showAction && !compact && (
+            <Button
+              type="primary"
+              shape="round"
+              block
+              icon={<PlusOutlined />}
+              onClick={handleActionClick}
+              style={{
+                marginTop: 4,
+                height: 40,
+                fontWeight: 600,
+              }}
+            >
+              {t('app.newApplication')}
+            </Button>
+          )}
+        </>
       )}
     </div>
   )

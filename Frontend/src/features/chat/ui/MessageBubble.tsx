@@ -1,19 +1,11 @@
-import {
-  CheckOutlined,
-  DownloadOutlined,
-  FileOutlined,
-  PlayCircleOutlined,
-} from '@ant-design/icons'
+import { CheckOutlined, DownloadOutlined, FileOutlined } from '@ant-design/icons'
 import { Dropdown, Image, theme, Typography } from 'antd'
 import type { MenuProps } from 'antd'
 import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
 import type { ChatMessage } from '@/entities/chat/model/types'
-import {
-  formatChatBytes,
-  formatVoiceDuration,
-  getChatAttachmentUrl,
-} from '@/features/chat/lib/chat-attachments'
+import { formatChatBytes, getChatAttachmentUrl } from '@/features/chat/lib/chat-attachments'
+import { VoiceMessagePlayer } from '@/features/chat/ui/VoiceMessagePlayer'
 
 interface MessageBubbleProps {
   message: ChatMessage
@@ -128,20 +120,13 @@ export function MessageBubble({
 
                 if (attachment.kind === 'voice') {
                   return (
-                    <div
+                    <VoiceMessagePlayer
                       key={attachment.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        marginBottom: 6,
-                        minWidth: 200,
-                      }}
-                    >
-                      <PlayCircleOutlined />
-                      <audio controls src={getChatAttachmentUrl(attachment)} style={{ flex: 1, height: 32 }} />
-                      <span style={{ fontSize: 12 }}>{formatVoiceDuration(attachment.durationSec)}</span>
-                    </div>
+                      src={getChatAttachmentUrl(attachment)}
+                      durationSec={attachment.durationSec}
+                      isOwn={isOwn}
+                      seed={attachment.id}
+                    />
                   )
                 }
 

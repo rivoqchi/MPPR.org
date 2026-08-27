@@ -6,6 +6,19 @@ export function SubmitApplicationPageSkeleton() {
 
   return (
     <div style={fullHeightPageStyle}>
+      <div
+        style={{
+          flexShrink: 0,
+          marginBottom: 12,
+          background: token.colorBgContainer,
+          border: `1px solid ${token.colorBorderSecondary}`,
+          borderRadius: token.borderRadiusLG,
+          padding: '12px 16px',
+        }}
+      >
+        <Skeleton.Input active block style={{ maxWidth: 720 }} />
+      </div>
+
       <div style={splitPageRowStyle}>
         <div
           style={{

@@ -3,6 +3,7 @@
     "name": "Unified Technical Control",
     "tagline": "PPR planning and inter-unit document circulation system",
     "hello": "Welcome to Unified Technical Control",
+    "newApplication": "New application",
     "dashboard": "Dashboard",
     "theme": "Theme",
     "language": "Language",
@@ -10,7 +11,8 @@
     "dark": "Dark"
   },
   "layout": {
-    "openMenu": "Open menu"
+    "openMenu": "Open menu",
+    "structuralUnitNumber": "Unit number : {{number}}"
   },
   "api": {
     "errors": {
@@ -41,6 +43,9 @@
       "NOTIFICATION_NOT_FOUND": "Notification not found",
       "APPLICATION_NOT_FOUND": "Application not found",
       "APPLICATION_CANNOT_TARGET_OWN_STRUCTURAL_UNIT": "You cannot submit an application to your own structural unit",
+      "APPLICATION_CANNOT_TARGET_SELF": "You cannot select yourself as a recipient",
+      "APPLICATION_RECIPIENTS_REQUIRED": "Select at least one recipient",
+      "APPLICATION_RECIPIENTS_INVALID": "Selected recipients are invalid or inactive",
       "APPLICATION_SECTION_REQUIRED": "Select a section for the chosen structural unit",
       "APPLICATION_SECTION_INVALID": "The selected section is invalid",
       "APPLICATION_SINGLE_UNIT_REQUIRED": "A single application must target exactly one structural unit",
@@ -98,6 +103,9 @@
         "STRUCTURAL_UNIT_IN_USE": "Reassign users to another structural unit before deleting",
         "APPLICATION_WORKFLOW_FORBIDDEN": "The application is outside your scope or your role lacks permission",
         "APPLICATION_CANNOT_TARGET_OWN_STRUCTURAL_UNIT": "Select a different structural unit",
+        "APPLICATION_CANNOT_TARGET_SELF": "Select a different recipient",
+        "APPLICATION_RECIPIENTS_REQUIRED": "Select at least one recipient",
+        "APPLICATION_RECIPIENTS_INVALID": "Select active users as recipients",
         "APPLICATION_SECTION_REQUIRED": "Open the unit sections and select one",
         "APPLICATION_SECTION_INVALID": "Select one of the available sections",
         "APPLICATION_SINGLE_UNIT_REQUIRED": "Keep only one structural unit for a single application",
@@ -476,14 +484,15 @@
     "today": "Today",
     "previousMonth": "Previous month",
     "nextMonth": "Next month",
+    "onlySubmittedByMe": "Applications I submitted",
     "weekdays": {
-      "sunday": "Sun",
-      "monday": "Mon",
-      "tuesday": "Tue",
-      "wednesday": "Wed",
-      "thursday": "Thu",
-      "friday": "Fri",
-      "saturday": "Sat"
+      "sunday": "sunday",
+      "monday": "monday",
+      "tuesday": "tuesday",
+      "wednesday": "wednesday",
+      "thursday": "thursday",
+      "friday": "friday",
+      "saturday": "saturday"
     },
     "months": {
       "0": "January",
@@ -500,6 +509,19 @@
       "11": "December"
     },
     "moreEvents": "+{{count}} more",
+    "dayPanel": {
+      "title": "{{date}} — deadline applications",
+      "empty": "No applications on this day",
+      "columns": {
+        "number": "Document number",
+        "type": "Document type",
+        "summary": "Summary",
+        "sender": "Sender",
+        "executor": "Main executor",
+        "status": "Status",
+        "files": "Files"
+      }
+    },
     "modal": {
       "title": "Application details",
       "viewDetails": "View application",
@@ -514,13 +536,13 @@
     "nextMonth": "Next month",
     "moreEvents": "+{{count}} more",
     "weekdays": {
-      "sunday": "Sun",
-      "monday": "Mon",
-      "tuesday": "Tue",
-      "wednesday": "Wed",
-      "thursday": "Thu",
-      "friday": "Fri",
-      "saturday": "Sat"
+      "sunday": "sunday",
+      "monday": "monday",
+      "tuesday": "tuesday",
+      "wednesday": "wednesday",
+      "thursday": "thursday",
+      "friday": "friday",
+      "saturday": "saturday"
     },
     "months": {
       "0": "January",
@@ -891,6 +913,18 @@
     "selectItem": "Select an application",
     "emptyList": "No applications sent yet",
     "emptySearch": "No applications match your search",
+    "statusTabs": {
+      "label": "Application status filters",
+      "all": "All",
+      "completed": "Completed",
+      "not_completed": "Not completed",
+      "in_progress": "In progress",
+      "completed_late": "Completed past deadline",
+      "pending_confirmation": "Pending confirmation",
+      "unseen": "Unseen",
+      "co_executor": "Co-executor"
+    },
+    "emptyStatusFilter": "No applications match this status",
     "uploadImages": "Upload images",
     "uploadFiles": "Upload files",
     "drawer": {
@@ -902,6 +936,7 @@
       "submitterStructuralUnit": "Submitter structural unit",
       "submissionMode": "Application routing",
       "applicationNumber": "Application number",
+      "recipients": "Application recipients",
       "structuralUnit": "Structural unit",
       "structuralUnits": "Structural units",
       "section": "Section",
@@ -915,6 +950,7 @@
       "structuralUnit": "Select a structural unit",
       "structuralUnits": "Select one or more structural units",
       "section": "Select a section",
+      "recipients": "Select one or more users",
       "applicationNumber": "Enter application number",
       "type": "Select application type",
       "deadline": "Select deadline",
@@ -932,10 +968,8 @@
       "auto": "Automatic",
       "manual": "Manual"
     },
-    "hints": {
-      "autoNumber": "Automatic format: {{preview}}"
-    },
     "copyNumber": "Copy application number",
+    "changeDeadline": "Change execution deadline",
     "types": {
       "execution": "For execution",
       "information": "For information"
@@ -953,8 +987,10 @@
       "structuralUnitsRequired": "Select at least one structural unit",
       "singleStructuralUnitRequired": "Select exactly one structural unit for a single application",
       "sectionRequired": "Select a section for the chosen structural unit",
+      "recipientsRequired": "Select at least one recipient",
       "applicationNumberRequired": "Enter at least 3 characters for the application number",
       "cannotTargetOwnStructuralUnit": "You cannot submit an application to your own structural unit",
+      "cannotTargetSelf": "You cannot select yourself as a recipient",
       "deadlineRequired": "Select a deadline for execution applications",
       "commentMin": "Comment must be at least 3 characters"
     },
@@ -965,6 +1001,7 @@
       "error": "Failed to send application",
       "numberCopied": "Application number copied",
       "numberCopyFailed": "Could not copy application number",
+      "deadlineUpdated": "Execution deadline updated",
       "finalizedHint": "Application confirmed",
       "cancelledLockedHint": "Cancelled applications cannot be edited or deleted"
     },
@@ -995,6 +1032,7 @@
     "selectItem": "Select an application",
     "emptyList": "No incoming applications yet",
     "emptySearch": "No applications match your search",
+    "emptyStatusFilter": "No applications match this status",
     "specialMessage": {
       "badge": "Special message",
       "highlightTitle": "Special message for you"
@@ -1018,7 +1056,34 @@
     },
     "actions": {
       "confirm": "Confirm",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "accept": "Accept",
+      "forward": "Forward to employee",
+      "forwardConfirm": "Forward",
+      "reply": "Reply",
+      "editReply": "Edit reply",
+      "saveReply": "Save",
+      "sendReply": "Send",
+      "attach": "File/image",
+      "release": "Release from supervision",
+      "releaseAndClose": "Release and close"
+    },
+    "assignmentStatus": {
+      "pending_accept": "Waiting to accept",
+      "accepted": "Accepted",
+      "replied": "Replied",
+      "forwarded": "Forwarded",
+      "released": "Released"
+    },
+    "placeholders": {
+      "forwardUser": "Select an employee"
+    },
+    "releaseModal": {
+      "title": "Release from supervision",
+      "message": "Are you sure you want to release this application from supervision?",
+      "closeTitle": "Close application",
+      "closeMessage": "Are you sure you want to release and finalize this application?",
+      "ok": "Yes, release"
     },
     "finalizeModal": {
       "no": "No",
@@ -1047,6 +1112,13 @@
     },
     "messages": {
       "loadError": "Failed to load workflow",
+      "error": "Action failed",
+      "accepted": "Application accepted",
+      "forwarded": "Application forwarded",
+      "replied": "Reply sent",
+      "replyUpdated": "Reply updated",
+      "released": "Released from supervision",
+      "closed": "Application confirmed and closed",
       "sendError": "Failed to send message",
       "statusUpdated": "Status updated successfully",
       "statusError": "Failed to update status",

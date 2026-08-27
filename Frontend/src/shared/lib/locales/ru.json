@@ -3,6 +3,7 @@
     "name": "Единый технический контроль",
     "tagline": "Система планирования ППР и межведомственного документооборота",
     "hello": "Добро пожаловать в систему «Единый технический контроль»",
+    "newApplication": "Новая заявка",
     "dashboard": "Главная",
     "theme": "Тема",
     "language": "Язык",
@@ -10,7 +11,8 @@
     "dark": "Тёмная"
   },
   "layout": {
-    "openMenu": "Открыть меню"
+    "openMenu": "Открыть меню",
+    "structuralUnitNumber": "Номер подразделения : {{number}}"
   },
   "api": {
     "errors": {
@@ -41,6 +43,9 @@
       "NOTIFICATION_NOT_FOUND": "Уведомление не найдено",
       "APPLICATION_NOT_FOUND": "Заявка не найдена",
       "APPLICATION_CANNOT_TARGET_OWN_STRUCTURAL_UNIT": "Нельзя отправить заявку в своё структурное подразделение",
+      "APPLICATION_CANNOT_TARGET_SELF": "Нельзя выбрать себя получателем",
+      "APPLICATION_RECIPIENTS_REQUIRED": "Выберите хотя бы одного получателя",
+      "APPLICATION_RECIPIENTS_INVALID": "Выбранные получатели недействительны или неактивны",
       "APPLICATION_SECTION_REQUIRED": "Выберите отдел для выбранного подразделения",
       "APPLICATION_SECTION_INVALID": "Выбранный отдел недействителен",
       "APPLICATION_SINGLE_UNIT_REQUIRED": "Для одиночной заявки можно выбрать только одно подразделение",
@@ -98,6 +103,9 @@
         "STRUCTURAL_UNIT_IN_USE": "Сначала переведите пользователей в другое подразделение",
         "APPLICATION_WORKFLOW_FORBIDDEN": "Заявка вне вашей зоны ответственности или недостаточно прав",
         "APPLICATION_CANNOT_TARGET_OWN_STRUCTURAL_UNIT": "Выберите другое структурное подразделение",
+        "APPLICATION_CANNOT_TARGET_SELF": "Выберите другого получателя",
+        "APPLICATION_RECIPIENTS_REQUIRED": "Выберите хотя бы одного получателя",
+        "APPLICATION_RECIPIENTS_INVALID": "Выберите активных пользователей в качестве получателей",
         "APPLICATION_SECTION_REQUIRED": "Откройте отделы подразделения и выберите нужный",
         "APPLICATION_SECTION_INVALID": "Выберите один из доступных отделов",
         "APPLICATION_SINGLE_UNIT_REQUIRED": "Для одиночной заявки оставьте только одно подразделение",
@@ -476,14 +484,15 @@
     "today": "Сегодня",
     "previousMonth": "Предыдущий месяц",
     "nextMonth": "Следующий месяц",
+    "onlySubmittedByMe": "Заявки, которые я отправил",
     "weekdays": {
-      "sunday": "Вс",
-      "monday": "Пн",
-      "tuesday": "Вт",
-      "wednesday": "Ср",
-      "thursday": "Чт",
-      "friday": "Пт",
-      "saturday": "Сб"
+      "sunday": "воскресенье",
+      "monday": "понедельник",
+      "tuesday": "вторник",
+      "wednesday": "среда",
+      "thursday": "четверг",
+      "friday": "пятница",
+      "saturday": "суббота"
     },
     "months": {
       "0": "Январь",
@@ -500,6 +509,19 @@
       "11": "Декабрь"
     },
     "moreEvents": "ещё {{count}}",
+    "dayPanel": {
+      "title": "{{date}} — заявки со сроком",
+      "empty": "На этот день заявок нет",
+      "columns": {
+        "number": "Номер документа",
+        "type": "Тип документа",
+        "summary": "Краткое содержание",
+        "sender": "Отправитель",
+        "executor": "Основной исполнитель",
+        "status": "Статус",
+        "files": "Файлы"
+      }
+    },
     "modal": {
       "title": "Сведения о заявке",
       "viewDetails": "Подробнее о заявке",
@@ -514,13 +536,13 @@
     "nextMonth": "Следующий месяц",
     "moreEvents": "ещё {{count}}",
     "weekdays": {
-      "sunday": "Вс",
-      "monday": "Пн",
-      "tuesday": "Вт",
-      "wednesday": "Ср",
-      "thursday": "Чт",
-      "friday": "Пт",
-      "saturday": "Сб"
+      "sunday": "воскресенье",
+      "monday": "понедельник",
+      "tuesday": "вторник",
+      "wednesday": "среда",
+      "thursday": "четверг",
+      "friday": "пятница",
+      "saturday": "суббота"
     },
     "months": {
       "0": "Январь",
@@ -891,6 +913,18 @@
     "selectItem": "Выберите заявку",
     "emptyList": "Заявки ещё не отправлялись",
     "emptySearch": "По запросу ничего не найдено",
+    "statusTabs": {
+      "label": "Фильтры статуса заявок",
+      "all": "Все",
+      "completed": "Выполненные",
+      "not_completed": "Невыполненные",
+      "in_progress": "В процессе",
+      "completed_late": "Выполнены с опозданием",
+      "pending_confirmation": "На подтверждении",
+      "unseen": "Непросмотренные",
+      "co_executor": "Соисполнитель"
+    },
+    "emptyStatusFilter": "Нет заявок с этим статусом",
     "uploadImages": "Загрузить изображения",
     "uploadFiles": "Загрузить файлы",
     "drawer": {
@@ -902,6 +936,7 @@
       "submitterStructuralUnit": "Структурное подразделение отправителя",
       "submissionMode": "Тип направления",
       "applicationNumber": "Номер заявки",
+      "recipients": "Получатели заявки",
       "structuralUnit": "Структурное подразделение",
       "structuralUnits": "Структурные подразделения",
       "section": "Отдел",
@@ -915,6 +950,7 @@
       "structuralUnit": "Выберите подразделение",
       "structuralUnits": "Выберите одно или несколько подразделений",
       "section": "Выберите отдел",
+      "recipients": "Выберите одного или нескольких пользователей",
       "applicationNumber": "Введите номер заявки",
       "type": "Выберите тип заявки",
       "deadline": "Выберите срок",
@@ -932,10 +968,8 @@
       "auto": "Автоматически",
       "manual": "Вручную"
     },
-    "hints": {
-      "autoNumber": "Автоматический формат: {{preview}}"
-    },
     "copyNumber": "Скопировать номер заявки",
+    "changeDeadline": "Изменить срок исполнения",
     "types": {
       "execution": "Для исполнения",
       "information": "Для информации"
@@ -953,8 +987,10 @@
       "structuralUnitsRequired": "Выберите хотя бы одно структурное подразделение",
       "singleStructuralUnitRequired": "Для одиночной заявки выберите одно подразделение",
       "sectionRequired": "Выберите отдел для выбранного подразделения",
+      "recipientsRequired": "Выберите хотя бы одного получателя",
       "applicationNumberRequired": "Введите номер заявки (минимум 3 символа)",
       "cannotTargetOwnStructuralUnit": "Нельзя отправить заявку в своё структурное подразделение",
+      "cannotTargetSelf": "Нельзя выбрать себя получателем",
       "deadlineRequired": "Укажите срок для заявки на исполнение",
       "commentMin": "Комментарий должен содержать минимум 3 символа"
     },
@@ -965,6 +1001,7 @@
       "error": "Ошибка при отправке заявки",
       "numberCopied": "Номер заявки скопирован",
       "numberCopyFailed": "Не удалось скопировать номер заявки",
+      "deadlineUpdated": "Срок исполнения обновлён",
       "finalizedHint": "Заявка подтверждена",
       "cancelledLockedHint": "Отменённую заявку нельзя редактировать или удалить"
     },
@@ -995,6 +1032,7 @@
     "selectItem": "Выберите заявку",
     "emptyList": "Входящих заявок пока нет",
     "emptySearch": "По запросу ничего не найдено",
+    "emptyStatusFilter": "Нет заявок с этим статусом",
     "specialMessage": {
       "badge": "Спец. сообщение",
       "highlightTitle": "Специальное сообщение для вас"
@@ -1018,7 +1056,34 @@
     },
     "actions": {
       "confirm": "Подтвердить",
-      "cancel": "Отменить"
+      "cancel": "Отменить",
+      "accept": "Принять",
+      "forward": "Направить сотруднику",
+      "forwardConfirm": "Направить",
+      "reply": "Ответить",
+      "editReply": "Редактировать ответ",
+      "saveReply": "Сохранить",
+      "sendReply": "Отправить",
+      "attach": "Файл/изображение",
+      "release": "Снять с контроля",
+      "releaseAndClose": "Снять с контроля и закрыть"
+    },
+    "assignmentStatus": {
+      "pending_accept": "Ожидает принятия",
+      "accepted": "Принята",
+      "replied": "Ответ отправлен",
+      "forwarded": "Направлена",
+      "released": "Снята с контроля"
+    },
+    "placeholders": {
+      "forwardUser": "Выберите сотрудника"
+    },
+    "releaseModal": {
+      "title": "Снять с контроля",
+      "message": "Вы действительно хотите снять эту заявку с контроля?",
+      "closeTitle": "Закрыть заявку",
+      "closeMessage": "Вы действительно хотите снять с контроля и завершить заявку?",
+      "ok": "Да, снять"
     },
     "finalizeModal": {
       "no": "Нет",
@@ -1047,6 +1112,13 @@
     },
     "messages": {
       "loadError": "Не удалось загрузить рабочий процесс",
+      "error": "Не удалось выполнить действие",
+      "accepted": "Заявка принята",
+      "forwarded": "Заявка направлена сотруднику",
+      "replied": "Ответ отправлен",
+      "replyUpdated": "Ответ обновлён",
+      "released": "Снято с контроля",
+      "closed": "Заявка подтверждена и закрыта",
       "sendError": "Не удалось отправить сообщение",
       "statusUpdated": "Статус успешно обновлён",
       "statusError": "Не удалось обновить статус",

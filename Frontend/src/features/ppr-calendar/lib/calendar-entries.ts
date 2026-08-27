@@ -376,6 +376,38 @@ export function getExecutionStatusTagColor(
   return 'default'
 }
 
+const PPR_CALENDAR_MAX_STATUS_DOTS = 5
+
+export function getPprEntryStatusDotColor(
+  entry: PprCalendarEntry,
+  options?: { showExecutionProgress?: boolean },
+): string {
+  if (options?.showExecutionProgress && isPprExecutionOverdue(entry.date)) {
+    return '#cf1322'
+  }
+
+  const status = getEntryExecutionStatus(entry)
+
+  switch (status) {
+    case 'completed':
+      return '#1677ff'
+    case 'in_progress':
+      return '#8b5a2b'
+    case 'pending':
+    default:
+      return '#8b5a2b'
+  }
+}
+
+export function getPprDayDotColors(
+  entries: PprCalendarEntry[],
+  options?: { showExecutionProgress?: boolean },
+): string[] {
+  return entries
+    .slice(0, PPR_CALENDAR_MAX_STATUS_DOTS)
+    .map((entry) => getPprEntryStatusDotColor(entry, options))
+}
+
 export function getViewScopeLabel(
   viewScope: PprCalendarViewScope | null | undefined,
   structuralUnit: Pick<StructuralUnit, 'sections'> | undefined,

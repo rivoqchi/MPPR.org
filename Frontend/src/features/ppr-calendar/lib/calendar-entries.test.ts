@@ -9,6 +9,8 @@ import {
   findPendingMonthForView,
   getDayCompletionPercent,
   getEntryCompletionPercent,
+  getPprDayDotColors,
+  getPprEntryStatusDotColor,
   groupEntriesByDate,
   isPprExecutionOverdue,
   isStructuralUnitHead,
@@ -215,5 +217,32 @@ describe('buildExecutionTimelineSteps', () => {
     expect(steps[1]?.completionPercent).toBe(67)
     expect(steps[2]?.completionPercent).toBe(100)
     expect(steps[2]?.isCompleted).toBe(true)
+  })
+})
+
+describe('ppr calendar status dots', () => {
+  it('maps entry execution state to calendar dot colors', () => {
+    const pending = baseEntry
+    const completed: PprCalendarEntry = {
+      ...baseEntry,
+      id: 'entry-completed',
+      executions: [
+        {
+          id: 'exec-1',
+          entryId: 'entry-completed',
+          objectId: 'obj-1',
+          images: [],
+          files: [],
+          comment: '',
+          executedByUserId: 'user-1',
+          createdAt: '2026-07-01T00:00:00.000Z',
+          updatedAt: '2026-07-01T00:00:00.000Z',
+        },
+      ],
+    }
+
+    expect(getPprEntryStatusDotColor(pending)).toBe('#8b5a2b')
+    expect(getPprEntryStatusDotColor(completed)).toBe('#1677ff')
+    expect(getPprDayDotColors([pending, completed])).toEqual(['#8b5a2b', '#1677ff'])
   })
 })

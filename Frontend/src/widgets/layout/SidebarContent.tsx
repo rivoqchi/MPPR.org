@@ -1,8 +1,10 @@
 import { Menu } from 'antd'
 import { useLocation } from 'react-router-dom'
 import type { SidebarPosition } from '@/shared/types'
+import { useRolePermissions } from '@/shared/hooks/useRolePermissions'
 import { AppBrandHeader } from '@/shared/ui/AppBrand'
 import { ChatSidebarPanel } from '@/features/chat/ui/ChatSidebarPanel'
+import { SidebarFooter } from '@/widgets/layout/SidebarFooter'
 import { SidebarSkeleton } from '@/widgets/layout/SidebarSkeleton'
 import { useSidebarMenu } from '@/widgets/layout/use-sidebar-menu'
 
@@ -23,7 +25,9 @@ export function SidebarContent({
 }: SidebarContentProps) {
   const location = useLocation()
   const isChat = isChatRoute(location.pathname)
+  const { canView } = useRolePermissions()
   const { activeMenuPath, openKeys, menuItems, handleOpenChange, isMenuLoading } = useSidebarMenu()
+  const canSubmitApplication = canView('/applications/submit')
 
   if (isChat) {
     return (
@@ -42,8 +46,12 @@ export function SidebarContent({
   }
 
   return (
-    <>
-      <AppBrandHeader collapsed={collapsed} />
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <AppBrandHeader
+        collapsed={collapsed}
+        showAction={canSubmitApplication}
+        onActionClick={onNavigate}
+      />
       <Menu
         mode="inline"
         selectedKeys={[activeMenuPath]}
@@ -51,12 +59,16 @@ export function SidebarContent({
         onOpenChange={handleOpenChange}
         items={menuItems}
         onClick={onNavigate}
-        style={
-          sidebarPosition === 'right'
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          ...(sidebarPosition === 'right'
             ? { borderInlineStart: 'none' }
-            : { borderInlineEnd: 'none' }
-        }
+            : { borderInlineEnd: 'none' }),
+        }}
       />
-    </>
+      <SidebarFooter collapsed={collapsed} />
+    </div>
   )
 }

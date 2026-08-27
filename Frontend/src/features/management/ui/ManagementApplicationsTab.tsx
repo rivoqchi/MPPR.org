@@ -5,8 +5,6 @@ import type { Application } from '@/entities/application/model/types'
 import { useApplicationsStore } from '@/entities/application/model/applications-store'
 import { useStructuralUnitsStore } from '@/entities/structural-unit/model/structural-units-store'
 import { useUsersStore } from '@/entities/user/model/users-store'
-import { ApplicationWorkflowWorkspace } from '@/features/application-workflow/ui/ApplicationWorkflowWorkspace'
-import { canAccessApplicationWorkflow } from '@/features/application-workflow/lib/workflow-access'
 import { filterIncomingApplications } from '@/features/application-submit/lib/incoming-applications'
 import { isApplicationFinalized } from '@/features/application-submit/lib/application-status'
 import { ApplicationDetail } from '@/features/application-submit/ui/ApplicationDetail'
@@ -45,8 +43,6 @@ export function ManagementApplicationsTab({
   const [editingApplication, setEditingApplication] = useState<Application | null>(null)
   const [selectedSubmittedApplicationId, setSelectedSubmittedApplicationId] = useState<string>()
   const [selectedIncomingApplicationId, setSelectedIncomingApplicationId] = useState<string>()
-  const [workflowApplicationId, setWorkflowApplicationId] = useState<string>()
-  const [workflowSource, setWorkflowSource] = useState<'submitted' | 'incoming'>('submitted')
 
   const submittedApplications = useMemo(
     () =>
@@ -87,24 +83,6 @@ export function ManagementApplicationsTab({
     () => incomingApplications.find((application) => application.id === activeIncomingApplicationId),
     [activeIncomingApplicationId, incomingApplications],
   )
-
-  const workflowApplication = useMemo(
-    () => applications.find((application) => application.id === workflowApplicationId),
-    [applications, workflowApplicationId],
-  )
-
-  const workflowTarget =
-    workflowApplication ??
-    selectedIncomingApplication ??
-    selectedSubmittedApplication ??
-    submittedApplications[0] ??
-    incomingApplications[0]
-
-  const openWorkflow = (application: Application, source: 'submitted' | 'incoming') => {
-    setWorkflowApplicationId(application.id)
-    setWorkflowSource(source)
-    onSubtabChange('workflow')
-  }
 
   const handleOpenSend = () => {
     setEditingApplication(null)
@@ -174,21 +152,6 @@ export function ManagementApplicationsTab({
                     ? handleDelete
                     : undefined
                 }
-                onOpenWorkflow={
-                  selectedSubmittedApplication &&
-                  canAccessApplicationWorkflow(
-                    selectedSubmittedApplication,
-                    currentUser?.structuralUnitId,
-                    canViewAll,
-                    {
-                      userId: currentUser?.id,
-                      structuralUnits,
-                      users,
-                    },
-                  )
-                    ? () => openWorkflow(selectedSubmittedApplication, 'submitted')
-                    : undefined
-                }
               />
             </div>
 
@@ -225,43 +188,20 @@ export function ManagementApplicationsTab({
               mode="incoming"
               viewerStructuralUnitId={currentUser?.structuralUnitId}
               canViewAll={canViewAll}
-              onOpenWorkflow={
-                selectedIncomingApplication &&
-                canEdit(incomingPageKey) &&
-                canAccessApplicationWorkflow(
-                  selectedIncomingApplication,
-                  currentUser?.structuralUnitId,
-                  canViewAll,
-                  {
-                    userId: currentUser?.id,
-                    structuralUnits,
-                    users,
-                  },
-                )
-                  ? () => openWorkflow(selectedIncomingApplication, 'incoming')
-                  : undefined
-              }
             />
           </div>
         ) : null}
 
         {subtab === 'workflow' ? (
-          workflowTarget ? (
-            <ApplicationWorkflowWorkspace
-              applicationId={workflowTarget.id}
-              onBack={() => onSubtabChange(workflowSource)}
-            />
-          ) : (
-            <div
-              style={{
-                ...fullHeightPageStyle,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Empty description={t('managementPage.workflowEmptyDescription')} />
-            </div>
-          )
+          <div
+            style={{
+              ...fullHeightPageStyle,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Empty description={t('managementPage.workflowEmptyDescription')} />
+          </div>
         ) : null}
       </div>
     </div>

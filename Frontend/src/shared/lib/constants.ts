@@ -12,6 +12,8 @@ export const APP_NAME = 'Yagona texnik nazorat'
 export const APP_TAGLINE =
   'PPR rejalashtirish va tarkibiy tuzilmalararo hujjat aylanish tizimi'
 
+export const STRUCTURAL_UNIT_DISPLAY_NUMBER = '5055'
+
 export const APP_LOCALES = ['uz', 'uzc', 'ru', 'en'] as const
 
 export const LOCALE_LABELS: Record<(typeof APP_LOCALES)[number], string> = {

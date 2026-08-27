@@ -19,10 +19,16 @@ function normalizeApplication(application: Application): Application {
     workflowStatus: application.workflowStatus ?? DEFAULT_WORKFLOW_STATUS,
     applicationNumber: application.applicationNumber ?? null,
     submissionMode: application.submissionMode === 'single' ? 'single' : 'combined',
+    recipientUserIds: Array.isArray(application.recipientUserIds)
+      ? application.recipientUserIds
+      : [],
     structuralUnitIds: Array.isArray(application.structuralUnitIds)
       ? application.structuralUnitIds
       : [],
     structuralUnitSectionId: application.structuralUnitSectionId ?? null,
+    workflowAssignments: Array.isArray(application.workflowAssignments)
+      ? application.workflowAssignments
+      : [],
     images: Array.isArray(application.images) ? application.images : [],
     files: Array.isArray(application.files) ? application.files : [],
     specialMessages: Array.isArray(application.specialMessages)
@@ -41,7 +47,7 @@ interface ApplicationsState {
   setApplications: (applications: Application[]) => void
   hydrate: () => Promise<void>
   addApplication: (data: ApplicationFormValues) => Promise<Application>
-  updateApplication: (id: string, data: ApplicationFormValues) => Promise<Application | null>
+  updateApplication: (id: string, data: Partial<ApplicationFormValues>) => Promise<Application | null>
   removeApplication: (id: string) => Promise<boolean>
 }
 

@@ -1,17 +1,17 @@
-import { LogoutOutlined, MenuOutlined, UserOutlined } from '@ant-design/icons'
-import { Avatar, Button, Dropdown, Layout, Modal, Select, Space, theme } from 'antd'
+import { LogoutOutlined, MenuOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons'
+import { Button, Dropdown, Layout, Modal, Select, Space, theme } from 'antd'
 import type { MenuProps } from 'antd'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { logoutFromApi } from '@/shared/api/auth-api'
 import { resetAppDataSession } from '@/shared/lib/realtime/sync-app-data'
 import { clearTokens } from '@/shared/lib/token-storage'
-import { resolveMediaUrl } from '@/shared/lib/resolve-media-url'
-import { getUserFullName, getUserInitials } from '@/entities/user/lib/user-display'
+import { getUserShortName } from '@/entities/user/lib/user-display'
 import { useAuthStore } from '@/entities/user/model/auth-store'
 import { APP_LOCALES, LOCALE_LABELS } from '@/shared/lib/constants'
 import { useLocaleSync } from '@/shared/hooks/useLocaleSync'
+import { useRolePermissions } from '@/shared/hooks/useRolePermissions'
 import { useUiStore } from '@/shared/stores/ui-store'
 import type { AppLocale } from '@/shared/types'
 import { AppBreadcrumb } from '@/widgets/layout/AppBreadcrumb'
@@ -19,6 +19,29 @@ import { ThemeModeToggle } from '@/widgets/layout/ThemeModeToggle'
 import { NotificationBell } from '@/features/notifications/ui/NotificationBell'
 
 const { Header } = Layout
+
+function VerifiedBadge({ size = 18, color }: { size?: number; color: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      style={{ display: 'block', flexShrink: 0 }}
+    >
+      <path
+        d="M12 1.5l1.9 1.2 2.15-.35.85 2 2 .85-.35 2.15L20.5 12l-1.2 1.9.35 2.15-2 .85-.85 2-2.15-.35L12 22.5l-1.9-1.2-2.15.35-.85-2-2-.85.35-2.15L3.5 12l1.2-1.9-.35-2.15 2-.85.85-2 2.15.35L12 1.5z"
+        fill={color}
+      />
+      <path
+        d="M10.2 15.4L7.4 12.6l1.2-1.2 1.6 1.6 4.2-4.2 1.2 1.2-5.4 5.4z"
+        fill="#ffffff"
+      />
+    </svg>
+  )
+}
 
 interface AppHeaderProps {
   compact?: boolean
@@ -30,12 +53,16 @@ export function AppHeader({ compact = false, showMenuButton = false, onMenuOpen 
   const { token } = theme.useToken()
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { canView } = useRolePermissions()
   const locale = useUiStore((state) => state.locale)
   const setLocale = useUiStore((state) => state.setLocale)
   const currentUser = useAuthStore((state) => state.currentUser)
   const logout = useAuthStore((state) => state.logout)
   const [logoutModalOpen, setLogoutModalOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const canOpenSettings = canView('/settings')
+  const isSettingsActive = location.pathname === '/settings'
 
   useLocaleSync()
 
@@ -124,19 +151,40 @@ export function AppHeader({ compact = false, showMenuButton = false, onMenuOpen 
 
           <ThemeModeToggle size={compact ? 'small' : 'middle'} />
 
+          {canOpenSettings && (
+            <Button
+              type="text"
+              aria-label={t('menu.settings')}
+              aria-current={isSettingsActive ? 'page' : undefined}
+              icon={
+                <SettingOutlined
+                  style={{
+                    fontSize: 18,
+                    color: isSettingsActive ? token.colorPrimary : undefined,
+                  }}
+                />
+              }
+              onClick={() => navigate('/settings')}
+            />
+          )}
+
           <NotificationBell />
 
           {currentUser && (
             <Dropdown menu={{ items: userMenuItems }} trigger={['click']}>
-              <Space style={{ cursor: 'pointer' }}>
-                <Avatar
-                  size={compact ? 'small' : 'default'}
-                  src={resolveMediaUrl(currentUser.avatar)}
-                  icon={!currentUser.avatar ? <UserOutlined /> : undefined}
+              <Space size={6} style={{ cursor: 'pointer', alignItems: 'center' }}>
+                <VerifiedBadge size={compact ? 16 : 18} color={token.colorPrimary} />
+                <span
+                  style={{
+                    color: token.colorText,
+                    fontWeight: 600,
+                    fontSize: compact ? 13 : 14,
+                    lineHeight: 1.2,
+                    whiteSpace: 'nowrap',
+                  }}
                 >
-                  {!currentUser.avatar ? getUserInitials(currentUser) : undefined}
-                </Avatar>
-                {!compact && <span>{getUserFullName(currentUser)}</span>}
+                  {getUserShortName(currentUser)}
+                </span>
               </Space>
             </Dropdown>
           )}

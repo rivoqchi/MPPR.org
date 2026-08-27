@@ -1,4 +1,4 @@
-import { MENU_CONFIG, type MenuItemConfig } from '@/shared/config/menu'
+import { MENU_CONFIG, SETTINGS_MENU_ITEM, type MenuItemConfig } from '@/shared/config/menu'
 
 export type PermissionPage = {
   key: string
@@ -14,5 +14,6 @@ function collectPermissionPages(items: MenuItemConfig[]): PermissionPage[] {
 
 export const PERMISSION_PAGES: PermissionPage[] = [
   ...collectPermissionPages(MENU_CONFIG),
+  { key: '/settings', labelKey: SETTINGS_MENU_ITEM.labelKey },
   { key: '/profile', labelKey: 'menu.profile' },
 ]

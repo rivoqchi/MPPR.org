@@ -12,16 +12,34 @@ export function normalizeApplicationSubmissionMode(
   return value === 'single' ? 'single' : 'combined'
 }
 
+export function normalizeApplicationRecipientUserIds(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value.filter((item): item is string => typeof item === 'string' && item.length > 0)
+}
+
 export function isSingleApplicationHeadRecipient(
   application: Pick<
     Application,
-    'submissionMode' | 'structuralUnitIds' | 'structuralUnitSectionId'
+    'submissionMode' | 'structuralUnitIds' | 'structuralUnitSectionId' | 'recipientUserIds'
   >,
   userId: string | undefined,
   structuralUnits: StructuralUnit[],
   users: User[] = [],
 ): boolean {
-  if (!userId || normalizeApplicationSubmissionMode(application.submissionMode) !== 'single') {
+  if (!userId) {
+    return false
+  }
+
+  const explicitRecipients = normalizeApplicationRecipientUserIds(application.recipientUserIds)
+
+  if (explicitRecipients.length > 0) {
+    return explicitRecipients.includes(userId)
+  }
+
+  if (normalizeApplicationSubmissionMode(application.submissionMode) !== 'single') {
     return false
   }
 
@@ -56,7 +74,11 @@ export function isSingleApplicationHeadRecipient(
 export function canReceiveIncomingApplication(
   application: Pick<
     Application,
-    'submissionMode' | 'structuralUnitIds' | 'structuralUnitSectionId'
+    | 'submissionMode'
+    | 'structuralUnitIds'
+    | 'structuralUnitSectionId'
+    | 'recipientUserIds'
+    | 'workflowAssignments'
   >,
   options: {
     userId?: string
@@ -68,6 +90,20 @@ export function canReceiveIncomingApplication(
 ): boolean {
   if (options.canViewAll) {
     return true
+  }
+
+  const assignments = Array.isArray(application.workflowAssignments)
+    ? application.workflowAssignments
+    : []
+
+  if (assignments.length > 0) {
+    return Boolean(options.userId && assignments.some((item) => item.userId === options.userId))
+  }
+
+  const explicitRecipients = normalizeApplicationRecipientUserIds(application.recipientUserIds)
+
+  if (explicitRecipients.length > 0) {
+    return Boolean(options.userId && explicitRecipients.includes(options.userId))
   }
 
   if (!options.structuralUnitId) {

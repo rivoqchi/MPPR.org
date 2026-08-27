@@ -20,6 +20,7 @@ import type { Application, ApplicationFormValues } from '@/entities/application/
 import { useApplicationsStore } from '@/entities/application/model/applications-store'
 import { useStructuralUnitsStore } from '@/entities/structural-unit/model/structural-units-store'
 import { useAuthStore } from '@/entities/user/model/auth-store'
+import { useUsersStore } from '@/entities/user/model/users-store'
 import {
   toApplicationAttachments,
   toUploadFiles,
@@ -30,6 +31,11 @@ import {
 } from '@/features/application-submit/model/application-form-schema'
 import { isApplicationFinalized } from '@/features/application-submit/lib/application-status'
 import { buildApplicationNumberPreview } from '@/features/application-submit/lib/application-number'
+import {
+  buildRecipientUserSelectGroups,
+  deriveStructuralUnitIdsFromRecipients,
+  filterRecipientUserSelectOption,
+} from '@/features/application-submit/lib/recipient-user-select'
 import { SpecialMessageModal } from '@/features/application-submit/ui/SpecialMessageModal'
 import { useNotifyApiError } from '@/shared/hooks/useNotifyApiError'
 
@@ -41,11 +47,9 @@ interface ApplicationSendDrawerProps {
 }
 
 const defaultValues: ApplicationFormSchema = {
-  submissionMode: 'single',
   numberMode: 'auto',
   applicationNumber: '',
-  structuralUnitIds: [],
-  structuralUnitSectionId: undefined,
+  recipientUserIds: [],
   type: 'information',
   deadline: undefined,
   images: [],
@@ -53,18 +57,11 @@ const defaultValues: ApplicationFormSchema = {
   comment: '',
 }
 
-function applicationToFormValues(
-  application: Application,
-  ownStructuralUnitId?: string | null,
-): ApplicationFormSchema {
+function applicationToFormValues(application: Application): ApplicationFormSchema {
   return {
-    submissionMode: application.submissionMode ?? 'combined',
     numberMode: application.applicationNumber ? 'manual' : 'auto',
     applicationNumber: application.applicationNumber ?? '',
-    structuralUnitIds: application.structuralUnitIds.filter(
-      (unitId) => unitId !== ownStructuralUnitId,
-    ),
-    structuralUnitSectionId: application.structuralUnitSectionId ?? undefined,
+    recipientUserIds: application.recipientUserIds ?? [],
     type: application.type,
     deadline: application.deadline ? dayjs(application.deadline) : undefined,
     images: toUploadFiles(application.images),
@@ -86,6 +83,7 @@ export function ApplicationSendDrawer({
   const updateApplication = useApplicationsStore((state) => state.updateApplication)
   const currentUser = useAuthStore((state) => state.currentUser)
   const structuralUnits = useStructuralUnitsStore((state) => state.structuralUnits)
+  const users = useUsersStore((state) => state.users)
   const [specialMessageOpen, setSpecialMessageOpen] = useState(false)
   const [pendingValues, setPendingValues] = useState<ApplicationFormSchema | null>(null)
   const [isSaving, setIsSaving] = useState(false)
@@ -102,10 +100,8 @@ export function ApplicationSendDrawer({
   })
 
   const applicationType = useWatch({ control, name: 'type' })
-  const submissionMode = useWatch({ control, name: 'submissionMode' })
   const numberMode = useWatch({ control, name: 'numberMode' })
-  const selectedUnitIds = useWatch({ control, name: 'structuralUnitIds' }) ?? []
-  const selectedSectionId = useWatch({ control, name: 'structuralUnitSectionId' })
+  const selectedRecipientIds = useWatch({ control, name: 'recipientUserIds' }) ?? []
 
   useEffect(() => {
     if (applicationType === 'information') {
@@ -113,10 +109,9 @@ export function ApplicationSendDrawer({
     }
   }, [applicationType, setValue])
 
-  const ownStructuralUnitId = currentUser?.structuralUnitId
   const ownStructuralUnit = useMemo(
-    () => structuralUnits.find((unit) => unit.id === ownStructuralUnitId),
-    [ownStructuralUnitId, structuralUnits],
+    () => structuralUnits.find((unit) => unit.id === currentUser?.structuralUnitId),
+    [currentUser?.structuralUnitId, structuralUnits],
   )
   const autoNumberPreview = useMemo(
     () => buildApplicationNumberPreview(ownStructuralUnit?.shortName),
@@ -131,41 +126,20 @@ export function ApplicationSendDrawer({
     [t],
   )
 
-  const structuralUnitOptions = useMemo(
+  const recipientOptions = useMemo(
     () =>
-      structuralUnits
-        .filter((unit) => unit.id !== ownStructuralUnitId)
-        .map((unit) => ({
-          value: unit.id,
-          label: unit.shortName,
-        })),
-    [ownStructuralUnitId, structuralUnits],
+      buildRecipientUserSelectGroups({
+        users,
+        structuralUnits,
+        excludeUserIds: currentUser?.id ? [currentUser.id] : [],
+      }),
+    [currentUser?.id, structuralUnits, users],
   )
 
-  const selectedUnit = useMemo(() => {
-    if (submissionMode !== 'single' || selectedUnitIds.length !== 1) {
-      return undefined
-    }
-
-    return structuralUnits.find((unit) => unit.id === selectedUnitIds[0])
-  }, [selectedUnitIds, structuralUnits, submissionMode])
-
-  const sectionOptions = useMemo(
-    () =>
-      (selectedUnit?.sections ?? []).map((section) => ({
-        value: section.id,
-        label: section.shortName || section.originalName,
-      })),
-    [selectedUnit],
+  const derivedUnitIds = useMemo(
+    () => deriveStructuralUnitIdsFromRecipients(selectedRecipientIds, users),
+    [selectedRecipientIds, users],
   )
-
-  const showSectionSelect = submissionMode === 'single' && sectionOptions.length > 0
-
-  useEffect(() => {
-    if (!showSectionSelect && selectedSectionId) {
-      setValue('structuralUnitSectionId', undefined)
-    }
-  }, [selectedSectionId, setValue, showSectionSelect])
 
   const typeOptions = useMemo(
     () => [
@@ -175,27 +149,15 @@ export function ApplicationSendDrawer({
     [t],
   )
 
-  const modeOptions = useMemo(
-    () => [
-      { value: 'single', label: t('applicationSubmit.submissionModes.single') },
-      { value: 'combined', label: t('applicationSubmit.submissionModes.combined') },
-    ],
-    [t],
-  )
-
   useEffect(() => {
     if (!open) {
       return
     }
 
-    reset(
-      editingApplication
-        ? applicationToFormValues(editingApplication, ownStructuralUnitId)
-        : defaultValues,
-    )
+    reset(editingApplication ? applicationToFormValues(editingApplication) : defaultValues)
     setPendingValues(null)
     setSpecialMessageOpen(false)
-  }, [open, editingApplication, ownStructuralUnitId, reset])
+  }, [open, editingApplication, reset])
 
   const handleClose = () => {
     reset(defaultValues)
@@ -220,13 +182,10 @@ export function ApplicationSendDrawer({
     const files = await toApplicationAttachments(values.files, existingFiles, 'file')
 
     const payload: ApplicationFormValues = {
-      submissionMode: values.submissionMode,
       numberMode: values.numberMode,
       applicationNumber:
         values.numberMode === 'manual' ? values.applicationNumber?.trim() || null : null,
-      structuralUnitIds: values.structuralUnitIds,
-      structuralUnitSectionId:
-        values.submissionMode === 'single' ? values.structuralUnitSectionId || null : null,
+      recipientUserIds: values.recipientUserIds,
       type: values.type,
       deadline:
         values.type === 'execution' && values.deadline
@@ -252,32 +211,18 @@ export function ApplicationSendDrawer({
   }
 
   const validateTargeting = (values: ApplicationFormSchema): boolean => {
-    if (
-      ownStructuralUnitId &&
-      values.structuralUnitIds.includes(ownStructuralUnitId)
-    ) {
+    if (currentUser?.id && values.recipientUserIds.includes(currentUser.id)) {
       notification.warning({
-        message: t('applicationSubmit.validation.cannotTargetOwnStructuralUnit'),
+        message: t('applicationSubmit.validation.cannotTargetSelf'),
       })
       return false
     }
 
-    if (values.submissionMode === 'single') {
-      if (values.structuralUnitIds.length !== 1) {
-        notification.warning({
-          message: t('applicationSubmit.validation.singleStructuralUnitRequired'),
-        })
-        return false
-      }
-
-      const unit = structuralUnits.find((item) => item.id === values.structuralUnitIds[0])
-
-      if (unit && unit.sections.length > 0 && !values.structuralUnitSectionId) {
-        notification.warning({
-          message: t('applicationSubmit.validation.sectionRequired'),
-        })
-        return false
-      }
+    if (values.recipientUserIds.length < 1) {
+      notification.warning({
+        message: t('applicationSubmit.validation.recipientsRequired'),
+      })
+      return false
     }
 
     return true
@@ -366,38 +311,12 @@ export function ApplicationSendDrawer({
       >
         <Form layout="vertical">
           <Form.Item
-            label={t('applicationSubmit.fields.submissionMode')}
-            validateStatus={errors.submissionMode ? 'error' : undefined}
-            help={getError(errors.submissionMode?.message)}
-            required
-          >
-            <Controller
-              name="submissionMode"
-              control={control}
-              render={({ field }) => (
-                <Radio.Group
-                  {...field}
-                  options={modeOptions}
-                  onChange={(event) => {
-                    field.onChange(event.target.value)
-                    setValue('structuralUnitIds', [])
-                    setValue('structuralUnitSectionId', undefined)
-                  }}
-                />
-              )}
-            />
-          </Form.Item>
-
-          <Form.Item
             label={t('applicationSubmit.fields.applicationNumber')}
             required
             validateStatus={errors.applicationNumber || errors.numberMode ? 'error' : undefined}
             help={
               getError(errors.applicationNumber?.message) ||
-              getError(errors.numberMode?.message) ||
-              (numberMode === 'auto'
-                ? t('applicationSubmit.hints.autoNumber', { preview: autoNumberPreview })
-                : undefined)
+              getError(errors.numberMode?.message)
             }
           >
             <Space direction="vertical" size={8} style={{ width: '100%' }}>
@@ -433,83 +352,31 @@ export function ApplicationSendDrawer({
             </Space>
           </Form.Item>
 
-          {submissionMode === 'single' ? (
-            <Form.Item
-              label={t('applicationSubmit.fields.structuralUnit')}
-              required
-              validateStatus={
-                errors.structuralUnitIds || errors.structuralUnitSectionId ? 'error' : undefined
-              }
-              help={
-                getError(errors.structuralUnitIds?.message) ||
-                getError(errors.structuralUnitSectionId?.message)
-              }
-            >
-              <Space.Compact style={{ width: '100%' }}>
-                <Controller
-                  name="structuralUnitIds"
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      showSearch
-                      optionFilterProp="label"
-                      style={{ width: showSectionSelect ? '50%' : '100%' }}
-                      value={field.value[0]}
-                      onChange={(unitId?: string) => {
-                        field.onChange(unitId ? [unitId] : [])
-                        setValue('structuralUnitSectionId', undefined)
-                      }}
-                      allowClear
-                      placeholder={t('applicationSubmit.placeholders.structuralUnit')}
-                      options={structuralUnitOptions}
-                    />
-                  )}
+          <Form.Item
+            label={t('applicationSubmit.fields.recipients')}
+            validateStatus={errors.recipientUserIds ? 'error' : undefined}
+            help={getError(errors.recipientUserIds?.message)}
+            required
+          >
+            <Controller
+              name="recipientUserIds"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  mode="multiple"
+                  showSearch
+                  allowClear
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder={t('applicationSubmit.placeholders.recipients')}
+                  options={recipientOptions}
+                  filterOption={filterRecipientUserSelectOption}
+                  optionFilterProp="label"
+                  maxTagCount="responsive"
                 />
-
-                {showSectionSelect ? (
-                  <Controller
-                    name="structuralUnitSectionId"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        showSearch
-                        optionFilterProp="label"
-                        style={{ width: '50%' }}
-                        value={field.value}
-                        onChange={field.onChange}
-                        allowClear
-                        placeholder={t('applicationSubmit.placeholders.section')}
-                        options={sectionOptions}
-                      />
-                    )}
-                  />
-                ) : null}
-              </Space.Compact>
-            </Form.Item>
-          ) : (
-            <Form.Item
-              label={t('applicationSubmit.fields.structuralUnits')}
-              validateStatus={errors.structuralUnitIds ? 'error' : undefined}
-              help={getError(errors.structuralUnitIds?.message)}
-              required
-            >
-              <Controller
-                name="structuralUnitIds"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    mode="multiple"
-                    showSearch
-                    optionFilterProp="label"
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder={t('applicationSubmit.placeholders.structuralUnits')}
-                    options={structuralUnitOptions}
-                  />
-                )}
-              />
-            </Form.Item>
-          )}
+              )}
+            />
+          </Form.Item>
 
           <Form.Item
             label={t('applicationSubmit.fields.type')}
@@ -628,7 +495,11 @@ export function ApplicationSendDrawer({
 
       <SpecialMessageModal
         open={specialMessageOpen}
-        structuralUnitIds={pendingValues?.structuralUnitIds ?? []}
+        structuralUnitIds={
+          pendingValues
+            ? deriveStructuralUnitIdsFromRecipients(pendingValues.recipientUserIds, users)
+            : derivedUnitIds
+        }
         onCancel={() => setSpecialMessageOpen(false)}
         onSkip={() => void handleSkipSpecialMessage()}
         onConfirm={(messages) => void handleConfirmSpecialMessage(messages)}

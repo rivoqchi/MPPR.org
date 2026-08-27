@@ -17,7 +17,7 @@ export function filterIncomingApplications(
     return applications
   }
 
-  if (!options.structuralUnitId) {
+  if (!options.structuralUnitId && !options.userId) {
     return []
   }
 

@@ -3,10 +3,14 @@ import { describe, expect, it } from 'vitest'
 import type { Application } from '@/entities/application/model/types'
 import type { User } from '@/entities/user/model/types'
 import {
+  countApplicationsInMonth,
   filterCalendarApplications,
   getApplicationDeadlineKey,
+  getApplicationStatusDotColor,
   getApplicationsForDate,
+  getCalendarDayDotColors,
   groupApplicationsByDeadline,
+  isApplicationSubmittedByUser,
   isExecutionApplicationWithDeadline,
 } from '@/features/application-calendar/lib/calendar-applications'
 
@@ -17,6 +21,7 @@ const currentUser = {
 const baseApplication: Application = {
   id: 'app-1',
   submissionMode: 'combined',
+  recipientUserIds: [],
   structuralUnitIds: ['unit-a'],
   type: 'execution',
   status: 'in_progress',
@@ -28,6 +33,7 @@ const baseApplication: Application = {
   specialMessages: [],
   confirmationFiles: [],
   workflowUnitStatuses: [],
+  workflowAssignments: [],
   createdByUserId: 'user-1',
   createdAt: '2026-07-01T00:00:00.000Z',
   updatedAt: '2026-07-01T00:00:00.000Z',
@@ -84,5 +90,57 @@ describe('calendar applications', () => {
 
     expect(getApplicationsForDate(grouped, dayjs('2026-07-15'))).toHaveLength(1)
     expect(getApplicationsForDate(grouped, dayjs('2026-07-16'))).toHaveLength(0)
+  })
+
+  it('filters applications submitted by the current user', () => {
+    const applications = [
+      baseApplication,
+      {
+        ...baseApplication,
+        id: 'app-other',
+        createdByUserId: 'user-2',
+      },
+      {
+        ...baseApplication,
+        id: 'app-mine-too',
+        createdByUserId: 'user-1',
+        deadline: '2026-07-20T00:00:00.000Z',
+      },
+    ]
+
+    expect(isApplicationSubmittedByUser(applications[0]!, 'user-1')).toBe(true)
+    expect(isApplicationSubmittedByUser(applications[1]!, 'user-1')).toBe(false)
+
+    const scoped = filterCalendarApplications(applications, currentUser, true, {
+      onlySubmittedByMe: true,
+    })
+
+    expect(scoped.map((item) => item.id)).toEqual(['app-1', 'app-mine-too'])
+  })
+
+  it('builds status dots and month totals for calendar cells', () => {
+    const applications = [
+      baseApplication,
+      {
+        ...baseApplication,
+        id: 'app-2',
+        status: 'completed' as const,
+        deadline: '2026-07-20T00:00:00.000Z',
+      },
+      {
+        ...baseApplication,
+        id: 'app-3',
+        deadline: '2026-08-01T00:00:00.000Z',
+      },
+    ]
+    const grouped = groupApplicationsByDeadline(applications)
+
+    expect(getApplicationStatusDotColor('in_progress')).toBe('#8b5a2b')
+    expect(getCalendarDayDotColors([applications[0]!, applications[1]!])).toEqual([
+      '#8b5a2b',
+      '#1677ff',
+    ])
+    expect(countApplicationsInMonth(grouped, dayjs('2026-07-01'))).toBe(2)
+    expect(countApplicationsInMonth(grouped, dayjs('2026-08-01'))).toBe(1)
   })
 })

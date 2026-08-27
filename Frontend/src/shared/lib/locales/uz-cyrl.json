@@ -3,6 +3,7 @@
     "name": "Ягона техник назорат",
     "tagline": "ППР режалаштириш ва таркибий тузилмалараро ҳужжат айланиш тизими",
     "hello": "Ягона техник назорат тизимига хуш келибсиз",
+    "newApplication": "Янги ариза",
     "dashboard": "Бош саҳифа",
     "theme": "Мавзу",
     "language": "Тил",
@@ -10,7 +11,8 @@
     "dark": "Қоронғу"
   },
   "layout": {
-    "openMenu": "Менйуни очиш"
+    "openMenu": "Менйуни очиш",
+    "structuralUnitNumber": "Тузилма рақами : {{number}}"
   },
   "api": {
     "errors": {
@@ -41,6 +43,9 @@
       "NOTIFICATION_NOT_FOUND": "Билдиришнома топилмади",
       "APPLICATION_NOT_FOUND": "Ариза топилмади",
       "APPLICATION_CANNOT_TARGET_OWN_STRUCTURAL_UNIT": "Ўз таркибий тузилмангизга ариза йубора олмайсиз",
+      "APPLICATION_CANNOT_TARGET_SELF": "Ўзингизни қабул қилувчи қилиб танлай олмайсиз",
+      "APPLICATION_RECIPIENTS_REQUIRED": "Камида битта қабул қилувчини танланг",
+      "APPLICATION_RECIPIENTS_INVALID": "Танланган қабул қилувчилар нотўғри ёки фаол эмас",
       "APPLICATION_SECTION_REQUIRED": "Танланган тузилма учун бўлимни танланг",
       "APPLICATION_SECTION_INVALID": "Танланган бўлим нотўғри",
       "APPLICATION_SINGLE_UNIT_REQUIRED": "Якка ариза учун фақат битта тузилма танланади",
@@ -98,6 +103,9 @@
         "STRUCTURAL_UNIT_IN_USE": "Аввал фойдаланувчиларни бошқа таркибий тузилмага ўтказинг, кейин ўчиринг",
         "APPLICATION_WORKFLOW_FORBIDDEN": "Ариза сизнинг таркибий тузилмангизга тегишли емас йоки рухсат йетарли емас",
         "APPLICATION_CANNOT_TARGET_OWN_STRUCTURAL_UNIT": "Бошқа таркибий тузилмани танланг",
+        "APPLICATION_CANNOT_TARGET_SELF": "Ўзингиздан бошқа қабул қилувчини танланг",
+        "APPLICATION_RECIPIENTS_REQUIRED": "Камида битта қабул қилувчини танланг",
+        "APPLICATION_RECIPIENTS_INVALID": "Фаол фойдаланувчилардан қабул қилувчини танланг",
         "APPLICATION_SECTION_REQUIRED": "Тузилма бўлимларини очиб, керакли бўлимни танланг",
         "APPLICATION_SECTION_INVALID": "Мавжуд бўлимлардан бирини танланг",
         "APPLICATION_SINGLE_UNIT_REQUIRED": "Якка аризада фақат битта тузилмани қолдиринг",
@@ -476,14 +484,15 @@
     "today": "Бугун",
     "previousMonth": "Олдинги ой",
     "nextMonth": "Кейинги ой",
+    "onlySubmittedByMe": "Мен юборган аризалар",
     "weekdays": {
-      "sunday": "Йак",
-      "monday": "Душ",
-      "tuesday": "Сеш",
-      "wednesday": "Чор",
-      "thursday": "Пай",
-      "friday": "Жум",
-      "saturday": "Шан"
+      "sunday": "якшанба",
+      "monday": "душанба",
+      "tuesday": "сешанба",
+      "wednesday": "чоршанба",
+      "thursday": "пайшанба",
+      "friday": "жума",
+      "saturday": "шанба"
     },
     "months": {
       "0": "Йанвар",
@@ -500,6 +509,19 @@
       "11": "Декабр"
     },
     "moreEvents": "+{{count}} та йана",
+    "dayPanel": {
+      "title": "{{date}} — муддатли аризалар",
+      "empty": "Бу кунда ариза йўқ",
+      "columns": {
+        "number": "Ҳужжат рақами",
+        "type": "Ҳужжат тури",
+        "summary": "Қисқача мазмуни",
+        "sender": "Жўнатувчи",
+        "executor": "Асосий ижрочи",
+        "status": "Статус",
+        "files": "Файллар"
+      }
+    },
     "modal": {
       "title": "Ариза маълумотлари",
       "viewDetails": "Аризани батафсил",
@@ -514,13 +536,13 @@
     "nextMonth": "Кейинги ой",
     "moreEvents": "+{{count}} та йана",
     "weekdays": {
-      "sunday": "Йак",
-      "monday": "Душ",
-      "tuesday": "Сеш",
-      "wednesday": "Чор",
-      "thursday": "Пай",
-      "friday": "Жум",
-      "saturday": "Шан"
+      "sunday": "якшанба",
+      "monday": "душанба",
+      "tuesday": "сешанба",
+      "wednesday": "чоршанба",
+      "thursday": "пайшанба",
+      "friday": "жума",
+      "saturday": "шанба"
     },
     "months": {
       "0": "Йанвар",
@@ -890,6 +912,18 @@
     "selectItem": "Аризани танланг",
     "emptyList": "Ҳали ариза йуборилмаган",
     "emptySearch": "Қидирув бўйича натижа топилмади",
+    "statusTabs": {
+      "label": "Ариза ҳолати фильтрлари",
+      "all": "Барчаси",
+      "completed": "Бажарилган",
+      "not_completed": "Бажарилмаган",
+      "in_progress": "Бажарилмоқда",
+      "completed_late": "Муддатидан кеч бажарилган",
+      "pending_confirmation": "Тасдиқлашда",
+      "unseen": "Кўрилмаган",
+      "co_executor": "Ҳамижрочи"
+    },
+    "emptyStatusFilter": "Ушбу ҳолат бўйича ариза топилмади",
     "uploadImages": "Расм йуклаш",
     "uploadFiles": "Файл йуклаш",
     "drawer": {
@@ -901,6 +935,7 @@
       "submitterStructuralUnit": "Ариза йуборувчи тузилма",
       "submissionMode": "Ариза йўналиши",
       "applicationNumber": "Ариза рақами",
+      "recipients": "Ариза қабул қилувчи",
       "structuralUnit": "Таркибий тузилма",
       "structuralUnits": "Таркибий тузилмалар",
       "section": "Бўлим",
@@ -914,6 +949,7 @@
       "structuralUnit": "Тузилмани танланг",
       "structuralUnits": "Бир йоки бир нечта тузилмани танланг",
       "section": "Бўлимни танланг",
+      "recipients": "Бир йоки бир нечта фойдаланувчини танланг",
       "applicationNumber": "Ариза рақамини киритинг",
       "type": "Ариза турини танланг",
       "deadline": "Муддатни танланг",
@@ -931,10 +967,8 @@
       "auto": "Автоматик",
       "manual": "Қўлда"
     },
-    "hints": {
-      "autoNumber": "Автоматик формат: {{preview}}"
-    },
     "copyNumber": "Ариза рақамини нусхалаш",
+    "changeDeadline": "Ижро муддатини ўзгартириш",
     "types": {
       "execution": "Ижро учун",
       "information": "Маълумот учун"
@@ -952,8 +986,10 @@
       "structuralUnitsRequired": "Камида битта таркибий тузилмани танланг",
       "singleStructuralUnitRequired": "Якка ариза учун битта тузилмани танланг",
       "sectionRequired": "Танланган тузилма учун бўлимни танланг",
+      "recipientsRequired": "Камида битта қабул қилувчини танланг",
       "applicationNumberRequired": "Ариза рақамини камида 3 та белгидан киритинг",
       "cannotTargetOwnStructuralUnit": "Ўз таркибий тузилмангизга ариза йубора олмайсиз",
+      "cannotTargetSelf": "Ўзингизни қабул қилувчи қилиб танлай олмайсиз",
       "deadlineRequired": "Ижро учун муддатни танланг",
       "commentMin": "Изоҳ камида 3 та белгидан иборат бўлиши керак"
     },
@@ -964,6 +1000,7 @@
       "error": "Аризани йуборишда хатолик йуз берди",
       "numberCopied": "Ариза рақами нусхаланди",
       "numberCopyFailed": "Ариза рақамини нусхалаб бўлмади",
+      "deadlineUpdated": "Ижро муддати янгиланди",
       "finalizedHint": "Ариза тасдиқланган",
       "cancelledLockedHint": "Бекор қилинган аризани таҳрирлаб йоки ўчириб бўлмайди"
     },
@@ -994,6 +1031,7 @@
     "selectItem": "Аризани танланг",
     "emptyList": "Ҳали келган ариза йўқ",
     "emptySearch": "Қидирув бўйича натижа топилмади",
+    "emptyStatusFilter": "Ушбу ҳолат бўйича ариза топилмади",
     "specialMessage": {
       "badge": "Махсус ҳабар",
       "highlightTitle": "Сиз учун махсус ҳабар"
@@ -1017,7 +1055,34 @@
     },
     "actions": {
       "confirm": "Тасдиқлаш",
-      "cancel": "Бекор қилиш"
+      "cancel": "Бекор қилиш",
+      "accept": "Қабул қилиш",
+      "forward": "Ходимга йўналтириш",
+      "forwardConfirm": "Йўналтириш",
+      "reply": "Жавоб бериш",
+      "editReply": "Жавобни таҳрирлаш",
+      "saveReply": "Сақлаш",
+      "sendReply": "Юбориш",
+      "attach": "Файл/расм",
+      "release": "Назоратдан ечиш",
+      "releaseAndClose": "Назоратдан ечиш ва ёпиш"
+    },
+    "assignmentStatus": {
+      "pending_accept": "Қабул қилиш кутилмоқда",
+      "accepted": "Қабул қилинди",
+      "replied": "Жавоб берилди",
+      "forwarded": "Йўналтирилди",
+      "released": "Назоратдан ечилди"
+    },
+    "placeholders": {
+      "forwardUser": "Ходимни танланг"
+    },
+    "releaseModal": {
+      "title": "Назоратдан ечиш",
+      "message": "Ростдан ҳам бу аризани назоратдан ечмоқчимисиз?",
+      "closeTitle": "Аризани ёпиш",
+      "closeMessage": "Ростдан ҳам аризани назоратдан ечиб, якунламоқчимисиз?",
+      "ok": "Ҳа, ечиш"
     },
     "finalizeModal": {
       "no": "Йўқ",
@@ -1046,6 +1111,13 @@
     },
     "messages": {
       "loadError": "Иш жарайонини йуклаб бўлмади",
+      "error": "Амални бажариб бўлмади",
+      "accepted": "Ариза қабул қилинди",
+      "forwarded": "Ариза ходимга йўналтирилди",
+      "replied": "Жавоб юборилди",
+      "replyUpdated": "Жавоб янгиланди",
+      "released": "Назоратдан ечилди",
+      "closed": "Ариза тасдиқланиб ёпилди",
       "sendError": "Хабарни йубориб бўлмади",
       "statusUpdated": "Статус муваффақийатли йангиланди",
       "statusError": "Статусни йангилаб бўлмади",

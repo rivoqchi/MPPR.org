@@ -1,7 +1,7 @@
 import type { RouteObject } from 'react-router-dom'
+import { Navigate, useParams } from 'react-router-dom'
 import {
   ApplicationCalendarPage,
-  ApplicationWorkflowPage,
   ChatPage,
   GuidePage,
   HomePage,
@@ -27,6 +27,17 @@ import {
   submitApplicationRouteFallback,
   usersRouteFallback,
 } from '@/app/router/lazy-route'
+
+function WorkflowLegacyRedirect({ basePath }: { basePath: string }) {
+  const { applicationId } = useParams()
+
+  return (
+    <Navigate
+      replace
+      to={`${basePath}?applicationId=${applicationId ?? ''}`}
+    />
+  )
+}
 
 export const appRoutes: RouteObject[] = [
   {
@@ -63,25 +74,19 @@ export const appRoutes: RouteObject[] = [
     path: 'applications/submit',
     element: lazyRoute(<SubmitApplicationPage />, submitApplicationRouteFallback),
     handle: { titleKey: 'menu.applications.submit' },
-    children: [
-      {
-        path: 'workflow/:applicationId',
-        element: lazyRoute(<ApplicationWorkflowPage />, submitApplicationRouteFallback),
-        handle: { titleKey: 'applicationWorkflow.title' },
-      },
-    ],
+  },
+  {
+    path: 'applications/submit/workflow/:applicationId',
+    element: <WorkflowLegacyRedirect basePath="/applications/submit" />,
   },
   {
     path: 'applications/incoming',
     element: lazyRoute(<IncomingApplicationPage />, submitApplicationRouteFallback),
     handle: { titleKey: 'menu.applications.incoming' },
-    children: [
-      {
-        path: 'workflow/:applicationId',
-        element: lazyRoute(<ApplicationWorkflowPage />, submitApplicationRouteFallback),
-        handle: { titleKey: 'applicationWorkflow.title' },
-      },
-    ],
+  },
+  {
+    path: 'applications/incoming/workflow/:applicationId',
+    element: <WorkflowLegacyRedirect basePath="/applications/incoming" />,
   },
   {
     path: 'applications/calendar',
