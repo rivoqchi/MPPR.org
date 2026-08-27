@@ -79,9 +79,14 @@ export class NotificationsService {
       },
     });
 
-    this.websocketGateway.emitToUser(dto.userId, 'notification:created', notification);
+    const payload = {
+      ...notification,
+      createdAt: notification.createdAt.toISOString(),
+    };
 
-    return notification;
+    this.websocketGateway.emitToUser(dto.userId, 'notification:created', payload);
+
+    return payload;
   }
 
   async createMany(dtos: CreateNotificationDto[]) {

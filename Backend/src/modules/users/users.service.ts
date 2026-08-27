@@ -58,6 +58,10 @@ export class UsersService {
     }));
   }
 
+  async getOnlineUserIds(): Promise<Set<string>> {
+    return new Set(await this.redisService.getClient().smembers(ONLINE_USERS_SET_KEY));
+  }
+
   async setUserOnline(userId: string): Promise<boolean> {
     const redis = this.redisService.getClient();
     const connectionCount = await redis.incr(this.getUserConnectionKey(userId));

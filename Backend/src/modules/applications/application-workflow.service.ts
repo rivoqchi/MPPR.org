@@ -27,7 +27,9 @@ import {
   mapWorkflowMessageRecord,
   normalizeAttachments,
   normalizeStructuralUnitIds,
+  normalizeSubmissionMode,
 } from './lib/normalize-application';
+import { isSingleApplicationHeadRecipient } from './lib/resolve-application-recipients';
 import {
   aggregateWorkflowStatus,
   allUnitsPendingConfirmation,
@@ -61,8 +63,24 @@ export class ApplicationWorkflowService {
     const application = await this.getApplicationOrThrow(applicationId);
     const participant = await this.prisma.user.findUnique({
       where: { id: user.id },
-      select: { structuralUnitId: true },
+      select: {
+        structuralUnitId: true,
+        appRole: {
+          select: {
+            isSystem: true,
+            canViewAllStructuralUnits: true,
+          },
+        },
+      },
     });
+
+    const canViewAll = Boolean(
+      participant?.appRole?.isSystem || participant?.appRole?.canViewAllStructuralUnits,
+    );
+
+    if (canViewAll) {
+      return application;
+    }
 
     const structuralUnitId = participant?.structuralUnitId;
 
@@ -72,12 +90,26 @@ export class ApplicationWorkflowService {
 
     const recipientUnitIds = normalizeStructuralUnitIds(application.structuralUnitIds);
     const submitterUnitId = application.createdByStructuralUnitId;
+    const isSubmitter = submitterUnitId === structuralUnitId;
+    const isRecipientUnit = recipientUnitIds.includes(structuralUnitId);
 
-    const canAccess =
-      submitterUnitId === structuralUnitId || recipientUnitIds.includes(structuralUnitId);
-
-    if (!canAccess) {
+    if (!isSubmitter && !isRecipientUnit) {
       throw new ForbiddenException(ErrorCode.APPLICATION_WORKFLOW_FORBIDDEN);
+    }
+
+    if (
+      !isSubmitter &&
+      normalizeSubmissionMode(application.submissionMode) === 'single'
+    ) {
+      const isHead = await isSingleApplicationHeadRecipient(
+        this.prisma,
+        application,
+        user.id,
+      );
+
+      if (!isHead) {
+        throw new ForbiddenException(ErrorCode.APPLICATION_WORKFLOW_FORBIDDEN);
+      }
     }
 
     return application;
@@ -178,7 +210,9 @@ export class ApplicationWorkflowService {
       authorLastName: author?.lastName,
       authorStructuralUnitId: author?.structuralUnitId,
       createdByStructuralUnitId: application.createdByStructuralUnitId,
+      submissionMode: application.submissionMode,
       recipientUnitIds: normalizeStructuralUnitIds(application.structuralUnitIds),
+      structuralUnitSectionId: application.structuralUnitSectionId,
       content,
     });
 
@@ -259,7 +293,9 @@ export class ApplicationWorkflowService {
       authorLastName: author?.lastName,
       authorStructuralUnitId,
       createdByStructuralUnitId: existingApplication.createdByStructuralUnitId,
+      submissionMode: existingApplication.submissionMode,
       recipientUnitIds,
+      structuralUnitSectionId: existingApplication.structuralUnitSectionId,
       workflowStatus: dto.workflowStatus,
     });
 
@@ -307,7 +343,9 @@ export class ApplicationWorkflowService {
       authorLastName: mappedExisting.createdByLastName,
       authorStructuralUnitId: existingApplication.createdByStructuralUnitId,
       createdByStructuralUnitId: existingApplication.createdByStructuralUnitId,
+      submissionMode: existingApplication.submissionMode,
       recipientUnitIds,
+      structuralUnitSectionId: existingApplication.structuralUnitSectionId,
       workflowStatus: 'confirmed',
     });
 
@@ -355,7 +393,9 @@ export class ApplicationWorkflowService {
       authorLastName: mappedExisting.createdByLastName,
       authorStructuralUnitId: existingApplication.createdByStructuralUnitId,
       createdByStructuralUnitId: existingApplication.createdByStructuralUnitId,
+      submissionMode: existingApplication.submissionMode,
       recipientUnitIds,
+      structuralUnitSectionId: existingApplication.structuralUnitSectionId,
       workflowStatus: 'cancelled',
     });
 

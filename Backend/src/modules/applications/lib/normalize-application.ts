@@ -71,6 +71,19 @@ export function normalizeStructuralUnitIds(value: unknown): string[] {
   return value.filter((item): item is string => typeof item === 'string' && item.length > 0);
 }
 
+export function normalizeSubmissionMode(value: unknown): 'single' | 'combined' {
+  return value === 'single' ? 'single' : 'combined';
+}
+
+export function normalizeStructuralUnitSectionId(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
 export function mapApplicationRecord<
   T extends {
     structuralUnitIds: unknown;
@@ -80,6 +93,9 @@ export function mapApplicationRecord<
     confirmationFiles?: unknown;
     workflowStatus?: string;
     workflowUnitStatuses?: unknown;
+    submissionMode?: string | null;
+    structuralUnitSectionId?: string | null;
+    applicationNumber?: string | null;
     createdAt: Date;
     updatedAt: Date;
   },
@@ -104,7 +120,13 @@ export function mapApplicationRecord<
 
   return {
     ...application,
+    applicationNumber:
+      typeof application.applicationNumber === 'string' ? application.applicationNumber : null,
+    submissionMode: normalizeSubmissionMode(application.submissionMode),
     structuralUnitIds,
+    structuralUnitSectionId: normalizeStructuralUnitSectionId(
+      application.structuralUnitSectionId,
+    ),
     images: normalizeAttachments(application.images),
     files: normalizeAttachments(application.files),
     specialMessages: normalizeSpecialMessages(application.specialMessages),

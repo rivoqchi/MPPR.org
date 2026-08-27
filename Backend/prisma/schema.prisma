@@ -62,8 +62,74 @@ model User {
   notifications    Notification[]
   auditLogs        AuditLog[]
   errorLogs        ErrorLog[]
+  chatParticipations ChatParticipant[]
+  chatMessages       ChatMessage[]
+  chatHiddenMessages ChatMessageHide[]
 
   @@map("users")
+}
+
+model ChatConversation {
+  id           String            @id @default(uuid())
+  pairKey      String            @unique
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  participants ChatParticipant[]
+  messages     ChatMessage[]
+
+  @@index([updatedAt])
+  @@map("chat_conversations")
+}
+
+model ChatParticipant {
+  id             String           @id @default(uuid())
+  conversationId String
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clearedAt      DateTime?
+  lastReadAt     DateTime?
+  muted          Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+  @@map("chat_participants")
+}
+
+model ChatMessage {
+  id             String           @id @default(uuid())
+  conversationId String
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User             @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  content        String           @default("")
+  attachments    Json             @default("[]")
+  replyToId      String?
+  replyTo        ChatMessage?     @relation("ChatMessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies        ChatMessage[]    @relation("ChatMessageReplies")
+  editedAt       DateTime?
+  deletedAt      DateTime?
+  createdAt      DateTime         @default(now())
+  hiddenFor      ChatMessageHide[]
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+  @@map("chat_messages")
+}
+
+model ChatMessageHide {
+  id        String      @id @default(uuid())
+  messageId String
+  message   ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
+
+  @@unique([messageId, userId])
+  @@index([userId])
+  @@map("chat_message_hides")
 }
 
 model RegisteredObject {
@@ -156,7 +222,10 @@ model PprCalendarObjectExecution {
 
 model Application {
   id                        String   @id @default(uuid())
+  applicationNumber         String?
+  submissionMode            String   @default("combined")
   structuralUnitIds         Json     @default("[]")
+  structuralUnitSectionId   String?
   type                      String
   status                    String   @default("in_progress")
   workflowStatus            String   @default("in_progress_work")
@@ -175,6 +244,7 @@ model Application {
   updatedAt                 DateTime @updatedAt
   workflowMessages          ApplicationWorkflowMessage[]
 
+  @@unique([applicationNumber])
   @@index([createdByUserId])
   @@map("applications")
 }

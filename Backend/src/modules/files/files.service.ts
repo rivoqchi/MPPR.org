@@ -92,6 +92,14 @@ function guessMimeTypeFromName(fileName: string): string {
       return 'video/mp4';
     case 'webm':
       return 'video/webm';
+    case 'ogg':
+      return 'audio/ogg';
+    case 'mp3':
+      return 'audio/mpeg';
+    case 'wav':
+      return 'audio/wav';
+    case 'm4a':
+      return 'audio/mp4';
     case 'doc':
       return 'application/msword';
     case 'docx':

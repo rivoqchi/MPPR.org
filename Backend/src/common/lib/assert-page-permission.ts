@@ -9,6 +9,7 @@ export const PAGE_KEYS = {
   home: '/',
   guide: '/guide',
   settings: '/settings',
+  chat: '/chat',
   profile: '/profile',
   applicationsSubmit: '/applications/submit',
   applicationsIncoming: '/applications/incoming',

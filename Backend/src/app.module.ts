@@ -28,6 +28,8 @@ import { AppRolesModule } from './modules/app-roles/app-roles.module';
 
 import { AuthModule } from './modules/auth/auth.module';
 
+import { ChatModule } from './modules/chat/chat.module';
+
 import { GuideVideosModule } from './modules/guide-videos/guide-videos.module';
 
 import { FilesModule } from './modules/files/files.module';
@@ -142,6 +144,8 @@ import { RedisModule } from './shared/redis/redis.module';
     DashboardModule,
 
     NotificationsModule,
+
+    ChatModule,
 
     ErrorLogsModule,
 

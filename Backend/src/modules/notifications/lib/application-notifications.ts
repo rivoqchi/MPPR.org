@@ -2,6 +2,7 @@ import { PrismaService } from '../../../shared/prisma/prisma.service';
 import { CreateNotificationDto } from '../dto/notification.dto';
 import { findUsersByStructuralUnitIds } from './notification-recipients';
 import { NOTIFICATION_TYPES } from './notification-types';
+import { resolveApplicationIncomingRecipientUserIds } from '../../applications/lib/resolve-application-recipients';
 
 const WORKFLOW_STATUS_LABELS: Record<string, string> = {
   returned: 'Qaytarildi',
@@ -60,12 +61,18 @@ export async function buildApplicationCreatedNotifications(
     creatorUserId: string;
     creatorFirstName?: string | null;
     creatorLastName?: string | null;
+    submissionMode?: string | null;
     recipientUnitIds: string[];
+    structuralUnitSectionId?: string | null;
   },
 ): Promise<CreateNotificationDto[]> {
-  const recipientUserIds = await findUsersByStructuralUnitIds(
+  const recipientUserIds = await resolveApplicationIncomingRecipientUserIds(
     prisma,
-    params.recipientUnitIds,
+    {
+      submissionMode: params.submissionMode,
+      structuralUnitIds: params.recipientUnitIds,
+      structuralUnitSectionId: params.structuralUnitSectionId,
+    },
     [params.creatorUserId],
   );
 
@@ -102,7 +109,9 @@ export async function buildWorkflowMessageNotifications(
     authorLastName?: string | null;
     authorStructuralUnitId?: string | null;
     createdByStructuralUnitId?: string | null;
+    submissionMode?: string | null;
     recipientUnitIds: string[];
+    structuralUnitSectionId?: string | null;
     content: string;
   },
 ): Promise<CreateNotificationDto[]> {
@@ -121,11 +130,19 @@ export async function buildWorkflowMessageNotifications(
 
   const notifications: CreateNotificationDto[] = [];
 
-  const incomingUserIds = await findUsersByStructuralUnitIds(
-    prisma,
-    incomingRecipients,
-    [params.authorUserId],
-  );
+  const incomingUserIds =
+    incomingRecipients.length > 0
+      ? await resolveApplicationIncomingRecipientUserIds(
+          prisma,
+          {
+            submissionMode: params.submissionMode,
+            structuralUnitIds: incomingRecipients,
+            structuralUnitSectionId: params.structuralUnitSectionId,
+          },
+          [params.authorUserId],
+        )
+      : [];
+
   for (const userId of incomingUserIds) {
     notifications.push({
       userId,
@@ -165,7 +182,9 @@ export async function buildWorkflowStatusNotifications(
     authorLastName?: string | null;
     authorStructuralUnitId?: string | null;
     createdByStructuralUnitId?: string | null;
+    submissionMode?: string | null;
     recipientUnitIds: string[];
+    structuralUnitSectionId?: string | null;
     workflowStatus: string;
   },
 ): Promise<CreateNotificationDto[]> {
@@ -184,11 +203,19 @@ export async function buildWorkflowStatusNotifications(
 
   const notifications: CreateNotificationDto[] = [];
 
-  const incomingUserIds = await findUsersByStructuralUnitIds(
-    prisma,
-    incomingRecipients,
-    [params.authorUserId],
-  );
+  const incomingUserIds =
+    incomingRecipients.length > 0
+      ? await resolveApplicationIncomingRecipientUserIds(
+          prisma,
+          {
+            submissionMode: params.submissionMode,
+            structuralUnitIds: incomingRecipients,
+            structuralUnitSectionId: params.structuralUnitSectionId,
+          },
+          [params.authorUserId],
+        )
+      : [];
+
   for (const userId of incomingUserIds) {
     notifications.push({
       userId,

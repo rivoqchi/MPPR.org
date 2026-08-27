@@ -2,9 +2,12 @@ import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import {
+  ConnectedSocket,
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
@@ -150,6 +153,83 @@ export class WebsocketGateway
           this.logger.warn(`Failed to update disconnect presence: ${message}`);
         }
       })();
+    }
+  }
+
+  @SubscribeMessage('chat:typing')
+  async handleChatTyping(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() body: { conversationId?: string; isTyping?: boolean },
+  ) {
+    const user = client.data?.user;
+
+    if (!user?.id || !body?.conversationId) {
+      return;
+    }
+
+    const participation = await this.prisma.chatParticipant.findFirst({
+      where: { conversationId: body.conversationId, userId: user.id },
+    });
+
+    if (!participation) {
+      return;
+    }
+
+    const peer = await this.prisma.chatParticipant.findFirst({
+      where: { conversationId: body.conversationId, userId: { not: user.id } },
+    });
+
+    if (!peer) {
+      return;
+    }
+
+    this.emitToUser(peer.userId, 'chat:typing', {
+      conversationId: body.conversationId,
+      userId: user.id,
+      isTyping: Boolean(body.isTyping),
+    });
+  }
+
+  @SubscribeMessage('chat:read')
+  async handleChatRead(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() body: { conversationId?: string },
+  ) {
+    const user = client.data?.user;
+
+    if (!user?.id || !body?.conversationId) {
+      return;
+    }
+
+    try {
+      const participation = await this.prisma.chatParticipant.findFirst({
+        where: { conversationId: body.conversationId, userId: user.id },
+      });
+
+      if (!participation) {
+        return;
+      }
+
+      const now = new Date();
+
+      await this.prisma.chatParticipant.update({
+        where: { id: participation.id },
+        data: { lastReadAt: now },
+      });
+
+      const peer = await this.prisma.chatParticipant.findFirst({
+        where: { conversationId: body.conversationId, userId: { not: user.id } },
+      });
+
+      if (peer) {
+        this.emitToUser(peer.userId, 'chat:read', {
+          conversationId: body.conversationId,
+          userId: user.id,
+          lastReadAt: now.toISOString(),
+        });
+      }
+    } catch {
+      // Ignore unauthorized/missing conversation for socket reads
     }
   }
 

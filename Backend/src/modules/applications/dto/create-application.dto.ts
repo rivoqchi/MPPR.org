@@ -13,11 +13,30 @@ import { ApplicationAttachmentDto } from './application-attachment.dto';
 import { ApplicationSpecialMessageDto } from './application-special-message.dto';
 
 export class CreateApplicationDto {
+  @ApiProperty({ enum: ['single', 'combined'], example: 'single' })
+  @IsIn(['single', 'combined'])
+  submissionMode!: 'single' | 'combined';
+
+  @ApiProperty({ enum: ['auto', 'manual'], example: 'auto' })
+  @IsIn(['auto', 'manual'])
+  numberMode!: 'auto' | 'manual';
+
+  @ApiPropertyOptional({ example: 'MOT-2026-0001' })
+  @IsOptional()
+  @IsString()
+  @MinLength(3)
+  applicationNumber?: string;
+
   @ApiProperty({ type: [String], example: ['unit-id'] })
   @IsArray()
   @ArrayMinSize(1)
   @IsString({ each: true })
   structuralUnitIds!: string[];
+
+  @ApiPropertyOptional({ example: 'section-id' })
+  @IsOptional()
+  @IsString()
+  structuralUnitSectionId?: string;
 
   @ApiProperty({ enum: ['execution', 'information'] })
   @IsIn(['execution', 'information'])

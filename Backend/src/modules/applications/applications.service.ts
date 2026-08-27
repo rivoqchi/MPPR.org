@@ -16,14 +16,22 @@ import {
   normalizeAttachments,
   normalizeSpecialMessages,
   normalizeStructuralUnitIds,
+  normalizeStructuralUnitSectionId,
+  normalizeSubmissionMode,
 } from './lib/normalize-application';
+import {
+  generateApplicationNumber,
+  normalizeManualApplicationNumber,
+} from './lib/application-number';
+import {
+  validateSingleApplicationSection,
+} from './lib/resolve-application-recipients';
 import {
   aggregateWorkflowStatus,
   isApplicationFinalized,
   mergeConfirmationFiles,
   normalizeWorkflowUnitStatuses,
   syncWorkflowUnitStatuses,
-  updateWorkflowUnitStatus,
 } from './lib/workflow-unit-status';
 
 @Injectable()
@@ -52,6 +60,137 @@ export class ApplicationsService {
     return mapApplicationRecord(application);
   }
 
+  private assertDoesNotTargetOwnStructuralUnit(
+    structuralUnitIds: string[],
+    ownStructuralUnitId: string | null | undefined,
+  ) {
+    if (
+      ownStructuralUnitId &&
+      structuralUnitIds.includes(ownStructuralUnitId)
+    ) {
+      throw new BadRequestException(
+        ErrorCode.APPLICATION_CANNOT_TARGET_OWN_STRUCTURAL_UNIT,
+      );
+    }
+  }
+
+  private async assertApplicationNumberAvailable(
+    applicationNumber: string,
+    excludeId?: string,
+  ) {
+    const existing = await this.prisma.application.findFirst({
+      where: {
+        applicationNumber,
+        ...(excludeId ? { id: { not: excludeId } } : {}),
+      },
+      select: { id: true },
+    });
+
+    if (existing) {
+      throw new BadRequestException(ErrorCode.APPLICATION_NUMBER_ALREADY_EXISTS);
+    }
+  }
+
+  private async resolveApplicationNumber(params: {
+    numberMode?: 'auto' | 'manual';
+    applicationNumber?: string | null;
+    creatorStructuralUnitId?: string | null;
+    fallbackNumber?: string | null;
+    excludeId?: string;
+  }): Promise<string> {
+    const mode = params.numberMode ?? (params.applicationNumber ? 'manual' : 'auto');
+
+    if (mode === 'manual') {
+      const manualNumber = normalizeManualApplicationNumber(params.applicationNumber);
+
+      if (!manualNumber || manualNumber.length < 3) {
+        throw new BadRequestException(ErrorCode.APPLICATION_NUMBER_REQUIRED);
+      }
+
+      await this.assertApplicationNumberAvailable(manualNumber, params.excludeId);
+      return manualNumber;
+    }
+
+    if (params.fallbackNumber) {
+      return params.fallbackNumber;
+    }
+
+    const unit = params.creatorStructuralUnitId
+      ? await this.prisma.structuralUnit.findUnique({
+          where: { id: params.creatorStructuralUnitId },
+          select: { shortName: true },
+        })
+      : null;
+
+    const generated = await generateApplicationNumber(
+      this.prisma,
+      unit?.shortName ?? 'APP',
+    );
+    await this.assertApplicationNumberAvailable(generated, params.excludeId);
+    return generated;
+  }
+
+  private async normalizeTargeting(
+    dto: {
+      submissionMode?: 'single' | 'combined';
+      structuralUnitIds?: string[];
+      structuralUnitSectionId?: string | null;
+    },
+    fallback?: {
+      submissionMode: string | null;
+      structuralUnitIds: unknown;
+      structuralUnitSectionId: string | null;
+    },
+  ) {
+    const submissionMode = normalizeSubmissionMode(
+      dto.submissionMode ?? fallback?.submissionMode,
+    );
+    const structuralUnitIds = normalizeStructuralUnitIds(
+      dto.structuralUnitIds ?? fallback?.structuralUnitIds,
+    );
+
+    if (submissionMode === 'single') {
+      if (structuralUnitIds.length !== 1) {
+        throw new BadRequestException(ErrorCode.APPLICATION_SINGLE_UNIT_REQUIRED);
+      }
+
+      const sectionId = normalizeStructuralUnitSectionId(
+        dto.structuralUnitSectionId !== undefined
+          ? dto.structuralUnitSectionId
+          : fallback?.structuralUnitSectionId,
+      );
+      const sectionValidation = await validateSingleApplicationSection(
+        this.prisma,
+        structuralUnitIds[0],
+        sectionId,
+      );
+
+      if (!sectionValidation.ok) {
+        if (sectionValidation.reason === 'unit') {
+          throw new BadRequestException(ErrorCode.STRUCTURAL_UNIT_NOT_FOUND);
+        }
+
+        if (sectionValidation.reason === 'section_required') {
+          throw new BadRequestException(ErrorCode.APPLICATION_SECTION_REQUIRED);
+        }
+
+        throw new BadRequestException(ErrorCode.APPLICATION_SECTION_INVALID);
+      }
+
+      return {
+        submissionMode,
+        structuralUnitIds,
+        structuralUnitSectionId: sectionId,
+      };
+    }
+
+    return {
+      submissionMode,
+      structuralUnitIds,
+      structuralUnitSectionId: null as string | null,
+    };
+  }
+
   async create(dto: CreateApplicationDto, createdByUserId: string) {
     await assertPagePermission(
       this.prisma,
@@ -69,13 +208,27 @@ export class ApplicationsService {
       },
     });
 
-    const structuralUnitIds = normalizeStructuralUnitIds(dto.structuralUnitIds);
-    const workflowUnitStatuses = syncWorkflowUnitStatuses(structuralUnitIds, []);
+    const targeting = await this.normalizeTargeting(dto);
+    this.assertDoesNotTargetOwnStructuralUnit(
+      targeting.structuralUnitIds,
+      creator?.structuralUnitId,
+    );
+
+    const applicationNumber = await this.resolveApplicationNumber({
+      numberMode: dto.numberMode,
+      applicationNumber: dto.applicationNumber,
+      creatorStructuralUnitId: creator?.structuralUnitId,
+    });
+
+    const workflowUnitStatuses = syncWorkflowUnitStatuses(targeting.structuralUnitIds, []);
     const workflowStatus = aggregateWorkflowStatus(workflowUnitStatuses);
 
     const application = await this.prisma.application.create({
       data: {
-        structuralUnitIds: structuralUnitIds as unknown as Prisma.InputJsonValue,
+        applicationNumber,
+        submissionMode: targeting.submissionMode,
+        structuralUnitIds: targeting.structuralUnitIds as unknown as Prisma.InputJsonValue,
+        structuralUnitSectionId: targeting.structuralUnitSectionId,
         type: dto.type,
         status: 'in_progress',
         workflowStatus,
@@ -97,7 +250,6 @@ export class ApplicationsService {
 
     const mapped = mapApplicationRecord(application);
 
-    const recipientUnitIds = normalizeStructuralUnitIds(application.structuralUnitIds);
     const notificationPayloads = await buildApplicationCreatedNotifications(this.prisma, {
       applicationId: application.id,
       applicationType: application.type,
@@ -105,7 +257,9 @@ export class ApplicationsService {
       creatorUserId: createdByUserId,
       creatorFirstName: creator?.firstName,
       creatorLastName: creator?.lastName,
-      recipientUnitIds,
+      submissionMode: targeting.submissionMode,
+      recipientUnitIds: targeting.structuralUnitIds,
+      structuralUnitSectionId: targeting.structuralUnitSectionId,
     });
 
     if (notificationPayloads.length > 0) {
@@ -135,15 +289,63 @@ export class ApplicationsService {
       throw new BadRequestException(ErrorCode.APPLICATION_WORKFLOW_FINALIZED);
     }
 
-    const nextStructuralUnitIds =
-      dto.structuralUnitIds !== undefined
-        ? normalizeStructuralUnitIds(dto.structuralUnitIds)
-        : normalizeStructuralUnitIds(existing.structuralUnitIds);
+    const targetingChanged =
+      dto.submissionMode !== undefined ||
+      dto.structuralUnitIds !== undefined ||
+      dto.structuralUnitSectionId !== undefined;
+
+    const targeting = targetingChanged
+      ? await this.normalizeTargeting(dto, {
+          submissionMode: existing.submissionMode,
+          structuralUnitIds: existing.structuralUnitIds,
+          structuralUnitSectionId: existing.structuralUnitSectionId,
+        })
+      : {
+          submissionMode: normalizeSubmissionMode(existing.submissionMode),
+          structuralUnitIds: normalizeStructuralUnitIds(existing.structuralUnitIds),
+          structuralUnitSectionId: existing.structuralUnitSectionId,
+        };
+
+    if (targetingChanged) {
+      const actor = await this.prisma.user.findUnique({
+        where: { id: actorId },
+        select: { structuralUnitId: true },
+      });
+
+      this.assertDoesNotTargetOwnStructuralUnit(
+        targeting.structuralUnitIds,
+        actor?.structuralUnitId ?? existing.createdByStructuralUnitId,
+      );
+    }
+
+    const numberChanged =
+      dto.numberMode !== undefined || dto.applicationNumber !== undefined;
+    let nextApplicationNumber: string | undefined;
+
+    if (numberChanged) {
+      const creatorUnitId =
+        existing.createdByStructuralUnitId ??
+        (
+          await this.prisma.user.findUnique({
+            where: { id: existing.createdByUserId },
+            select: { structuralUnitId: true },
+          })
+        )?.structuralUnitId ??
+        null;
+
+      nextApplicationNumber = await this.resolveApplicationNumber({
+        numberMode: dto.numberMode,
+        applicationNumber: dto.applicationNumber,
+        creatorStructuralUnitId: creatorUnitId,
+        fallbackNumber: existing.applicationNumber,
+        excludeId: existing.id,
+      });
+    }
+
     const existingUnitStatuses = normalizeWorkflowUnitStatuses(existing.workflowUnitStatuses);
-    const nextWorkflowUnitStatuses =
-      dto.structuralUnitIds !== undefined
-        ? syncWorkflowUnitStatuses(nextStructuralUnitIds, existingUnitStatuses)
-        : undefined;
+    const nextWorkflowUnitStatuses = targetingChanged
+      ? syncWorkflowUnitStatuses(targeting.structuralUnitIds, existingUnitStatuses)
+      : undefined;
     const nextWorkflowStatus =
       nextWorkflowUnitStatuses !== undefined
         ? aggregateWorkflowStatus(nextWorkflowUnitStatuses)
@@ -152,8 +354,13 @@ export class ApplicationsService {
     const application = await this.prisma.application.update({
       where: { id },
       data: {
-        ...(dto.structuralUnitIds !== undefined && {
-          structuralUnitIds: nextStructuralUnitIds as unknown as Prisma.InputJsonValue,
+        ...(nextApplicationNumber !== undefined && {
+          applicationNumber: nextApplicationNumber,
+        }),
+        ...(targetingChanged && {
+          submissionMode: targeting.submissionMode,
+          structuralUnitIds: targeting.structuralUnitIds as unknown as Prisma.InputJsonValue,
+          structuralUnitSectionId: targeting.structuralUnitSectionId,
           workflowUnitStatuses: nextWorkflowUnitStatuses as unknown as Prisma.InputJsonValue,
           workflowStatus: nextWorkflowStatus,
           confirmationFiles: mergeConfirmationFiles(
