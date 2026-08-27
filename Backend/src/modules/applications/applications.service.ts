@@ -14,9 +14,9 @@ import { UpdateApplicationDto } from './dto/update-application.dto';
 import {
   mapApplicationRecord,
   normalizeAttachments,
+  normalizeRecipientUserIds,
   normalizeSpecialMessages,
   normalizeStructuralUnitIds,
-  normalizeStructuralUnitSectionId,
   normalizeSubmissionMode,
 } from './lib/normalize-application';
 import {
@@ -24,15 +24,13 @@ import {
   normalizeManualApplicationNumber,
 } from './lib/application-number';
 import {
-  validateSingleApplicationSection,
-} from './lib/resolve-application-recipients';
-import {
   aggregateWorkflowStatus,
   isApplicationFinalized,
   mergeConfirmationFiles,
   normalizeWorkflowUnitStatuses,
   syncWorkflowUnitStatuses,
 } from './lib/workflow-unit-status';
+import { createInitialWorkflowAssignments } from './lib/workflow-assignments';
 
 @Injectable()
 export class ApplicationsService {
@@ -60,17 +58,12 @@ export class ApplicationsService {
     return mapApplicationRecord(application);
   }
 
-  private assertDoesNotTargetOwnStructuralUnit(
-    structuralUnitIds: string[],
-    ownStructuralUnitId: string | null | undefined,
+  private assertDoesNotTargetSelf(
+    recipientUserIds: string[],
+    actorUserId: string | null | undefined,
   ) {
-    if (
-      ownStructuralUnitId &&
-      structuralUnitIds.includes(ownStructuralUnitId)
-    ) {
-      throw new BadRequestException(
-        ErrorCode.APPLICATION_CANNOT_TARGET_OWN_STRUCTURAL_UNIT,
-      );
+    if (actorUserId && recipientUserIds.includes(actorUserId)) {
+      throw new BadRequestException(ErrorCode.APPLICATION_CANNOT_TARGET_SELF);
     }
   }
 
@@ -133,59 +126,59 @@ export class ApplicationsService {
   private async normalizeTargeting(
     dto: {
       submissionMode?: 'single' | 'combined';
+      recipientUserIds?: string[];
       structuralUnitIds?: string[];
       structuralUnitSectionId?: string | null;
     },
     fallback?: {
       submissionMode: string | null;
+      recipientUserIds?: unknown;
       structuralUnitIds: unknown;
       structuralUnitSectionId: string | null;
     },
   ) {
-    const submissionMode = normalizeSubmissionMode(
-      dto.submissionMode ?? fallback?.submissionMode,
-    );
-    const structuralUnitIds = normalizeStructuralUnitIds(
-      dto.structuralUnitIds ?? fallback?.structuralUnitIds,
+    const recipientUserIds = normalizeRecipientUserIds(
+      dto.recipientUserIds ?? fallback?.recipientUserIds,
     );
 
-    if (submissionMode === 'single') {
-      if (structuralUnitIds.length !== 1) {
-        throw new BadRequestException(ErrorCode.APPLICATION_SINGLE_UNIT_REQUIRED);
-      }
-
-      const sectionId = normalizeStructuralUnitSectionId(
-        dto.structuralUnitSectionId !== undefined
-          ? dto.structuralUnitSectionId
-          : fallback?.structuralUnitSectionId,
-      );
-      const sectionValidation = await validateSingleApplicationSection(
-        this.prisma,
-        structuralUnitIds[0],
-        sectionId,
-      );
-
-      if (!sectionValidation.ok) {
-        if (sectionValidation.reason === 'unit') {
-          throw new BadRequestException(ErrorCode.STRUCTURAL_UNIT_NOT_FOUND);
-        }
-
-        if (sectionValidation.reason === 'section_required') {
-          throw new BadRequestException(ErrorCode.APPLICATION_SECTION_REQUIRED);
-        }
-
-        throw new BadRequestException(ErrorCode.APPLICATION_SECTION_INVALID);
-      }
-
-      return {
-        submissionMode,
-        structuralUnitIds,
-        structuralUnitSectionId: sectionId,
-      };
+    if (recipientUserIds.length === 0) {
+      throw new BadRequestException(ErrorCode.APPLICATION_RECIPIENTS_REQUIRED);
     }
 
+    const users = await this.prisma.user.findMany({
+      where: {
+        id: { in: recipientUserIds },
+        isActive: true,
+      },
+      select: {
+        id: true,
+        structuralUnitId: true,
+      },
+    });
+
+    if (users.length !== recipientUserIds.length) {
+      throw new BadRequestException(ErrorCode.APPLICATION_RECIPIENTS_INVALID);
+    }
+
+    const structuralUnitIds = [
+      ...new Set(
+        users
+          .map((user) => user.structuralUnitId)
+          .filter((unitId): unitId is string => Boolean(unitId)),
+      ),
+    ];
+
+    if (structuralUnitIds.length === 0) {
+      throw new BadRequestException(ErrorCode.APPLICATION_RECIPIENTS_INVALID);
+    }
+
+    const submissionMode =
+      dto.submissionMode ??
+      (recipientUserIds.length === 1 ? 'single' : 'combined');
+
     return {
-      submissionMode,
+      submissionMode: normalizeSubmissionMode(submissionMode),
+      recipientUserIds,
       structuralUnitIds,
       structuralUnitSectionId: null as string | null,
     };
@@ -209,10 +202,7 @@ export class ApplicationsService {
     });
 
     const targeting = await this.normalizeTargeting(dto);
-    this.assertDoesNotTargetOwnStructuralUnit(
-      targeting.structuralUnitIds,
-      creator?.structuralUnitId,
-    );
+    this.assertDoesNotTargetSelf(targeting.recipientUserIds, createdByUserId);
 
     const applicationNumber = await this.resolveApplicationNumber({
       numberMode: dto.numberMode,
@@ -222,17 +212,23 @@ export class ApplicationsService {
 
     const workflowUnitStatuses = syncWorkflowUnitStatuses(targeting.structuralUnitIds, []);
     const workflowStatus = aggregateWorkflowStatus(workflowUnitStatuses);
+    const workflowAssignments = createInitialWorkflowAssignments(
+      targeting.recipientUserIds,
+      createdByUserId,
+    );
 
     const application = await this.prisma.application.create({
       data: {
         applicationNumber,
         submissionMode: targeting.submissionMode,
+        recipientUserIds: targeting.recipientUserIds as unknown as Prisma.InputJsonValue,
         structuralUnitIds: targeting.structuralUnitIds as unknown as Prisma.InputJsonValue,
         structuralUnitSectionId: targeting.structuralUnitSectionId,
         type: dto.type,
         status: 'in_progress',
         workflowStatus,
         workflowUnitStatuses: workflowUnitStatuses as unknown as Prisma.InputJsonValue,
+        workflowAssignments: workflowAssignments as unknown as Prisma.InputJsonValue,
         confirmationFiles: mergeConfirmationFiles(workflowUnitStatuses) as unknown as Prisma.InputJsonValue,
         deadline: dto.deadline,
         images: normalizeAttachments(dto.images) as unknown as Prisma.InputJsonValue,
@@ -259,6 +255,7 @@ export class ApplicationsService {
       creatorLastName: creator?.lastName,
       submissionMode: targeting.submissionMode,
       recipientUnitIds: targeting.structuralUnitIds,
+      recipientUserIds: targeting.recipientUserIds,
       structuralUnitSectionId: targeting.structuralUnitSectionId,
     });
 
@@ -290,6 +287,7 @@ export class ApplicationsService {
     }
 
     const targetingChanged =
+      dto.recipientUserIds !== undefined ||
       dto.submissionMode !== undefined ||
       dto.structuralUnitIds !== undefined ||
       dto.structuralUnitSectionId !== undefined;
@@ -297,24 +295,22 @@ export class ApplicationsService {
     const targeting = targetingChanged
       ? await this.normalizeTargeting(dto, {
           submissionMode: existing.submissionMode,
+          recipientUserIds: existing.recipientUserIds,
           structuralUnitIds: existing.structuralUnitIds,
           structuralUnitSectionId: existing.structuralUnitSectionId,
         })
       : {
           submissionMode: normalizeSubmissionMode(existing.submissionMode),
+          recipientUserIds: normalizeRecipientUserIds(existing.recipientUserIds),
           structuralUnitIds: normalizeStructuralUnitIds(existing.structuralUnitIds),
           structuralUnitSectionId: existing.structuralUnitSectionId,
         };
 
     if (targetingChanged) {
-      const actor = await this.prisma.user.findUnique({
-        where: { id: actorId },
-        select: { structuralUnitId: true },
-      });
-
-      this.assertDoesNotTargetOwnStructuralUnit(
-        targeting.structuralUnitIds,
-        actor?.structuralUnitId ?? existing.createdByStructuralUnitId,
+      this.assertDoesNotTargetSelf(targeting.recipientUserIds, actorId);
+      this.assertDoesNotTargetSelf(
+        targeting.recipientUserIds,
+        existing.createdByUserId,
       );
     }
 
@@ -350,6 +346,9 @@ export class ApplicationsService {
       nextWorkflowUnitStatuses !== undefined
         ? aggregateWorkflowStatus(nextWorkflowUnitStatuses)
         : undefined;
+    const nextWorkflowAssignments = targetingChanged
+      ? createInitialWorkflowAssignments(targeting.recipientUserIds, existing.createdByUserId)
+      : undefined;
 
     const application = await this.prisma.application.update({
       where: { id },
@@ -359,9 +358,11 @@ export class ApplicationsService {
         }),
         ...(targetingChanged && {
           submissionMode: targeting.submissionMode,
+          recipientUserIds: targeting.recipientUserIds as unknown as Prisma.InputJsonValue,
           structuralUnitIds: targeting.structuralUnitIds as unknown as Prisma.InputJsonValue,
           structuralUnitSectionId: targeting.structuralUnitSectionId,
           workflowUnitStatuses: nextWorkflowUnitStatuses as unknown as Prisma.InputJsonValue,
+          workflowAssignments: nextWorkflowAssignments as unknown as Prisma.InputJsonValue,
           workflowStatus: nextWorkflowStatus,
           confirmationFiles: mergeConfirmationFiles(
             nextWorkflowUnitStatuses ?? [],

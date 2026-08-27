@@ -6,6 +6,9 @@ import type { AuthenticatedUser } from '../../common/types';
 import { ApplicationWorkflowService } from './application-workflow.service';
 import {
   CreateWorkflowMessageDto,
+  ForwardWorkflowDto,
+  ReleaseWorkflowDto,
+  UpdateWorkflowMessageDto,
   UpdateWorkflowStatusDto,
 } from './dto/application-workflow.dto';
 
@@ -25,8 +28,63 @@ export class ApplicationWorkflowController {
     return this.applicationWorkflowService.getWorkflow(applicationId, user);
   }
 
+  @Post('accept')
+  @ApiOperation({ summary: 'Accept assigned application' })
+  accept(
+    @Param('applicationId') applicationId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.applicationWorkflowService.acceptAssignment(applicationId, user);
+  }
+
+  @Post('forward')
+  @ApiOperation({ summary: 'Forward application to another user' })
+  forward(
+    @Param('applicationId') applicationId: string,
+    @Body() dto: ForwardWorkflowDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.applicationWorkflowService.forwardAssignment(applicationId, dto, user);
+  }
+
+  @Post('reply')
+  @ApiOperation({ summary: 'Send a single reply for current assignment' })
+  reply(
+    @Param('applicationId') applicationId: string,
+    @Body() dto: CreateWorkflowMessageDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.applicationWorkflowService.replyAssignment(applicationId, dto, user);
+  }
+
+  @Patch('messages/:messageId')
+  @ApiOperation({ summary: 'Edit own reply message' })
+  updateMessage(
+    @Param('applicationId') applicationId: string,
+    @Param('messageId') messageId: string,
+    @Body() dto: UpdateWorkflowMessageDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.applicationWorkflowService.updateReplyMessage(
+      applicationId,
+      messageId,
+      dto,
+      user,
+    );
+  }
+
+  @Post('release')
+  @ApiOperation({ summary: 'Release supervision / close application' })
+  release(
+    @Param('applicationId') applicationId: string,
+    @Body() dto: ReleaseWorkflowDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.applicationWorkflowService.releaseSupervision(applicationId, dto, user);
+  }
+
   @Post('messages')
-  @ApiOperation({ summary: 'Send workflow chat message' })
+  @ApiOperation({ summary: 'Send workflow reply (alias)' })
   createMessage(
     @Param('applicationId') applicationId: string,
     @Body() dto: CreateWorkflowMessageDto,
@@ -36,7 +94,7 @@ export class ApplicationWorkflowController {
   }
 
   @Patch('status')
-  @ApiOperation({ summary: 'Update application workflow status' })
+  @ApiOperation({ summary: 'Update application workflow status (legacy)' })
   updateStatus(
     @Param('applicationId') applicationId: string,
     @Body() dto: UpdateWorkflowStatusDto,
@@ -46,7 +104,7 @@ export class ApplicationWorkflowController {
   }
 
   @Post('confirm')
-  @ApiOperation({ summary: 'Submitter confirms application after all units responded' })
+  @ApiOperation({ summary: 'Submitter releases/confirms application' })
   confirmWorkflow(
     @Param('applicationId') applicationId: string,
     @CurrentUser() user: AuthenticatedUser,
@@ -55,7 +113,7 @@ export class ApplicationWorkflowController {
   }
 
   @Post('cancel')
-  @ApiOperation({ summary: 'Submitter cancels application after all units responded' })
+  @ApiOperation({ summary: 'Submitter cancels application' })
   cancelWorkflow(
     @Param('applicationId') applicationId: string,
     @CurrentUser() user: AuthenticatedUser,

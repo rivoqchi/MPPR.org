@@ -13,25 +13,32 @@ import { ApplicationAttachmentDto } from './application-attachment.dto';
 import { ApplicationSpecialMessageDto } from './application-special-message.dto';
 
 export class CreateApplicationDto {
-  @ApiProperty({ enum: ['single', 'combined'], example: 'single' })
+  @ApiPropertyOptional({ enum: ['single', 'combined'], example: 'combined' })
+  @IsOptional()
   @IsIn(['single', 'combined'])
-  submissionMode!: 'single' | 'combined';
+  submissionMode?: 'single' | 'combined';
 
   @ApiProperty({ enum: ['auto', 'manual'], example: 'auto' })
   @IsIn(['auto', 'manual'])
   numberMode!: 'auto' | 'manual';
 
-  @ApiPropertyOptional({ example: 'MOT-2026-0001' })
+  @ApiPropertyOptional({ example: 'BB-2026-0001' })
   @IsOptional()
   @IsString()
   @MinLength(3)
   applicationNumber?: string;
 
-  @ApiProperty({ type: [String], example: ['unit-id'] })
+  @ApiProperty({ type: [String], example: ['user-id'] })
   @IsArray()
   @ArrayMinSize(1)
   @IsString({ each: true })
-  structuralUnitIds!: string[];
+  recipientUserIds!: string[];
+
+  @ApiPropertyOptional({ type: [String], example: ['unit-id'] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  structuralUnitIds?: string[];
 
   @ApiPropertyOptional({ example: 'section-id' })
   @IsOptional()

@@ -7,6 +7,7 @@ import {
   isWorkflowFinalized,
   mergeConfirmationFiles,
 } from './workflow-unit-status';
+import { normalizeWorkflowAssignments } from './workflow-assignments';
 
 function isAttachment(value: unknown): value is ApplicationAttachmentDto {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -71,6 +72,22 @@ export function normalizeStructuralUnitIds(value: unknown): string[] {
   return value.filter((item): item is string => typeof item === 'string' && item.length > 0);
 }
 
+export function normalizeRecipientUserIds(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const unique = new Set<string>();
+
+  for (const item of value) {
+    if (typeof item === 'string' && item.trim().length > 0) {
+      unique.add(item.trim());
+    }
+  }
+
+  return [...unique];
+}
+
 export function normalizeSubmissionMode(value: unknown): 'single' | 'combined' {
   return value === 'single' ? 'single' : 'combined';
 }
@@ -87,6 +104,8 @@ export function normalizeStructuralUnitSectionId(value: unknown): string | null 
 export function mapApplicationRecord<
   T extends {
     structuralUnitIds: unknown;
+    recipientUserIds?: unknown;
+    workflowAssignments?: unknown;
     images: unknown;
     files: unknown;
     specialMessages: unknown;
@@ -101,6 +120,8 @@ export function mapApplicationRecord<
   },
 >(application: T) {
   const structuralUnitIds = normalizeStructuralUnitIds(application.structuralUnitIds);
+  const recipientUserIds = normalizeRecipientUserIds(application.recipientUserIds);
+  const workflowAssignments = normalizeWorkflowAssignments(application.workflowAssignments);
   const storedWorkflowStatus = (application.workflowStatus ??
     'in_progress_work') as ApplicationWorkflowStatus;
   const workflowUnitStatuses = ensureWorkflowUnitStatuses(
@@ -123,6 +144,7 @@ export function mapApplicationRecord<
     applicationNumber:
       typeof application.applicationNumber === 'string' ? application.applicationNumber : null,
     submissionMode: normalizeSubmissionMode(application.submissionMode),
+    recipientUserIds,
     structuralUnitIds,
     structuralUnitSectionId: normalizeStructuralUnitSectionId(
       application.structuralUnitSectionId,
@@ -130,6 +152,7 @@ export function mapApplicationRecord<
     images: normalizeAttachments(application.images),
     files: normalizeAttachments(application.files),
     specialMessages: normalizeSpecialMessages(application.specialMessages),
+    workflowAssignments,
     workflowUnitStatuses: normalizedUnitStatuses,
     workflowStatus,
     confirmationFiles: mergeConfirmationFiles(normalizedUnitStatuses),
@@ -141,12 +164,16 @@ export function mapApplicationRecord<
 export function mapWorkflowMessageRecord<
   T extends {
     attachments: unknown;
+    assignmentId?: string | null;
     createdAt: Date;
+    updatedAt?: Date;
   },
 >(message: T) {
   return {
     ...message,
+    assignmentId: message.assignmentId ?? null,
     attachments: normalizeAttachments(message.attachments),
     createdAt: message.createdAt.toISOString(),
+    updatedAt: (message.updatedAt ?? message.createdAt).toISOString(),
   };
 }

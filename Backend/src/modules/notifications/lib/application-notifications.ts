@@ -23,7 +23,7 @@ function truncateText(value: string, maxLength = 80): string {
 
 function buildWorkflowLinkPath(applicationId: string, forIncoming: boolean): string {
   const base = forIncoming ? '/applications/incoming' : '/applications/submit';
-  return `${base}/workflow/${applicationId}`;
+  return `${base}?applicationId=${applicationId}`;
 }
 
 function getOppositeUnitIds(
@@ -63,12 +63,14 @@ export async function buildApplicationCreatedNotifications(
     creatorLastName?: string | null;
     submissionMode?: string | null;
     recipientUnitIds: string[];
+    recipientUserIds?: string[];
     structuralUnitSectionId?: string | null;
   },
 ): Promise<CreateNotificationDto[]> {
   const recipientUserIds = await resolveApplicationIncomingRecipientUserIds(
     prisma,
     {
+      recipientUserIds: params.recipientUserIds,
       submissionMode: params.submissionMode,
       structuralUnitIds: params.recipientUnitIds,
       structuralUnitSectionId: params.structuralUnitSectionId,

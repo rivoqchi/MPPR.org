@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { randomUUID } from 'crypto';
 import { ErrorCode } from '../../common/constants/error-codes';
 import {
   assertPagePermission,
@@ -14,25 +15,33 @@ import { AuthenticatedUser } from '../../common/types';
 import { RealtimeService } from '../../shared/realtime/realtime.service';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import {
-  buildWorkflowMessageNotifications,
-  buildWorkflowStatusNotifications,
-} from '../notifications/lib/application-notifications';
+import { CreateNotificationDto } from '../notifications/dto/notification.dto';
+import { NOTIFICATION_TYPES } from '../notifications/lib/notification-types';
 import {
   CreateWorkflowMessageDto,
+  ForwardWorkflowDto,
+  ReleaseWorkflowDto,
+  UpdateWorkflowMessageDto,
   UpdateWorkflowStatusDto,
 } from './dto/application-workflow.dto';
 import {
   mapApplicationRecord,
   mapWorkflowMessageRecord,
   normalizeAttachments,
+  normalizeRecipientUserIds,
   normalizeStructuralUnitIds,
-  normalizeSubmissionMode,
 } from './lib/normalize-application';
-import { isSingleApplicationHeadRecipient } from './lib/resolve-application-recipients';
+import {
+  allRootAssignmentsReleased,
+  createInitialWorkflowAssignments,
+  findUserAssignment,
+  isUserInWorkflowChain,
+  normalizeWorkflowAssignments,
+  replaceAssignment,
+  type WorkflowAssignment,
+} from './lib/workflow-assignments';
 import {
   aggregateWorkflowStatus,
-  allUnitsPendingConfirmation,
   isWorkflowFinalized,
   mergeConfirmationFiles,
   normalizeWorkflowUnitStatuses,
@@ -82,37 +91,36 @@ export class ApplicationWorkflowService {
       return application;
     }
 
-    const structuralUnitId = participant?.structuralUnitId;
+    const assignments = normalizeWorkflowAssignments(application.workflowAssignments);
 
-    if (!structuralUnitId) {
-      throw new ForbiddenException(ErrorCode.APPLICATION_WORKFLOW_FORBIDDEN);
+    if (application.createdByUserId === user.id || isUserInWorkflowChain(assignments, user.id)) {
+      return application;
     }
 
-    const recipientUnitIds = normalizeStructuralUnitIds(application.structuralUnitIds);
-    const submitterUnitId = application.createdByStructuralUnitId;
-    const isSubmitter = submitterUnitId === structuralUnitId;
-    const isRecipientUnit = recipientUnitIds.includes(structuralUnitId);
+    const recipientUserIds = normalizeRecipientUserIds(application.recipientUserIds);
 
-    if (!isSubmitter && !isRecipientUnit) {
-      throw new ForbiddenException(ErrorCode.APPLICATION_WORKFLOW_FORBIDDEN);
+    if (recipientUserIds.includes(user.id)) {
+      return application;
+    }
+
+    const structuralUnitId = participant?.structuralUnitId;
+
+    if (
+      structuralUnitId &&
+      recipientUserIds.length === 0 &&
+      normalizeStructuralUnitIds(application.structuralUnitIds).includes(structuralUnitId)
+    ) {
+      return application;
     }
 
     if (
-      !isSubmitter &&
-      normalizeSubmissionMode(application.submissionMode) === 'single'
+      structuralUnitId &&
+      application.createdByStructuralUnitId === structuralUnitId
     ) {
-      const isHead = await isSingleApplicationHeadRecipient(
-        this.prisma,
-        application,
-        user.id,
-      );
-
-      if (!isHead) {
-        throw new ForbiddenException(ErrorCode.APPLICATION_WORKFLOW_FORBIDDEN);
-      }
+      return application;
     }
 
-    return application;
+    throw new ForbiddenException(ErrorCode.APPLICATION_WORKFLOW_FORBIDDEN);
   }
 
   private assertWorkflowNotFinalized(workflowStatus: string) {
@@ -121,37 +129,51 @@ export class ApplicationWorkflowService {
     }
   }
 
-  private async assertSubmitterAccess(
-    application: { createdByStructuralUnitId: string | null },
-    user: AuthenticatedUser,
+  private async saveAssignments(
+    applicationId: string,
+    assignments: WorkflowAssignment[],
+    extra?: {
+      workflowStatus?: string;
+      status?: string;
+    },
   ) {
-    const author = await this.prisma.user.findUnique({
-      where: { id: user.id },
-      select: { structuralUnitId: true },
+    return this.prisma.application.update({
+      where: { id: applicationId },
+      data: {
+        workflowAssignments: assignments as unknown as Prisma.InputJsonValue,
+        ...(extra?.workflowStatus !== undefined && { workflowStatus: extra.workflowStatus }),
+        ...(extra?.status !== undefined && { status: extra.status }),
+      },
     });
-
-    if (
-      !author?.structuralUnitId ||
-      author.structuralUnitId !== application.createdByStructuralUnitId
-    ) {
-      throw new ForbiddenException(ErrorCode.APPLICATION_WORKFLOW_FORBIDDEN);
-    }
-
-    return author;
   }
 
-  private assertReadyForSubmitterFinalization(application: ReturnType<typeof mapApplicationRecord>) {
-    if (application.workflowStatus !== 'pending_confirmation') {
-      throw new BadRequestException(ErrorCode.APPLICATION_WORKFLOW_NOT_READY_FOR_FINALIZATION);
+  private buildLinkPath(applicationId: string, forIncoming: boolean) {
+    const base = forIncoming ? '/applications/incoming' : '/applications/submit';
+    return `${base}?applicationId=${applicationId}`;
+  }
+
+  private async notifyUsers(
+    payloads: CreateNotificationDto[],
+  ) {
+    if (payloads.length === 0) {
+      return;
     }
 
-    if (!allUnitsPendingConfirmation(application.workflowUnitStatuses)) {
-      throw new BadRequestException(ErrorCode.APPLICATION_WORKFLOW_NOT_READY_FOR_FINALIZATION);
-    }
+    await this.notificationsService.createMany(payloads);
   }
 
   async getWorkflow(applicationId: string, user: AuthenticatedUser) {
-    const application = await this.assertWorkflowAccess(applicationId, user);
+    let application = await this.assertWorkflowAccess(applicationId, user);
+    let assignments = normalizeWorkflowAssignments(application.workflowAssignments);
+    const recipientUserIds = normalizeRecipientUserIds(application.recipientUserIds);
+
+    if (assignments.length === 0 && recipientUserIds.length > 0) {
+      assignments = createInitialWorkflowAssignments(
+        recipientUserIds,
+        application.createdByUserId,
+      );
+      application = await this.saveAssignments(applicationId, assignments);
+    }
 
     const messages = await this.prisma.applicationWorkflowMessage.findMany({
       where: { applicationId },
@@ -164,13 +186,138 @@ export class ApplicationWorkflowService {
     };
   }
 
-  async createMessage(
+  async acceptAssignment(applicationId: string, user: AuthenticatedUser) {
+    const existing = await this.assertWorkflowAccess(applicationId, user);
+    this.assertWorkflowNotFinalized(existing.workflowStatus);
+
+    const assignments = normalizeWorkflowAssignments(existing.workflowAssignments);
+    const assignment = findUserAssignment(assignments, user.id);
+
+    if (!assignment) {
+      throw new BadRequestException(ErrorCode.APPLICATION_WORKFLOW_ASSIGNMENT_NOT_FOUND);
+    }
+
+    if (assignment.status !== 'pending_accept') {
+      throw new BadRequestException(ErrorCode.APPLICATION_WORKFLOW_ALREADY_ACCEPTED);
+    }
+
+    const nextAssignments = replaceAssignment(assignments, {
+      ...assignment,
+      status: 'accepted',
+      acceptedAt: new Date().toISOString(),
+    });
+
+    const application = await this.saveAssignments(applicationId, nextAssignments);
+    const mapped = mapApplicationRecord(application);
+    this.realtimeService.emitEntityChange('applications', 'update', mapped);
+
+    return { application: mapped };
+  }
+
+  async forwardAssignment(
+    applicationId: string,
+    dto: ForwardWorkflowDto,
+    user: AuthenticatedUser,
+  ) {
+    const existing = await this.assertWorkflowAccess(applicationId, user);
+    this.assertWorkflowNotFinalized(existing.workflowStatus);
+
+    if (dto.toUserId === user.id || dto.toUserId === existing.createdByUserId) {
+      throw new BadRequestException(ErrorCode.APPLICATION_WORKFLOW_FORWARD_INVALID);
+    }
+
+    const target = await this.prisma.user.findUnique({
+      where: { id: dto.toUserId },
+      select: { id: true, isActive: true, firstName: true, lastName: true },
+    });
+
+    if (!target?.isActive) {
+      throw new BadRequestException(ErrorCode.APPLICATION_WORKFLOW_FORWARD_INVALID);
+    }
+
+    const assignments = normalizeWorkflowAssignments(existing.workflowAssignments);
+    const assignment = findUserAssignment(assignments, user.id);
+
+    if (!assignment || (assignment.status !== 'accepted' && assignment.status !== 'replied')) {
+      throw new BadRequestException(ErrorCode.APPLICATION_WORKFLOW_ACCEPT_REQUIRED);
+    }
+
+    const alreadyAssigned = assignments.some(
+      (item) => item.userId === dto.toUserId && item.status !== 'released',
+    );
+
+    if (alreadyAssigned) {
+      throw new BadRequestException(ErrorCode.APPLICATION_WORKFLOW_FORWARD_INVALID);
+    }
+
+    const child: WorkflowAssignment = {
+      id: randomUUID(),
+      userId: dto.toUserId,
+      assignedByUserId: user.id,
+      parentAssignmentId: assignment.id,
+      status: 'pending_accept',
+      replyMessageId: null,
+      forwardedToAssignmentId: null,
+      acceptedAt: null,
+      repliedAt: null,
+      releasedAt: null,
+      createdAt: new Date().toISOString(),
+    };
+
+    const nextAssignments = [
+      ...replaceAssignment(assignments, {
+        ...assignment,
+        status: 'forwarded',
+        forwardedToAssignmentId: child.id,
+      }),
+      child,
+    ];
+
+    const application = await this.saveAssignments(applicationId, nextAssignments);
+    const mapped = mapApplicationRecord(application);
+
+    await this.notifyUsers([
+      {
+        userId: dto.toUserId,
+        type: NOTIFICATION_TYPES.APPLICATION_CREATED,
+        title: 'Yangi ariza yo‘naltirildi',
+        message: 'Sizga ariza yo‘naltirildi. Avval qabul qiling.',
+        linkPath: this.buildLinkPath(applicationId, true),
+        metadata: { applicationId },
+      },
+    ]);
+
+    this.realtimeService.emitEntityChange('applications', 'update', mapped);
+
+    return { application: mapped };
+  }
+
+  async replyAssignment(
     applicationId: string,
     dto: CreateWorkflowMessageDto,
     user: AuthenticatedUser,
   ) {
-    const existingApplication = await this.assertWorkflowAccess(applicationId, user);
-    this.assertWorkflowNotFinalized(existingApplication.workflowStatus);
+    const existing = await this.assertWorkflowAccess(applicationId, user);
+    this.assertWorkflowNotFinalized(existing.workflowStatus);
+
+    const assignments = normalizeWorkflowAssignments(existing.workflowAssignments);
+    const assignment = findUserAssignment(assignments, user.id);
+
+    if (!assignment) {
+      throw new BadRequestException(ErrorCode.APPLICATION_WORKFLOW_ASSIGNMENT_NOT_FOUND);
+    }
+
+    if (assignment.status === 'pending_accept') {
+      throw new BadRequestException(ErrorCode.APPLICATION_WORKFLOW_ACCEPT_REQUIRED);
+    }
+
+    if (assignment.status === 'replied' || assignment.replyMessageId) {
+      throw new BadRequestException(ErrorCode.APPLICATION_WORKFLOW_ALREADY_REPLIED);
+    }
+
+    if (assignment.status === 'forwarded') {
+      throw new BadRequestException(ErrorCode.APPLICATION_WORKFLOW_FORWARD_INVALID);
+    }
 
     const content = dto.content?.trim() ?? '';
     const attachments = normalizeAttachments(dto.attachments);
@@ -181,11 +328,7 @@ export class ApplicationWorkflowService {
 
     const author = await this.prisma.user.findUnique({
       where: { id: user.id },
-      select: {
-        firstName: true,
-        lastName: true,
-        structuralUnitId: true,
-      },
+      select: { firstName: true, lastName: true, structuralUnitId: true },
     });
 
     const message = await this.prisma.applicationWorkflowMessage.create({
@@ -197,35 +340,211 @@ export class ApplicationWorkflowService {
         authorStructuralUnitId: author?.structuralUnitId,
         content,
         attachments: attachments as unknown as Prisma.InputJsonValue,
+        assignmentId: assignment.id,
       },
     });
 
-    const mapped = mapWorkflowMessageRecord(message);
-
-    const application = await this.getApplicationOrThrow(applicationId);
-    const notificationPayloads = await buildWorkflowMessageNotifications(this.prisma, {
-      applicationId,
-      authorUserId: user.id,
-      authorFirstName: author?.firstName,
-      authorLastName: author?.lastName,
-      authorStructuralUnitId: author?.structuralUnitId,
-      createdByStructuralUnitId: application.createdByStructuralUnitId,
-      submissionMode: application.submissionMode,
-      recipientUnitIds: normalizeStructuralUnitIds(application.structuralUnitIds),
-      structuralUnitSectionId: application.structuralUnitSectionId,
-      content,
+    const nextAssignments = replaceAssignment(assignments, {
+      ...assignment,
+      status: 'replied',
+      replyMessageId: message.id,
+      repliedAt: new Date().toISOString(),
     });
 
-    if (notificationPayloads.length > 0) {
-      await this.notificationsService.createMany(notificationPayloads);
+    const application = await this.saveAssignments(applicationId, nextAssignments);
+    const mapped = mapApplicationRecord(application);
+    const mappedMessage = mapWorkflowMessageRecord(message);
+
+    const notifyUserId = assignment.assignedByUserId;
+    const forIncoming = notifyUserId !== existing.createdByUserId;
+
+    await this.notifyUsers([
+      {
+        userId: notifyUserId,
+        type: NOTIFICATION_TYPES.APPLICATION_WORKFLOW_MESSAGE,
+        title: 'Arizaga javob keldi',
+        message: content || 'Fayl/rasm bilan javob yuborildi',
+        linkPath: this.buildLinkPath(applicationId, forIncoming),
+        metadata: { applicationId, messageId: message.id },
+      },
+    ]);
+
+    this.realtimeService.emitEntityChange('applications', 'update', mapped);
+    this.realtimeService.emitEntityChange('application-workflow', 'create', {
+      ...mappedMessage,
+      applicationId,
+    });
+
+    return {
+      application: mapped,
+      message: mappedMessage,
+    };
+  }
+
+  async updateReplyMessage(
+    applicationId: string,
+    messageId: string,
+    dto: UpdateWorkflowMessageDto,
+    user: AuthenticatedUser,
+  ) {
+    const existing = await this.assertWorkflowAccess(applicationId, user);
+    this.assertWorkflowNotFinalized(existing.workflowStatus);
+
+    const assignments = normalizeWorkflowAssignments(existing.workflowAssignments);
+    const assignment = findUserAssignment(assignments, user.id);
+
+    if (!assignment?.replyMessageId || assignment.replyMessageId !== messageId) {
+      throw new ForbiddenException(ErrorCode.APPLICATION_WORKFLOW_FORBIDDEN);
     }
 
-    this.realtimeService.emitEntityChange('application-workflow', 'create', {
-      applicationId,
-      message: mapped,
+    const content = dto.content?.trim() ?? '';
+    const attachments =
+      dto.attachments !== undefined ? normalizeAttachments(dto.attachments) : undefined;
+
+    if (dto.content !== undefined && !content && (attachments?.length ?? 1) === 0) {
+      throw new BadRequestException(ErrorCode.VALIDATION_FAILED);
+    }
+
+    const message = await this.prisma.applicationWorkflowMessage.update({
+      where: { id: messageId },
+      data: {
+        ...(dto.content !== undefined && { content }),
+        ...(attachments !== undefined && {
+          attachments: attachments as unknown as Prisma.InputJsonValue,
+        }),
+      },
     });
 
-    return mapped;
+    const mappedMessage = mapWorkflowMessageRecord(message);
+    this.realtimeService.emitEntityChange('application-workflow', 'update', {
+      ...mappedMessage,
+      applicationId,
+    });
+
+    return mappedMessage;
+  }
+
+  async releaseSupervision(
+    applicationId: string,
+    dto: ReleaseWorkflowDto,
+    user: AuthenticatedUser,
+  ) {
+    const existing = await this.assertWorkflowAccess(applicationId, user);
+    this.assertWorkflowNotFinalized(existing.workflowStatus);
+
+    let assignments = normalizeWorkflowAssignments(existing.workflowAssignments);
+    const isSubmitter = existing.createdByUserId === user.id;
+
+    if (dto.assignmentId) {
+      const target = assignments.find((item) => item.id === dto.assignmentId);
+
+      if (!target || target.assignedByUserId !== user.id) {
+        throw new BadRequestException(ErrorCode.APPLICATION_WORKFLOW_RELEASE_NOT_ALLOWED);
+      }
+
+      if (target.status !== 'replied' && target.status !== 'forwarded') {
+        throw new BadRequestException(ErrorCode.APPLICATION_WORKFLOW_RELEASE_NOT_ALLOWED);
+      }
+
+      assignments = replaceAssignment(assignments, {
+        ...target,
+        status: 'released',
+        releasedAt: new Date().toISOString(),
+      });
+
+      if (target.parentAssignmentId) {
+        const parent = assignments.find((item) => item.id === target.parentAssignmentId);
+
+        if (parent && parent.status === 'forwarded' && parent.userId === user.id) {
+          assignments = replaceAssignment(assignments, {
+            ...parent,
+            status: 'accepted',
+            forwardedToAssignmentId: parent.forwardedToAssignmentId,
+          });
+        }
+      }
+    } else if (isSubmitter) {
+      const releasable = assignments.filter(
+        (item) =>
+          item.assignedByUserId === user.id &&
+          (item.status === 'replied' || item.status === 'forwarded'),
+      );
+
+      if (releasable.length === 0) {
+        throw new BadRequestException(ErrorCode.APPLICATION_WORKFLOW_RELEASE_NOT_ALLOWED);
+      }
+
+      for (const item of releasable) {
+        assignments = replaceAssignment(assignments, {
+          ...item,
+          status: 'released',
+          releasedAt: new Date().toISOString(),
+        });
+      }
+    } else {
+      const child = assignments.find(
+        (item) =>
+          item.assignedByUserId === user.id &&
+          (item.status === 'replied' || item.status === 'forwarded'),
+      );
+
+      if (!child) {
+        throw new BadRequestException(ErrorCode.APPLICATION_WORKFLOW_RELEASE_NOT_ALLOWED);
+      }
+
+      assignments = replaceAssignment(assignments, {
+        ...child,
+        status: 'released',
+        releasedAt: new Date().toISOString(),
+      });
+
+      if (child.parentAssignmentId) {
+        const parent = assignments.find((item) => item.id === child.parentAssignmentId);
+
+        if (parent && parent.status === 'forwarded' && parent.userId === user.id) {
+          assignments = replaceAssignment(assignments, {
+            ...parent,
+            status: 'accepted',
+          });
+        }
+      }
+    }
+
+    const shouldFinalize = isSubmitter && allRootAssignmentsReleased(assignments);
+
+    const application = await this.saveAssignments(applicationId, assignments, {
+      ...(shouldFinalize && {
+        workflowStatus: 'confirmed',
+        status: 'completed',
+      }),
+    });
+
+    const mapped = mapApplicationRecord(application);
+
+    if (shouldFinalize) {
+      await this.notifyUsers(
+        normalizeRecipientUserIds(existing.recipientUserIds).map((userId) => ({
+          userId,
+          type: NOTIFICATION_TYPES.APPLICATION_WORKFLOW_STATUS,
+          title: 'Ariza tasdiqlandi',
+          message: 'Ariza nazoratdan yechildi va yopildi.',
+          linkPath: this.buildLinkPath(applicationId, true),
+          metadata: { applicationId },
+        })),
+      );
+    }
+
+    this.realtimeService.emitEntityChange('applications', 'update', mapped);
+
+    return { application: mapped };
+  }
+
+  async createMessage(
+    applicationId: string,
+    dto: CreateWorkflowMessageDto,
+    user: AuthenticatedUser,
+  ) {
+    return this.replyAssignment(applicationId, dto, user).then((result) => result.message);
   }
 
   async updateStatus(
@@ -238,7 +557,6 @@ export class ApplicationWorkflowService {
       user.id,
       PAGE_KEYS.applicationsIncoming,
       'canEdit',
-      ErrorCode.APPLICATION_WORKFLOW_FORBIDDEN,
     );
 
     const existingApplication = await this.assertWorkflowAccess(applicationId, user);
@@ -246,163 +564,76 @@ export class ApplicationWorkflowService {
 
     const author = await this.prisma.user.findUnique({
       where: { id: user.id },
-      select: {
-        firstName: true,
-        lastName: true,
-        structuralUnitId: true,
-      },
+      select: { structuralUnitId: true, firstName: true, lastName: true },
     });
 
-    const recipientUnitIds = normalizeStructuralUnitIds(existingApplication.structuralUnitIds);
-    const authorStructuralUnitId = author?.structuralUnitId;
-
-    if (!authorStructuralUnitId || !recipientUnitIds.includes(authorStructuralUnitId)) {
+    if (!author?.structuralUnitId) {
       throw new ForbiddenException(ErrorCode.APPLICATION_WORKFLOW_FORBIDDEN);
     }
 
-    const confirmationFiles = normalizeAttachments(dto.confirmationFiles);
+    const unitIds = normalizeStructuralUnitIds(existingApplication.structuralUnitIds);
 
-    if (dto.workflowStatus === 'pending_confirmation' && confirmationFiles.length === 0) {
+    if (!unitIds.includes(author.structuralUnitId)) {
+      throw new ForbiddenException(ErrorCode.APPLICATION_WORKFLOW_FORBIDDEN);
+    }
+
+    if (
+      dto.workflowStatus === 'pending_confirmation' &&
+      normalizeAttachments(dto.confirmationFiles).length === 0
+    ) {
       throw new BadRequestException(ErrorCode.APPLICATION_WORKFLOW_CONFIRMATION_FILES_REQUIRED);
     }
 
-    const workflowUnitStatuses = updateWorkflowUnitStatus(
-      recipientUnitIds,
-      mapApplicationRecord(existingApplication).workflowUnitStatuses,
-      authorStructuralUnitId,
-      dto.workflowStatus,
-      confirmationFiles,
+    const existingUnitStatuses = normalizeWorkflowUnitStatuses(
+      existingApplication.workflowUnitStatuses,
     );
-    const workflowStatus = aggregateWorkflowStatus(workflowUnitStatuses);
+    const nextUnitStatuses = updateWorkflowUnitStatus(
+      unitIds,
+      existingUnitStatuses,
+      author.structuralUnitId,
+      dto.workflowStatus,
+      normalizeAttachments(dto.confirmationFiles),
+    );
+    const nextWorkflowStatus = aggregateWorkflowStatus(nextUnitStatuses);
 
     const application = await this.prisma.application.update({
       where: { id: applicationId },
       data: {
-        workflowStatus,
-        workflowUnitStatuses: workflowUnitStatuses as unknown as Prisma.InputJsonValue,
-        confirmationFiles: mergeConfirmationFiles(workflowUnitStatuses) as unknown as Prisma.InputJsonValue,
+        workflowUnitStatuses: nextUnitStatuses as unknown as Prisma.InputJsonValue,
+        workflowStatus: nextWorkflowStatus,
+        confirmationFiles: mergeConfirmationFiles(nextUnitStatuses) as unknown as Prisma.InputJsonValue,
       },
     });
 
     const mapped = mapApplicationRecord(application);
-
-    const notificationPayloads = await buildWorkflowStatusNotifications(this.prisma, {
-      applicationId,
-      authorUserId: user.id,
-      authorFirstName: author?.firstName,
-      authorLastName: author?.lastName,
-      authorStructuralUnitId,
-      createdByStructuralUnitId: existingApplication.createdByStructuralUnitId,
-      submissionMode: existingApplication.submissionMode,
-      recipientUnitIds,
-      structuralUnitSectionId: existingApplication.structuralUnitSectionId,
-      workflowStatus: dto.workflowStatus,
-    });
-
-    if (notificationPayloads.length > 0) {
-      await this.notificationsService.createMany(notificationPayloads);
-    }
-
     this.realtimeService.emitEntityChange('applications', 'update', mapped);
 
     return mapped;
   }
 
   async confirmWorkflow(applicationId: string, user: AuthenticatedUser) {
-    const existingApplication = await this.assertWorkflowAccess(applicationId, user);
-    this.assertWorkflowNotFinalized(existingApplication.workflowStatus);
-    await this.assertSubmitterAccess(existingApplication, user);
-
-    const mappedExisting = mapApplicationRecord(existingApplication);
-    this.assertReadyForSubmitterFinalization(mappedExisting);
-
-    const confirmedUnitStatuses = normalizeWorkflowUnitStatuses(
-      existingApplication.workflowUnitStatuses,
-    ).map((unit) => ({
-      ...unit,
-      workflowStatus: 'confirmed' as const,
-    }));
-
-    const application = await this.prisma.application.update({
-      where: { id: applicationId },
-      data: {
-        workflowStatus: 'confirmed',
-        status: 'completed',
-        workflowUnitStatuses: confirmedUnitStatuses as unknown as Prisma.InputJsonValue,
-        confirmationFiles: mergeConfirmationFiles(confirmedUnitStatuses) as unknown as Prisma.InputJsonValue,
-      },
-    });
-
-    const mapped = mapApplicationRecord(application);
-    const recipientUnitIds = normalizeStructuralUnitIds(existingApplication.structuralUnitIds);
-
-    const notificationPayloads = await buildWorkflowStatusNotifications(this.prisma, {
-      applicationId,
-      authorUserId: user.id,
-      authorFirstName: mappedExisting.createdByFirstName,
-      authorLastName: mappedExisting.createdByLastName,
-      authorStructuralUnitId: existingApplication.createdByStructuralUnitId,
-      createdByStructuralUnitId: existingApplication.createdByStructuralUnitId,
-      submissionMode: existingApplication.submissionMode,
-      recipientUnitIds,
-      structuralUnitSectionId: existingApplication.structuralUnitSectionId,
-      workflowStatus: 'confirmed',
-    });
-
-    if (notificationPayloads.length > 0) {
-      await this.notificationsService.createMany(notificationPayloads);
-    }
-
-    this.realtimeService.emitEntityChange('applications', 'update', mapped);
-
-    return mapped;
+    return this.releaseSupervision(applicationId, {}, user).then(
+      (result) => result.application,
+    );
   }
 
   async cancelWorkflow(applicationId: string, user: AuthenticatedUser) {
-    const existingApplication = await this.assertWorkflowAccess(applicationId, user);
-    this.assertWorkflowNotFinalized(existingApplication.workflowStatus);
-    await this.assertSubmitterAccess(existingApplication, user);
+    const existing = await this.assertWorkflowAccess(applicationId, user);
+    this.assertWorkflowNotFinalized(existing.workflowStatus);
 
-    const mappedExisting = mapApplicationRecord(existingApplication);
-    this.assertReadyForSubmitterFinalization(mappedExisting);
-
-    const cancelledUnitStatuses = normalizeWorkflowUnitStatuses(
-      existingApplication.workflowUnitStatuses,
-    ).map((unit) => ({
-      ...unit,
-      workflowStatus: 'cancelled' as const,
-    }));
+    if (existing.createdByUserId !== user.id) {
+      throw new ForbiddenException(ErrorCode.APPLICATION_WORKFLOW_FORBIDDEN);
+    }
 
     const application = await this.prisma.application.update({
       where: { id: applicationId },
       data: {
         workflowStatus: 'cancelled',
         status: 'cancelled',
-        workflowUnitStatuses: cancelledUnitStatuses as unknown as Prisma.InputJsonValue,
-        confirmationFiles: mergeConfirmationFiles(cancelledUnitStatuses) as unknown as Prisma.InputJsonValue,
       },
     });
 
     const mapped = mapApplicationRecord(application);
-    const recipientUnitIds = normalizeStructuralUnitIds(existingApplication.structuralUnitIds);
-
-    const notificationPayloads = await buildWorkflowStatusNotifications(this.prisma, {
-      applicationId,
-      authorUserId: user.id,
-      authorFirstName: mappedExisting.createdByFirstName,
-      authorLastName: mappedExisting.createdByLastName,
-      authorStructuralUnitId: existingApplication.createdByStructuralUnitId,
-      createdByStructuralUnitId: existingApplication.createdByStructuralUnitId,
-      submissionMode: existingApplication.submissionMode,
-      recipientUnitIds,
-      structuralUnitSectionId: existingApplication.structuralUnitSectionId,
-      workflowStatus: 'cancelled',
-    });
-
-    if (notificationPayloads.length > 0) {
-      await this.notificationsService.createMany(notificationPayloads);
-    }
-
     this.realtimeService.emitEntityChange('applications', 'update', mapped);
 
     return mapped;

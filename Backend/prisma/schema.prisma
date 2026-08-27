@@ -224,12 +224,14 @@ model Application {
   id                        String   @id @default(uuid())
   applicationNumber         String?
   submissionMode            String   @default("combined")
+  recipientUserIds          Json     @default("[]")
   structuralUnitIds         Json     @default("[]")
   structuralUnitSectionId   String?
   type                      String
   status                    String   @default("in_progress")
   workflowStatus            String   @default("in_progress_work")
   workflowUnitStatuses      Json     @default("[]")
+  workflowAssignments       Json     @default("[]")
   deadline                  String?
   images                    Json     @default("[]")
   files                     Json     @default("[]")
@@ -259,6 +261,8 @@ model ApplicationWorkflowMessage {
   authorStructuralUnitId   String?
   content                  String      @default("")
   attachments              Json        @default("[]")
+  assignmentId             String?
+  updatedAt                DateTime    @updatedAt
   createdAt                DateTime    @default(now())
 
   @@index([applicationId, createdAt])

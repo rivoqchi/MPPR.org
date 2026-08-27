@@ -1,7 +1,10 @@
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../shared/prisma/prisma.service';
 import { resolveStructuralUnitHeadUserId } from '../../structural-units/lib/resolve-head-user';
-import { normalizeStructuralUnitIds } from './normalize-application';
+import {
+  normalizeRecipientUserIds,
+  normalizeStructuralUnitIds,
+} from './normalize-application';
 
 export type ApplicationSubmissionMode = 'single' | 'combined';
 
@@ -90,16 +93,25 @@ async function resolveSectionHeadUserId(
 export async function resolveApplicationIncomingRecipientUserIds(
   prisma: PrismaService,
   application: {
+    recipientUserIds?: unknown;
     submissionMode?: string | null;
     structuralUnitIds: unknown;
     structuralUnitSectionId?: string | null;
   },
   excludeUserIds: string[] = [],
 ): Promise<string[]> {
+  const excluded = new Set(excludeUserIds);
+  const explicitRecipients = normalizeRecipientUserIds(application.recipientUserIds).filter(
+    (userId) => !excluded.has(userId),
+  );
+
+  if (explicitRecipients.length > 0) {
+    return explicitRecipients;
+  }
+
   const unitIds = normalizeStructuralUnitIds(application.structuralUnitIds);
   const mode = normalizeSubmissionMode(application.submissionMode);
   const sectionId = normalizeSectionId(application.structuralUnitSectionId);
-  const excluded = new Set(excludeUserIds);
 
   if (unitIds.length === 0) {
     return [];
@@ -157,12 +169,19 @@ export async function resolveApplicationIncomingRecipientUserIds(
 export async function isSingleApplicationHeadRecipient(
   prisma: PrismaService,
   application: {
+    recipientUserIds?: unknown;
     submissionMode?: string | null;
     structuralUnitIds: unknown;
     structuralUnitSectionId?: string | null;
   },
   userId: string,
 ): Promise<boolean> {
+  const explicitRecipients = normalizeRecipientUserIds(application.recipientUserIds);
+
+  if (explicitRecipients.length > 0) {
+    return explicitRecipients.includes(userId);
+  }
+
   if (normalizeSubmissionMode(application.submissionMode) !== 'single') {
     return false;
   }
