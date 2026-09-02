@@ -65,6 +65,7 @@ model User {
   chatParticipations ChatParticipant[]
   chatMessages       ChatMessage[]
   chatHiddenMessages ChatMessageHide[]
+  userDocuments      UserDocument[]
 
   @@map("users")
 }
@@ -360,4 +361,27 @@ model GuideVideoProgress {
   @@unique([userId, videoId])
   @@index([userId])
   @@map("guide_video_progress")
+}
+
+enum UserDocumentType {
+  FILE
+  ARCHIVE
+}
+
+model UserDocument {
+  id            String           @id @default(uuid())
+  title         String
+  storageKey    String           @unique
+  documentKey   String
+  type          UserDocumentType @default(FILE)
+  isServiceFile Boolean          @default(false)
+  size          Int              @default(0)
+  mimeType      String           @default("application/octet-stream")
+  createdById   String
+  createdBy     User             @relation(fields: [createdById], references: [id])
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([createdById, type])
+  @@map("user_documents")
 }

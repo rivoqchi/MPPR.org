@@ -34,6 +34,8 @@ import { GuideVideosModule } from './modules/guide-videos/guide-videos.module';
 
 import { FilesModule } from './modules/files/files.module';
 
+import { DocumentsModule } from './modules/documents/documents.module';
+
 import { HealthModule } from './modules/health/health.module';
 
 import { NotificationsModule } from './modules/notifications/notifications.module';
@@ -152,6 +154,8 @@ import { RedisModule } from './shared/redis/redis.module';
     GuideVideosModule,
 
     FilesModule,
+
+    DocumentsModule,
 
     WebsocketModule,
 

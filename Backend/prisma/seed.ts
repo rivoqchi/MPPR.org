@@ -12,6 +12,10 @@ const PERMISSION_PAGE_KEYS = [
   '/guide',
   '/settings',
   '/applications/submit',
+  '/documents/new',
+  '/files',
+  '/archives',
+  '/archives/new',
   '/applications/incoming',
   '/applications/calendar',
   '/ppr-calendar',
@@ -38,7 +42,9 @@ async function main() {
 
   await prisma.appRole.upsert({
     where: { id: SYSTEM_ADMIN_ROLE_ID },
-    update: {},
+    update: {
+      permissions: createFullPagePermissions(),
+    },
     create: {
       id: SYSTEM_ADMIN_ROLE_ID,
       name: 'Admin',

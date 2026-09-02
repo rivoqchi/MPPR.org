@@ -68,16 +68,16 @@ docker compose up -d
 
 | Service   | URL                                      |
 |-----------|------------------------------------------|
-| API       | http://localhost:3000/api/v1             |
-| Swagger   | http://localhost:3000/api/docs           |
-| WebSocket | ws://localhost:3000/socket.io              |
-| Health    | http://localhost:3000/api/v1/health      |
+| API       | http://localhost:8000/api/v1             |
+| Swagger   | http://localhost:8000/api/docs           |
+| WebSocket | ws://localhost:8000/socket.io              |
+| Health    | http://localhost:8000/api/v1/health      |
 
 ## Frontend Integration
 
 ```env
-VITE_API_URL=http://localhost:3000/api/v1
-VITE_WS_URL=ws://localhost:3000
+VITE_API_URL=http://localhost:8000/api/v1
+VITE_WS_URL=ws://localhost:8000
 ```
 
 ## Auth Endpoints
@@ -103,7 +103,7 @@ Connect with JWT token in handshake:
 ```javascript
 import { io } from 'socket.io-client';
 
-const socket = io('ws://localhost:3000', {
+const socket = io('ws://localhost:8000', {
   path: '/socket.io',
   auth: { token: accessToken },
 });

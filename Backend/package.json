@@ -11,7 +11,9 @@
     "dev": "node scripts/dev.mjs",
     "infra:up": "docker compose up -d postgres redis",
     "infra:down": "docker compose down",
+    "onlyoffice:reset-cache": "node scripts/reset-onlyoffice-cache.mjs",
     "setup": "npm run prisma:generate && npx prisma migrate deploy && npm run prisma:seed",
+    "setup:documents": "npm install && npm run prisma:generate && npx prisma migrate deploy",
     "start": "nest start",
     "start:dev": "node scripts/dev.mjs",
     "postinstall": "prisma generate",
@@ -30,6 +32,10 @@
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+  },
+  "redisMemoryServer": {
+    "disablePostinstall": true,
+    "version": "7.4.2"
   },
   "dependencies": {
     "@nestjs/bullmq": "^11.0.4",
@@ -52,11 +58,13 @@
     "compression": "^1.8.1",
     "helmet": "^8.2.0",
     "ioredis": "^5.11.1",
+    "jszip": "^3.10.1",
     "joi": "^18.2.3",
     "multer": "^2.2.0",
     "nestjs-pino": "^4.6.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
+    "qrcode": "^1.5.4",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.3"
@@ -73,6 +81,7 @@
     "@types/jest": "^30.0.0",
     "@types/multer": "^2.2.0",
     "@types/node": "^24.0.0",
+    "@types/qrcode": "^1.5.5",
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^7.0.0",
     "embedded-postgres": "^18.4.0-beta.17",

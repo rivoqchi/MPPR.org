@@ -26,6 +26,10 @@ export const PAGE_KEYS = {
   managementPrograms: '/management/programs',
   managementErrors: '/management/errors',
   managementChanges: '/management/changes',
+  documentsNew: '/documents/new',
+  files: '/files',
+  archives: '/archives',
+  archivesNew: '/archives/new',
 } as const;
 
 export async function assertPagePermission(

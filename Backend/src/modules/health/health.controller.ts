@@ -29,7 +29,12 @@ export class HealthController {
     }
 
     try {
-      const pong = await this.redisService.getClient().ping();
+      const pong = await Promise.race([
+        this.redisService.getClient().ping(),
+        new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('Redis ping timeout')), 2_000);
+        }),
+      ]);
       checks.redis = pong === 'PONG' ? 'up' : 'down';
     } catch {
       checks.redis = 'down';

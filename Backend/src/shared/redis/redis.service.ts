@@ -16,6 +16,7 @@ export class RedisService implements OnModuleDestroy {
       host,
       port,
       maxRetriesPerRequest: null,
+      connectTimeout: 5_000,
       retryStrategy: (times: number) => Math.min(times * 200, 5_000),
     };
 
@@ -23,10 +24,15 @@ export class RedisService implements OnModuleDestroy {
     this.subscriber = new Redis(options);
 
     for (const connection of [this.client, this.subscriber]) {
-      connection.on('error', (error: Error) => {
-        this.logger.warn(`Redis connection issue: ${error.message}`);
-      });
+      this.attachErrorHandler(connection);
     }
+  }
+
+  private attachErrorHandler(connection: Redis) {
+    connection.on('error', (error: Error) => {
+      const message = error.message || 'connection failed';
+      this.logger.warn(`Redis connection issue: ${message}`);
+    });
   }
 
   getClient(): Redis {
@@ -38,7 +44,9 @@ export class RedisService implements OnModuleDestroy {
   }
 
   createDuplicateClient(): Redis {
-    return this.client.duplicate();
+    const duplicate = this.client.duplicate();
+    this.attachErrorHandler(duplicate);
+    return duplicate;
   }
 
   async onModuleDestroy() {

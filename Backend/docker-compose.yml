@@ -9,7 +9,7 @@ services:
       POSTGRES_DB: ppr_db
       POSTGRES_INITDB_ARGS: '--encoding=UTF8 --locale=C'
     ports:
-      - '5432:5432'
+      - '5433:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -46,6 +46,22 @@ services:
     volumes:
       - minio_data:/data
 
+  onlyoffice:
+    image: onlyoffice/documentserver:latest
+    container_name: ppr-onlyoffice
+    restart: unless-stopped
+    environment:
+      JWT_ENABLED: 'true'
+      JWT_SECRET: ${ONLYOFFICE_JWT_SECRET:-dev-onlyoffice-jwt-secret-change-me}
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    ports:
+      - '8080:80'
+    volumes:
+      - onlyoffice_data:/var/www/onlyoffice/Data
+      - onlyoffice_logs:/var/log/onlyoffice
+      - ./onlyoffice/local-production-linux.json:/etc/onlyoffice/documentserver/local-production-linux.json:ro
+
   api:
     build:
       context: .
@@ -59,21 +75,21 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: development
-      PORT: 3000
+      PORT: 8000
       API_PREFIX: api/v1
       DATABASE_URL: postgresql://user:password@postgres:5432/ppr_db?schema=public&options=-c%20client_encoding%3DUTF8
       REDIS_HOST: redis
       REDIS_PORT: 6379
       JWT_ACCESS_SECRET: dev-access-secret-change-me
       JWT_REFRESH_SECRET: dev-refresh-secret-change-me
-      JWT_ACCESS_EXPIRES: 15m
-      JWT_REFRESH_EXPIRES: 7d
+      JWT_ACCESS_EXPIRES: 365d
+      JWT_REFRESH_EXPIRES: 365d
       CORS_ORIGIN: http://localhost:5173
       WS_PATH: /socket.io
       THROTTLE_TTL: 60000
-      THROTTLE_LIMIT: 100
+      THROTTLE_LIMIT: 500
     ports:
-      - '3000:3000'
+      - '8000:8000'
     volumes:
       - .:/app
       - /app/node_modules
@@ -83,3 +99,5 @@ volumes:
   postgres_data:
   redis_data:
   minio_data:
+  onlyoffice_data:
+  onlyoffice_logs:

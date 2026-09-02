@@ -19,7 +19,7 @@ async function bootstrap() {
   app.useLogger(logger);
   app.use(
     helmet({
-      // Frontend (e.g. :5173) loads media from API (:3000) via <video src>.
+      // Frontend (e.g. :5173) loads media from API (:8000) via <video src>.
       crossOriginResourcePolicy: { policy: 'cross-origin' },
     }),
   );
@@ -53,7 +53,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
 
-  const port = configService.get<number>('PORT', 3000);
+  const port = configService.get<number>('PORT', 8000);
   await app.listen(port);
 
   logger.log(`API: http://localhost:${port}/${apiPrefix}`);
