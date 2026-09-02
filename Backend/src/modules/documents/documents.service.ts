@@ -145,9 +145,19 @@ export class DocumentsService {
     });
   }
 
+  async getById(userId: string, documentId: string) {
+    await this.assertDocumentPermission(userId, 'canView');
+    const document = await this.getAccessibleDocument(documentId, userId);
+
+    return this.prisma.userDocument.findUniqueOrThrow({
+      where: { id: document.id },
+      select: DOCUMENT_LIST_SELECT,
+    });
+  }
+
   async download(userId: string, documentId: string, res: Response) {
     const document = await this.getAccessibleDocument(documentId, userId);
-    await this.assertDocumentPermission(userId, 'canView');
+    await this.assertDocumentPermission(userId, 'canView', document.type);
 
     const filePath = getUploadFilePath(document.storageKey);
     if (!existsSync(filePath)) {
@@ -162,6 +172,56 @@ export class DocumentsService {
     res.setHeader('Cache-Control', 'no-store');
 
     createReadStream(filePath).pipe(res);
+  }
+
+  async preview(userId: string, documentId: string, res: Response) {
+    const document = await this.getAccessibleDocument(documentId, userId);
+    await this.assertDocumentPermission(userId, 'canView', document.type);
+
+    const filePath = getUploadFilePath(document.storageKey);
+    if (!existsSync(filePath)) {
+      throw new NotFoundException(ErrorCode.NOT_FOUND);
+    }
+
+    res.setHeader('Content-Type', document.mimeType || guessMimeTypeFromFileName(document.title));
+    res.setHeader(
+      'Content-Disposition',
+      `inline; filename="${encodeURIComponent(document.title)}"`,
+    );
+    res.setHeader('Cache-Control', 'no-store');
+
+    createReadStream(filePath).pipe(res);
+  }
+
+  async replaceFile(
+    userId: string,
+    documentId: string,
+    file: Express.Multer.File,
+    title?: string,
+  ) {
+    if (!file?.buffer?.length) {
+      throw new BadRequestException(ErrorCode.VALIDATION_FAILED);
+    }
+
+    const document = await this.getAccessibleDocument(documentId, userId);
+    await this.assertDocumentPermission(userId, 'canCreate', document.type);
+
+    const filePath = getUploadFilePath(document.storageKey);
+    writeFileSync(filePath, file.buffer);
+
+    const nextTitle = title?.trim() || document.title;
+    const mimeType = file.mimetype || guessMimeTypeFromFileName(nextTitle);
+
+    return this.prisma.userDocument.update({
+      where: { id: document.id },
+      data: {
+        title: nextTitle,
+        size: file.buffer.length,
+        mimeType,
+        documentKey: randomUUID(),
+      },
+      select: DOCUMENT_LIST_SELECT,
+    });
   }
 
   async remove(userId: string, documentId: string) {
@@ -458,12 +518,9 @@ export class DocumentsService {
       },
     });
 
-    const editorConfig = await this.getEditorConfig(userId, documentId, lang);
-
     return {
       documentKey: updated.documentKey,
       updatedAt: updated.updatedAt.toISOString(),
-      editorConfig,
     };
   }
 

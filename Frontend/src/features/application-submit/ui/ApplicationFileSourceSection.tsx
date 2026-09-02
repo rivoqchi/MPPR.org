@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { ApplicationDocumentEditorOverlay } from '@/features/application-submit/ui/ApplicationDocumentEditorOverlay'
 import { getDocumentFileIcon } from '@/features/documents/lib/document-file-icon'
 import {
-  isOnlyOfficeEditableFileName,
+  isDocxFileName,
   listDocuments,
   type DocumentAttachmentCopy,
   type UserDocumentSummary,
@@ -106,7 +106,7 @@ export function ApplicationFileSourceSection({
       return
     }
 
-    if (!isOnlyOfficeEditableFileName(selectedDocument.title)) {
+    if (!isDocxFileName(selectedDocument.title)) {
       return
     }
 
@@ -200,7 +200,7 @@ export function ApplicationFileSourceSection({
                 type="primary"
                 icon={<SettingOutlined />}
                 disabled={
-                  !selectedDocument || !isOnlyOfficeEditableFileName(selectedDocument.title)
+                  !selectedDocument || !isDocxFileName(selectedDocument.title)
                 }
                 onClick={handleConfigure}
               >

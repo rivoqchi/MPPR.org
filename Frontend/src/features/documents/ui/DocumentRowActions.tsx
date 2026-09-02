@@ -8,7 +8,7 @@ import { Button, Dropdown, Modal } from 'antd'
 import type { MenuProps } from 'antd'
 import { useTranslation } from 'react-i18next'
 import {
-  isOnlyOfficeEditableFileName,
+  isDocxFileName,
   type UserDocumentSummary,
 } from '@/shared/api/documents-api'
 
@@ -44,7 +44,7 @@ export function DocumentRowActions({
       label: t(downloadLabelKey),
       onClick: () => onDownload(record),
     },
-    ...(isOnlyOfficeEditableFileName(record.title)
+    ...(isDocxFileName(record.title)
       ? [
           {
             key: 'edit',

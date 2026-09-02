@@ -6,14 +6,23 @@ import {
   FullscreenOutlined,
   SaveOutlined,
 } from '@ant-design/icons'
-import { Alert, Button, Space, Spin, message, theme, Tooltip, Typography } from 'antd'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Alert, Button, Space, message, theme, Tooltip, Typography } from 'antd'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
-import { resolveOnlyOfficeLang } from '@/features/documents/lib/onlyoffice-lang'
 import { useElementFullscreen } from '@/features/documents/lib/use-element-fullscreen'
-import { useOnlyOfficeEditor } from '@/features/documents/lib/use-onlyoffice-editor'
-import { getDocumentEditorConfig, getOnlyOfficeServerUrl } from '@/shared/api/documents-api'
+import {
+  DocumentDocxEditorWorkspace,
+  type DocumentDocxEditorHandle,
+} from '@/features/documents/ui/DocumentDocxEditorWorkspace'
+import {
+  fetchDocumentPreviewBlob,
+  getDocumentById,
+  isDocxFileName,
+  saveDocumentDocxBytes,
+  type UserDocumentSummary,
+} from '@/shared/api/documents-api'
+import { resolveApiErrorMessage } from '@/shared/lib/api-error'
 import {
   fullHeightPageStyle,
   getSplitPanelSurfaceStyle,
@@ -21,50 +30,48 @@ import {
   pageToolbarStyle,
 } from '@/shared/lib/page-layout'
 
-const EDITOR_PLACEHOLDER_ID = 'mppr-archive-onlyoffice-editor'
-
 export function ArchiveEditorPage() {
   const { token } = theme.useToken()
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { documentId } = useParams<{ documentId: string }>()
-  const [editorConfig, setEditorConfig] = useState<Record<string, unknown> | null>(null)
+  const editorRef = useRef<DocumentDocxEditorHandle>(null)
+  const [userDocument, setUserDocument] = useState<UserDocumentSummary | null>(null)
+  const [title, setTitle] = useState('')
+  const [documentBytes, setDocumentBytes] = useState<Uint8Array | undefined>()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const { ref: fullscreenRef, isFullscreen, toggleFullscreen } = useElementFullscreen<HTMLDivElement>()
 
-  const onlyOfficeLang = useMemo(
-    () => resolveOnlyOfficeLang(i18n.resolvedLanguage ?? i18n.language),
-    [i18n.language, i18n.resolvedLanguage],
-  )
+  const handleSave = useCallback(async () => {
+    if (!documentId || !userDocument) {
+      return
+    }
 
-  const handleOnlyOfficeScriptError = useCallback(() => {
-    setErrorMessage(t('documents.onlyOfficeUnavailable'))
-  }, [t])
-
-  const { triggerSave, isReady } = useOnlyOfficeEditor({
-    placeholderId: EDITOR_PLACEHOLDER_ID,
-    documentServerUrl: getOnlyOfficeServerUrl(),
-    config: editorConfig,
-    enabled: Boolean(editorConfig),
-    onScriptError: handleOnlyOfficeScriptError,
-  })
-
-  const handleSave = useCallback(() => {
-    if (!isReady) {
+    const bytes = await editorRef.current?.save()
+    if (!bytes?.length) {
+      message.warning(t('documents.emptyDocumentWarning'))
       return
     }
 
     setIsSaving(true)
-    triggerSave()
-    message.success(t('documents.saveRequested'))
 
-    window.setTimeout(() => {
+    try {
+      const updated = await saveDocumentDocxBytes(
+        userDocument.id,
+        bytes,
+        title.trim() || userDocument.title,
+      )
+      setUserDocument(updated)
+      message.success(t('documents.docxEditorSaveSuccess'))
+    } catch (error: unknown) {
+      message.error(resolveApiErrorMessage(error, t, 'documents.saveError'))
+    } finally {
       setIsSaving(false)
-    }, 1500)
-  }, [isReady, t, triggerSave])
+    }
+  }, [documentId, message, t, title, userDocument])
 
   useEffect(() => {
     if (!documentId) {
@@ -75,20 +82,38 @@ export function ArchiveEditorPage() {
 
     let cancelled = false
 
-    async function loadEditor() {
+    async function loadDocument() {
+      if (!documentId) {
+        return
+      }
+
       setIsLoading(true)
       setErrorMessage(null)
-      setEditorConfig(null)
+      setDocumentBytes(undefined)
 
       try {
-        const config = await getDocumentEditorConfig(documentId, onlyOfficeLang)
-
-        if (!cancelled) {
-          setEditorConfig(config as Record<string, unknown>)
+        const meta = await getDocumentById(documentId)
+        if (cancelled) {
+          return
         }
-      } catch {
+
+        setUserDocument(meta)
+        setTitle(meta.title)
+
+        if (!isDocxFileName(meta.title)) {
+          setErrorMessage(t('documents.previewUnsupported'))
+          return
+        }
+
+        const blob = await fetchDocumentPreviewBlob(documentId)
+        if (cancelled) {
+          return
+        }
+
+        setDocumentBytes(new Uint8Array(await blob.arrayBuffer()))
+      } catch (error: unknown) {
         if (!cancelled) {
-          setErrorMessage(t('documents.loadError'))
+          setErrorMessage(resolveApiErrorMessage(error, t, 'documents.loadError'))
         }
       } finally {
         if (!cancelled) {
@@ -97,19 +122,19 @@ export function ArchiveEditorPage() {
       }
     }
 
-    void loadEditor()
+    void loadDocument()
 
     return () => {
       cancelled = true
     }
-  }, [documentId, onlyOfficeLang, t])
+  }, [documentId, t])
 
   const isImmersive = isExpanded || isFullscreen
 
   if (errorMessage) {
     return (
       <div style={fullHeightPageStyle}>
-        <Alert type="error" message={errorMessage} showIcon description={t('documents.onlyOfficeHint')} />
+        <Alert type="error" message={errorMessage} showIcon />
       </div>
     )
   }
@@ -124,8 +149,8 @@ export function ArchiveEditorPage() {
         type="default"
         icon={<SaveOutlined />}
         loading={isSaving}
-        disabled={!isReady || isLoading}
-        onClick={handleSave}
+        disabled={isLoading || !documentBytes}
+        onClick={() => void handleSave()}
       >
         {t('documents.saveFile')}
       </Button>
@@ -144,8 +169,8 @@ export function ArchiveEditorPage() {
             icon={<CompressOutlined />}
             onClick={() => {
               setIsExpanded(false)
-              if (document.fullscreenElement) {
-                void document.exitFullscreen().catch(() => undefined)
+              if (window.document.fullscreenElement) {
+                void window.document.exitFullscreen().catch(() => undefined)
               }
             }}
             aria-label={t('documents.collapse')}
@@ -223,10 +248,15 @@ export function ArchiveEditorPage() {
           </div>
         ) : null}
 
-        <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
-          {isLoading ? <Spin fullscreen tip={t('documents.loadingEditor')} /> : null}
-          <div id={EDITOR_PLACEHOLDER_ID} style={{ width: '100%', height: '100%' }} />
-        </div>
+        <DocumentDocxEditorWorkspace
+          key={documentBytes?.byteLength ?? 'loading'}
+          ref={editorRef}
+          documentBytes={documentBytes}
+          title={title}
+          onTitleChange={setTitle}
+          isLoading={isLoading}
+          onSave={handleSave}
+        />
       </div>
     </div>
   )

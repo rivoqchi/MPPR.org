@@ -23,45 +23,78 @@ export type DocumentAttachmentCopy = {
   mimeType: string
 }
 
-export type OnlyOfficeEditorConfig = {
-  document: {
-    fileType: string
-    key: string
-    title: string
-    url: string
-  }
-  documentType: 'word' | 'cell' | 'slide'
-  editorConfig: {
-    callbackUrl: string
-    mode: 'edit'
-    lang: string
-    user: {
-      id: string
-      name: string
-    }
-  }
-  token: string
+const DOCX_EXTENSIONS = new Set(['docx'])
+
+export function isDocxFileName(fileName: string): boolean {
+  const extension = fileName.split('.').pop()?.toLowerCase() ?? ''
+  return DOCX_EXTENSIONS.has(extension)
 }
 
-const ONLYOFFICE_EDITABLE_EXTENSIONS = new Set([
-  'doc',
-  'docx',
-  'xls',
-  'xlsx',
-  'ppt',
-  'pptx',
-  'odt',
-  'ods',
-  'odp',
-  'rtf',
-  'txt',
-  'csv',
-  'pdf',
-])
-
+/** @deprecated Use isDocxFileName */
 export function isOnlyOfficeEditableFileName(fileName: string): boolean {
-  const extension = fileName.split('.').pop()?.toLowerCase() ?? ''
-  return ONLYOFFICE_EDITABLE_EXTENSIONS.has(extension)
+  return isDocxFileName(fileName)
+}
+
+function parseFilenameFromContentDisposition(header: string | undefined): string | null {
+  if (!header) {
+    return null
+  }
+
+  const utf8Match = header.match(/filename\*=UTF-8''([^;\n]+)/i)
+  if (utf8Match?.[1]) {
+    try {
+      return decodeURIComponent(utf8Match[1])
+    } catch {
+      return utf8Match[1]
+    }
+  }
+
+  const asciiMatch = header.match(/filename="([^"]+)"/i) ?? header.match(/filename=([^;\n]+)/i)
+  if (asciiMatch?.[1]) {
+    return asciiMatch[1].trim()
+  }
+
+  return null
+}
+
+async function readBlobErrorMessage(blob: Blob): Promise<string | null> {
+  if (!blob.type.includes('json') && blob.type !== 'application/json') {
+    return null
+  }
+
+  try {
+    const text = await blob.text()
+    const parsed = JSON.parse(text) as { message?: string; error?: { message?: string } }
+    return parsed.message ?? parsed.error?.message ?? text
+  } catch {
+    return null
+  }
+}
+
+async function assertSuccessfulBlobResponse(response: { data: Blob; headers: Record<string, unknown> }) {
+  const blob = response.data
+
+  if (blob.type.includes('json')) {
+    const message = await readBlobErrorMessage(blob)
+    if (message) {
+      throw new Error(message)
+    }
+  }
+
+  return blob
+}
+
+function triggerBrowserDownload(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob)
+  const link = window.document.createElement('a')
+  link.href = url
+  link.download = fileName
+  link.rel = 'noopener'
+  link.click()
+
+  window.setTimeout(() => {
+    URL.revokeObjectURL(url)
+  }, 250)
 }
 
 export async function listDocuments(type?: UserDocumentType): Promise<UserDocumentSummary[]> {
@@ -69,6 +102,11 @@ export async function listDocuments(type?: UserDocumentType): Promise<UserDocume
     params: type ? { type } : undefined,
   })
   return unwrapApiResponse<UserDocumentSummary[]>(response)
+}
+
+export async function getDocumentById(documentId: string): Promise<UserDocumentSummary> {
+  const response = await api.get(`/documents/${encodeURIComponent(documentId)}`)
+  return unwrapApiResponse<UserDocumentSummary>(response)
 }
 
 export async function createDocument(
@@ -106,30 +144,59 @@ export async function deleteDocument(documentId: string): Promise<void> {
   await api.delete(`/documents/${encodeURIComponent(documentId)}`)
 }
 
-export async function downloadDocument(documentId: string, fileName: string): Promise<void> {
+export async function downloadDocument(documentId: string, fileName?: string): Promise<void> {
   const response = await api.get(`/documents/${encodeURIComponent(documentId)}/download`, {
     responseType: 'blob',
   })
 
-  const blob = response.data as Blob
-  const url = URL.createObjectURL(blob)
-  const link = window.document.createElement('a')
-  link.href = url
-  link.download = fileName
-  link.rel = 'noopener'
-  link.click()
-  URL.revokeObjectURL(url)
+  const blob = await assertSuccessfulBlobResponse(response)
+  const resolvedName =
+    fileName ??
+    parseFilenameFromContentDisposition(response.headers['content-disposition'] as string | undefined) ??
+    'document.docx'
+
+  triggerBrowserDownload(blob, resolvedName)
 }
 
-export async function getDocumentEditorConfig(
-  documentId: string,
-  lang: string,
-): Promise<OnlyOfficeEditorConfig> {
-  const response = await api.get(`/documents/${encodeURIComponent(documentId)}/editor-config`, {
-    params: { lang },
+export async function fetchDocumentPreviewBlob(documentId: string): Promise<Blob> {
+  const response = await api.get(`/documents/${encodeURIComponent(documentId)}/preview`, {
+    responseType: 'blob',
   })
 
-  return unwrapApiResponse<OnlyOfficeEditorConfig>(response)
+  return assertSuccessfulBlobResponse(response)
+}
+
+export async function replaceDocumentFile(
+  documentId: string,
+  file: File,
+  title?: string,
+): Promise<UserDocumentSummary> {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  if (title?.trim()) {
+    formData.append('title', title.trim())
+  }
+
+  const response = await api.post(
+    `/documents/${encodeURIComponent(documentId)}/replace-file`,
+    formData,
+  )
+
+  return unwrapApiResponse<UserDocumentSummary>(response)
+}
+
+export async function saveDocumentDocxBytes(
+  documentId: string,
+  bytes: Uint8Array,
+  title: string,
+): Promise<UserDocumentSummary> {
+  const normalizedBytes = new Uint8Array(bytes)
+  const file = new File([normalizedBytes], title, {
+    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  })
+
+  return replaceDocumentFile(documentId, file, title)
 }
 
 export async function saveDocumentAsArchive(documentId: string): Promise<UserDocumentSummary> {
@@ -146,64 +213,17 @@ export async function copyDocumentForAttachment(
   return unwrapApiResponse<DocumentAttachmentCopy>(response)
 }
 
-export type DocumentSaveState = {
+export type InsertQrResult = {
   documentKey: string
   updatedAt: string
-}
-
-export async function getDocumentSaveState(documentId: string): Promise<DocumentSaveState> {
-  const response = await api.get(`/documents/${encodeURIComponent(documentId)}/save-state`)
-  return unwrapApiResponse<DocumentSaveState>(response)
-}
-
-export type InsertQrResult = DocumentSaveState & {
-  editorConfig: OnlyOfficeEditorConfig
 }
 
 export async function insertQrIntoDocument(
   documentId: string,
   text: string,
-  lang?: string,
 ): Promise<InsertQrResult> {
   const response = await api.post(`/documents/${encodeURIComponent(documentId)}/insert-qr`, {
     text,
-    lang,
   })
   return unwrapApiResponse<InsertQrResult>(response)
-}
-
-export async function createDocumentQrImageUrl(
-  documentId: string,
-  text: string,
-): Promise<{ imageUrl: string }> {
-  const response = await api.post(`/documents/${encodeURIComponent(documentId)}/qr-image`, { text })
-  return unwrapApiResponse<{ imageUrl: string }>(response)
-}
-
-export async function waitForDocumentSave(
-  documentId: string,
-  previousDocumentKey: string,
-  timeoutMs = 20_000,
-  pollIntervalMs = 600,
-): Promise<boolean> {
-  const startedAt = Date.now()
-
-  while (Date.now() - startedAt < timeoutMs) {
-    await new Promise((resolve) => window.setTimeout(resolve, pollIntervalMs))
-
-    try {
-      const state = await getDocumentSaveState(documentId)
-      if (state.documentKey !== previousDocumentKey) {
-        return true
-      }
-    } catch {
-      // Retry until timeout.
-    }
-  }
-
-  return false
-}
-
-export function getOnlyOfficeServerUrl(): string {
-  return (import.meta.env.VITE_ONLYOFFICE_SERVER_URL ?? 'http://localhost:8080').replace(/\/$/, '')
 }

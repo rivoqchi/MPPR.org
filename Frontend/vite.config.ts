@@ -9,6 +9,23 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  optimizeDeps: {
+    include: ['@docx-editor.dev/react', '@docx-editor.dev/core'],
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('@docx-editor.dev')) {
+            return 'docx-editor'
+          }
+          if (id.includes('docx-preview')) {
+            return 'docx-preview'
+          }
+        },
+      },
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',
