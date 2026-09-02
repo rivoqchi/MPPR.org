@@ -4,6 +4,10 @@
     "tagline": "Система планирования ППР и межведомственного документооборота",
     "hello": "Добро пожаловать в систему «Единый технический контроль»",
     "newApplication": "Новая заявка",
+    "newApplications": "Новые заявки",
+    "newDocuments": "Новые документы",
+    "newDocument": "Новый документ",
+    "newArchiveDocument": "Новый архивный файл",
     "dashboard": "Главная",
     "theme": "Тема",
     "language": "Язык",
@@ -300,6 +304,8 @@
   },
   "menu": {
     "home": "Главная",
+    "files": "Мои файлы",
+    "archives": "Мои архивы",
     "guide": "Руководство",
     "settings": "Настройки",
     "chat": "Чат",
@@ -324,7 +330,92 @@
     "management.employees": "Управление сотрудниками",
     "management.programs": "Управление программами",
     "management.errors": "Ошибки",
-    "management.changes": "Изменения"
+    "management.changes": "Изменения",
+    "documents.new": "Новый документ",
+    "documents.editor": "Редактор документов",
+    "archives.new": "Новый архивный файл",
+    "archives.editor": "Редактор архива"
+  },
+  "documents": {
+    "editorTitle": "Подготовка документа",
+    "editorHint": "Создавайте и сохраняйте документы в среде, похожей на Word",
+    "creating": "Создание нового документа...",
+    "loadingEditor": "Загрузка редактора OnlyOffice...",
+    "loadError": "Не удалось загрузить редактор документов. Проверьте, что OnlyOffice запущен.",
+    "createError": "Не удалось создать документ. Перезапустите backend сервер.",
+    "onlyOfficeUnavailable": "OnlyOffice сервер не запущен (порт 8080).",
+    "onlyOfficeHint": "1) Установите Docker Desktop: https://www.docker.com/products/docker-desktop/ — откройте приложение. 2) Терминал: cd ~/Desktop/MPPR.org/Backend && docker compose up -d onlyoffice 3) Подождите ~5 мин и обновите страницу.",
+    "expand": "Развернуть",
+    "collapse": "Свернуть",
+    "enterFullscreen": "Полный экран",
+    "exitFullscreen": "Выйти из полного экрана",
+    "saveFile": "Сохранить файл",
+    "saveRequested": "Файл сохраняется..."
+  },
+  "archives": {
+    "title": "Мои архивы",
+    "subtitle": "Документы и шаблоны архивного формата",
+    "add": "Добавить",
+    "backToList": "Мои архивы",
+    "creating": "Создание нового архивного файла...",
+    "editorTitle": "Редактор архивного документа",
+    "editorHint": "Создайте и сохраните документ в архивном формате",
+    "loadError": "Не удалось загрузить список архивов",
+    "createError": "Не удалось создать архивный файл",
+    "downloadError": "Не удалось скачать архивный файл",
+    "deleteSuccess": "Архивный файл удалён",
+    "deleteError": "Не удалось удалить архивный файл",
+    "deleteConfirm": "Удалить этот архивный файл?",
+    "openNotSupported": "Этот тип файла нельзя открыть в OnlyOffice. Скачайте его.",
+    "columns": {
+      "name": "Имя файла",
+      "size": "Размер",
+      "uploadedAt": "Дата создания",
+      "actions": "Действия"
+    },
+    "actions": {
+      "open": "Открыть",
+      "download": "Скачать",
+      "delete": "Удалить",
+      "edit": "Редактировать"
+    }
+  },
+  "files": {
+    "title": "Мои файлы",
+    "subtitle": "Загруженные и созданные файлы",
+    "add": "Добавить",
+    "backToList": "Мои файлы",
+    "loadError": "Не удалось загрузить список файлов",
+    "downloadError": "Не удалось скачать файл",
+    "deleteSuccess": "Файл удалён",
+    "deleteError": "Не удалось удалить файл",
+    "deleteConfirm": "Удалить этот файл?",
+    "openNotSupported": "Этот тип файла нельзя открыть в OnlyOffice. Скачайте файл.",
+    "columns": {
+      "name": "Имя файла",
+      "size": "Размер",
+      "uploadedAt": "Дата загрузки",
+      "actions": "Действия"
+    },
+    "actions": {
+      "open": "Открыть",
+      "download": "Скачать",
+      "delete": "Удалить",
+      "edit": "Редактировать"
+    },
+    "serviceFileBadge": "Служебный файл",
+    "upload": {
+      "title": "Добавить файл",
+      "submit": "Сохранить",
+      "nameLabel": "Имя файла",
+      "namePlaceholder": "Например: Отчёт.docx",
+      "fileLabel": "Файл",
+      "chooseFile": "Выбрать файл",
+      "fileRequired": "Выберите файл",
+      "success": "Файл успешно загружен",
+      "error": "Не удалось загрузить файл",
+      "serviceFileLabel": "Служебный файл"
+    }
   },
   "chat": {
     "title": "Чат",
@@ -927,6 +1018,37 @@
     "emptyStatusFilter": "Нет заявок с этим статусом",
     "uploadImages": "Загрузить изображения",
     "uploadFiles": "Загрузить файлы",
+    "attachments": {
+      "sources": {
+        "myFiles": "Мои файлы",
+        "archives": "Мои архивы",
+        "other": "Другое"
+      },
+      "selectDocument": "Выберите файл",
+      "configure": "Настроить",
+      "createQr": "Создать QR",
+      "save": "Сохранить",
+      "saveAsArchive": "Сохранить как архив",
+      "finishAndAttach": "Готово и прикрепить",
+      "editorHint": "Отредактируйте документ, добавьте QR и сохраните",
+      "confirmSaveTitle": "Подтверждение сохранения",
+      "confirmSaveMessage": "Вы действительно хотите сохранить?",
+      "attachedSuccess": "Файл прикреплён к заявке",
+      "attachError": "Не удалось прикрепить файл",
+      "archiveSaved": "Архивная копия сохранена",
+      "archiveSaveError": "Не удалось сохранить архивную копию",
+      "qrNotReady": "Редактор ещё не готов",
+      "qrInsertedHint": "QR-код добавлен в документ. Разместите его и сохраните.",
+      "qrInsertError": "Не удалось вставить QR-код в документ",
+      "savePending": "Сохранение ещё выполняется. Подождите и повторите попытку.",
+      "qrOverlayHint": "Панель QR отображена. Разместите её над документом.",
+      "qrDragHint": "Перетащите для размещения",
+      "view": "Просмотр",
+      "download": "Скачать",
+      "empty": "Файлы не загружены",
+      "previewUnavailable": "Содержимое файла отсутствует",
+      "downloadUnavailable": "Не удалось скачать файл"
+    },
     "drawer": {
       "title": "Отправка заявки",
       "editTitle": "Редактирование заявки"
@@ -1010,13 +1132,6 @@
       "inProgress": "На рассмотрении",
       "pendingConfirmation": "Этап подтверждения",
       "finalized": "Завершена"
-    },
-    "attachments": {
-      "view": "Просмотр",
-      "download": "Скачать",
-      "empty": "Файлы не загружены",
-      "previewUnavailable": "Содержимое файла отсутствует",
-      "downloadUnavailable": "Не удалось скачать файл"
     },
     "specialMessage": {
       "title": "Специальное сообщение",

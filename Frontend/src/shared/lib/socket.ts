@@ -1,7 +1,7 @@
 import { io, type Socket } from 'socket.io-client'
 
 function getSocketUrl(): string {
-  const url = import.meta.env.VITE_WS_URL ?? 'http://localhost:3000'
+  const url = import.meta.env.VITE_WS_URL ?? 'http://localhost:8000'
   return url.replace(/^ws:/, 'http:').replace(/^wss:/, 'https:')
 }
 

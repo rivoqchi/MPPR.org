@@ -4,6 +4,10 @@
     "tagline": "ППР режалаштириш ва таркибий тузилмалараро ҳужжат айланиш тизими",
     "hello": "Ягона техник назорат тизимига хуш келибсиз",
     "newApplication": "Янги ариза",
+    "newApplications": "Янги аrizalar",
+    "newDocuments": "Янги hujjatlar",
+    "newDocument": "Янги hujjat",
+    "newArchiveDocument": "Янги arxiv fayl",
     "dashboard": "Бош саҳифа",
     "theme": "Мавзу",
     "language": "Тил",
@@ -300,6 +304,8 @@
   },
   "menu": {
     "home": "Бош саҳифа",
+    "files": "Файлларим",
+    "archives": "Архивларим",
     "guide": "Йўриқнома",
     "settings": "Созламалар",
     "chat": "Чат",
@@ -324,7 +330,92 @@
     "management.employees": "Ходимлар бошқаруви",
     "management.programs": "Дастур бошқаруви",
     "management.errors": "Хатолар",
-    "management.changes": "Ўзгаришлар"
+    "management.changes": "Ўзгаришлар",
+    "documents.new": "Янги hujjat",
+    "documents.editor": "Hujjat editori",
+    "archives.new": "Янги arxiv fayl",
+    "archives.editor": "Arxiv editori"
+  },
+  "documents": {
+    "editorTitle": "Hujjat tayyorlash",
+    "editorHint": "Word kabi muhitda hujjat yarating va saqlang",
+    "creating": "Yangi hujjat yaratilmoqda...",
+    "loadingEditor": "OnlyOffice editor yuklanmoqda...",
+    "loadError": "Hujjat editorini yuklab bo'lmadi. OnlyOffice ishlayotganini tekshiring.",
+    "createError": "Hujjat yaratib bo'lmadi. Backend serverni qayta ishga tushiring.",
+    "onlyOfficeUnavailable": "OnlyOffice server ishlamayapti (8080 port).",
+    "onlyOfficeHint": "1) Docker Desktop o‘rnating: https://www.docker.com/products/docker-desktop/ — ilovani oching. 2) Terminal: cd ~/Desktop/MPPR.org/Backend && docker compose up -d onlyoffice 3) 5 daqiqa kutib sahifani yangilang.",
+    "expand": "Kengaytirish",
+    "collapse": "Kichiklashtirish",
+    "enterFullscreen": "To‘liq ekran",
+    "exitFullscreen": "To‘liq ekrandan chiqish",
+    "saveFile": "Файлни сақлаш",
+    "saveRequested": "Файл сақланмоқда..."
+  },
+  "archives": {
+    "title": "Архивларим",
+    "subtitle": "Архив шаклидаги hujjatlar va shablonlar",
+    "add": "Qo'shish",
+    "backToList": "Архивларим",
+    "creating": "Янги arxiv fayl yaratilmoqda...",
+    "editorTitle": "Arxiv hujjat tayyorlash",
+    "editorHint": "Arxiv standartiga mos hujjat yarating va saqlang",
+    "loadError": "Arxivlar ro'yxatini yuklab bo'lmadi",
+    "createError": "Arxiv fayl yaratib bo'lmadi",
+    "downloadError": "Arxiv faylni yuklab olishda xatolik",
+    "deleteSuccess": "Arxiv fayl o'chirildi",
+    "deleteError": "Arxiv faylni o'chirib bo'lmadi",
+    "deleteConfirm": "Bu arxiv faylni o'chirishni xohlaysizmi?",
+    "openNotSupported": "Bu fayl turini OnlyOffice da ochib bo'lmaydi. Yuklab oling.",
+    "columns": {
+      "name": "Fayl nomi",
+      "size": "Hajmi",
+      "uploadedAt": "Yaratilgan vaqti",
+      "actions": "Amallar"
+    },
+    "actions": {
+      "open": "Ochish",
+      "download": "Yuklab olish",
+      "delete": "O'chirish",
+      "edit": "Tahrirlash"
+    }
+  },
+  "files": {
+    "title": "Файлларим",
+    "subtitle": "Юкланган ва яратилган файлларингиз",
+    "add": "Қўшиш",
+    "backToList": "Файлларим",
+    "loadError": "Файллар рўйхатини юклаб бўлмади",
+    "downloadError": "Файлни юклаб олишда хатолик",
+    "deleteSuccess": "Файл ўчирилди",
+    "deleteError": "Файлни ўчиrib бўлмади",
+    "deleteConfirm": "Бу файлни ўчirishni xohlaysizmi?",
+    "openNotSupported": "Бу файл турини OnlyOffice да очib бўлмайди. Юкlab oling.",
+    "columns": {
+      "name": "Файл номи",
+      "size": "Ҳажми",
+      "uploadedAt": "Юкланган вақти",
+      "actions": "Амаллар"
+    },
+    "actions": {
+      "open": "Очish",
+      "download": "Юкlab olish",
+      "delete": "Ўчириш",
+      "edit": "Таҳрирлаш"
+    },
+    "serviceFileBadge": "Хизмат файл",
+    "upload": {
+      "title": "Файл қўшish",
+      "submit": "Сақлаш",
+      "nameLabel": "Файл номи",
+      "namePlaceholder": "Масalan: Hisobot.docx",
+      "fileLabel": "Файл",
+      "chooseFile": "Файл tanlash",
+      "fileRequired": "Файл tanlang",
+      "success": "Файл muvaffaqiyatli yuklandi",
+      "error": "Файлni yuklab bo'lmadi",
+      "serviceFileLabel": "Хизмат файл"
+    }
   },
   "chat": {
     "title": "Чат",
@@ -926,6 +1017,37 @@
     "emptyStatusFilter": "Ушбу ҳолат бўйича ариза топилмади",
     "uploadImages": "Расм йуклаш",
     "uploadFiles": "Файл йуклаш",
+    "attachments": {
+      "sources": {
+        "myFiles": "Мening fayllarim",
+        "archives": "Архивларим",
+        "other": "Boshqa"
+      },
+      "selectDocument": "Faylni tanlang",
+      "configure": "Sozlash",
+      "createQr": "QR yaratish",
+      "save": "Saqlash",
+      "saveAsArchive": "Arxiv fayl sifati saqlash",
+      "finishAndAttach": "Tayyor va biriktirish",
+      "editorHint": "Hujjatni tahrirlang, QR qo'shing va saqlang",
+      "confirmSaveTitle": "Saqlashni tasdiqlash",
+      "confirmSaveMessage": "Rostdan ham saqlaysizmi?",
+      "attachedSuccess": "Fayl arizaga biriktirildi",
+      "attachError": "Faylni biriktirib bo'lmadi",
+      "archiveSaved": "Arxiv nusxasi saqlandi",
+      "archiveSaveError": "Arxiv nusxasini saqlab bo'lmadi",
+      "qrNotReady": "Editor hali tayyor emas",
+      "qrInsertedHint": "QR kod hujjat ichiga qo'shildi. Joyini sozlang va saqlang.",
+      "qrInsertError": "QR kodni hujjat ichiga qo'shib bo'lmadi",
+      "savePending": "Saqlash hali tugamagan. Biroz kutib qayta urinib ko'ring.",
+      "qrOverlayHint": "QR kod paneli ko'rsatildi. Uni hujjat ustida joylashtiring.",
+      "qrDragHint": "Sudrab joylashtiring",
+      "view": "Кўриш",
+      "download": "Йуклаб олиш",
+      "empty": "Файллар йукланмаган",
+      "previewUnavailable": "Файл мазмуни мавжуд емас",
+      "downloadUnavailable": "Файлни йуклаб бўлмади"
+    },
     "drawer": {
       "title": "Ариза йубориш",
       "editTitle": "Аризани таҳрирлаш"
@@ -1009,13 +1131,6 @@
       "inProgress": "Кўриб чиқилмоқда",
       "pendingConfirmation": "Тасдиқлаш босқичи",
       "finalized": "Йакунланди"
-    },
-    "attachments": {
-      "view": "Кўриш",
-      "download": "Йуклаб олиш",
-      "empty": "Файллар йукланмаган",
-      "previewUnavailable": "Файл мазмуни мавжуд емас",
-      "downloadUnavailable": "Файлни йуклаб бўлмади"
     },
     "specialMessage": {
       "title": "Махсус ҳабар",

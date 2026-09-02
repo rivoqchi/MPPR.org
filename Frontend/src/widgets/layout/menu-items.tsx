@@ -3,8 +3,10 @@ import {
   CalendarOutlined,
   ControlOutlined,
   FileTextOutlined,
+  FolderOutlined,
   HomeOutlined,
   MessageOutlined,
+  SnippetsOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons'
 import type { MenuProps } from 'antd'
@@ -18,6 +20,8 @@ const iconMap: Record<string, ReactNode> = {
   book: <BookOutlined />,
   message: <MessageOutlined />,
   file: <FileTextOutlined />,
+  folder: <FolderOutlined />,
+  snippets: <SnippetsOutlined />,
   calendar: <CalendarOutlined />,
   list: <UnorderedListOutlined />,
   control: <ControlOutlined />,

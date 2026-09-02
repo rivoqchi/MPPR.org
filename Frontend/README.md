@@ -40,7 +40,7 @@ src/
 # Install dependencies
 pnpm install
 
-# Copy environment variables
+# Copy environment variables (already points to API on port 8000)
 cp .env.example .env.development
 
 # Start dev server
@@ -67,8 +67,8 @@ Open [http://localhost:5173](http://localhost:5173). You should see the Ant Desi
 
 | Variable         | Description              | Example                        |
 | ---------------- | ------------------------ | ------------------------------ |
-| `VITE_API_URL`   | REST API base URL        | `http://localhost:3000/api`    |
-| `VITE_WS_URL`    | WebSocket URL            | `ws://localhost:3000`          |
+| `VITE_API_URL`   | REST API base URL        | `http://localhost:8000/api/v1` |
+| `VITE_WS_URL`    | WebSocket URL            | `http://localhost:8000`        |
 | `VITE_APP_NAME`  | Application name         | `MPPR tizimi`                  |
 | `VITE_APP_ENV`   | Environment label        | `development`                  |
 

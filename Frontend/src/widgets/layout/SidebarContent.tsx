@@ -28,6 +28,9 @@ export function SidebarContent({
   const { canView } = useRolePermissions()
   const { activeMenuPath, openKeys, menuItems, handleOpenChange, isMenuLoading } = useSidebarMenu()
   const canSubmitApplication = canView('/applications/submit')
+  const canCreateDocument = canView('/documents/new')
+  const canCreateArchive = canView('/archives/new')
+  const canShowNewActions = canSubmitApplication || canCreateDocument || canCreateArchive
 
   if (isChat) {
     return (
@@ -49,7 +52,7 @@ export function SidebarContent({
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <AppBrandHeader
         collapsed={collapsed}
-        showAction={canSubmitApplication}
+        showAction={canShowNewActions}
         onActionClick={onNavigate}
       />
       <Menu

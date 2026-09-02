@@ -8,7 +8,7 @@ export async function checkServerConnection(): Promise<boolean> {
   try {
     const controller = new AbortController()
     const timeoutId = window.setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS)
-    const baseUrl = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api/v1').replace(
+    const baseUrl = (import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1').replace(
       /\/$/,
       '',
     )

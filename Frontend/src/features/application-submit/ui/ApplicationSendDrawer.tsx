@@ -37,6 +37,7 @@ import {
   filterRecipientUserSelectOption,
 } from '@/features/application-submit/lib/recipient-user-select'
 import { SpecialMessageModal } from '@/features/application-submit/ui/SpecialMessageModal'
+import { ApplicationFileSourceSection } from '@/features/application-submit/ui/ApplicationFileSourceSection'
 import { useNotifyApiError } from '@/shared/hooks/useNotifyApiError'
 
 interface ApplicationSendDrawerProps {
@@ -102,6 +103,7 @@ export function ApplicationSendDrawer({
   const applicationType = useWatch({ control, name: 'type' })
   const numberMode = useWatch({ control, name: 'numberMode' })
   const selectedRecipientIds = useWatch({ control, name: 'recipientUserIds' }) ?? []
+  const watchedFiles = useWatch({ control, name: 'files' }) ?? []
 
   useEffect(() => {
     if (applicationType === 'information') {
@@ -448,29 +450,13 @@ export function ApplicationSendDrawer({
             />
           </Form.Item>
 
-          <Form.Item label={t('applicationSubmit.fields.files')}>
-            <Controller
-              name="files"
-              control={control}
-              render={({ field }) => (
-                <Upload
-                  multiple
-                  beforeUpload={() => false}
-                  fileList={field.value}
-                  onChange={({ fileList }) =>
-                    field.onChange(
-                      fileList.map((file) => ({
-                        ...file,
-                        status: 'done' as const,
-                      })),
-                    )
-                  }
-                >
-                  <Button icon={<UploadOutlined />}>{t('applicationSubmit.uploadFiles')}</Button>
-                </Upload>
-              )}
-            />
-          </Form.Item>
+          <ApplicationFileSourceSection
+            files={watchedFiles}
+            applicationNumberPreview={
+              numberMode === 'auto' ? autoNumberPreview : undefined
+            }
+            onFilesChange={(nextFiles) => setValue('files', nextFiles)}
+          />
 
           <Form.Item
             label={t('applicationSubmit.fields.comment')}

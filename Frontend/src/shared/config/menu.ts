@@ -21,6 +21,18 @@ export const MENU_CONFIG: MenuItemConfig[] = [
     icon: 'home',
   },
   {
+    key: '/files',
+    path: '/files',
+    labelKey: 'menu.files',
+    icon: 'folder',
+  },
+  {
+    key: '/archives',
+    path: '/archives',
+    labelKey: 'menu.archives',
+    icon: 'snippets',
+  },
+  {
     key: '/chat',
     path: '/chat',
     labelKey: 'menu.chat',
@@ -162,6 +174,14 @@ export function resolveMenuPathname(pathname: string): string {
 
   if (pathname.match(/^\/chat\/[^/]+$/)) {
     return '/chat'
+  }
+
+  if (pathname.match(/^\/documents\/[^/]+$/)) {
+    return '/files'
+  }
+
+  if (pathname.match(/^\/archives\/[^/]+$/)) {
+    return '/archives'
   }
 
   return pathname

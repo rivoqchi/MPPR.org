@@ -10,7 +10,7 @@ export type UploadedFileMeta = {
 }
 
 function getApiBaseUrl(): string {
-  return (import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api/v1').replace(/\/$/, '')
+  return (import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1').replace(/\/$/, '')
 }
 
 export async function uploadFile(file: File | Blob, fileName: string): Promise<UploadedFileMeta> {

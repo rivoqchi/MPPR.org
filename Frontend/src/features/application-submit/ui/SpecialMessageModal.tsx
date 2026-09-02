@@ -1,8 +1,13 @@
-import { App, Button, Drawer, Input, Space, theme } from 'antd'
+import { App, Button, Input, Modal, Space, theme, Typography } from 'antd'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ApplicationSpecialMessage } from '@/entities/application/model/types'
 import { useStructuralUnitsStore } from '@/entities/structural-unit/model/structural-units-store'
+
+const { Text } = Typography
+
+const PROMPT_WIDTH = 420
+const FORM_WIDTH = 480
 
 interface SpecialMessageModalProps {
   open: boolean
@@ -60,44 +65,43 @@ export function SpecialMessageModal({
   const isFormStep = wantsSpecialMessage === true
 
   return (
-    <Drawer
+    <Modal
       title={t('applicationSubmit.specialMessage.title')}
-      placement="top"
       open={open}
-      onClose={onCancel}
+      onCancel={onCancel}
       destroyOnHidden
-      height={isFormStep ? 'min(72vh, 640px)' : 200}
+      centered
+      width={isFormStep ? FORM_WIDTH : PROMPT_WIDTH}
+      zIndex={1100}
       footer={
         isFormStep ? (
-          <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+          <Space>
             <Button onClick={onCancel}>{t('common.cancel')}</Button>
             <Button type="primary" onClick={handleConfirmMessages}>
               {t('applicationSubmit.send')}
             </Button>
           </Space>
-        ) : null
-      }
-      styles={{
-        body: {
-          overflowY: isFormStep ? 'auto' : 'visible',
-        },
-      }}
-    >
-      {wantsSpecialMessage === null ? (
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
-          <div style={{ fontSize: 16 }}>{t('applicationSubmit.specialMessage.prompt')}</div>
-          <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+        ) : (
+          <Space>
             <Button onClick={onSkip}>{t('common.no')}</Button>
             <Button type="primary" onClick={() => setWantsSpecialMessage(true)}>
               {t('common.yes')}
             </Button>
           </Space>
-        </Space>
+        )
+      }
+      styles={{
+        body: {
+          maxHeight: isFormStep ? 'min(48vh, 320px)' : undefined,
+          overflowY: isFormStep ? 'auto' : undefined,
+        },
+      }}
+    >
+      {wantsSpecialMessage === null ? (
+        <Text>{t('applicationSubmit.specialMessage.prompt')}</Text>
       ) : (
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
-          <div style={{ color: 'inherit', opacity: 0.75 }}>
-            {t('applicationSubmit.specialMessage.hint')}
-          </div>
+        <Space direction="vertical" size={12} style={{ width: '100%' }}>
+          <Text type="secondary">{t('applicationSubmit.specialMessage.hint')}</Text>
 
           {selectedUnits.map((unit) => (
             <div
@@ -105,7 +109,7 @@ export function SpecialMessageModal({
               style={{
                 display: 'flex',
                 alignItems: 'flex-start',
-                gap: 16,
+                gap: 12,
                 width: '100%',
               }}
             >
@@ -113,7 +117,7 @@ export function SpecialMessageModal({
                 htmlFor={`special-message-${unit.id}`}
                 style={{
                   flexShrink: 0,
-                  minWidth: 88,
+                  minWidth: 72,
                   paddingTop: 10,
                   fontWeight: 500,
                   color: token.colorText,
@@ -123,7 +127,7 @@ export function SpecialMessageModal({
               </label>
               <Input.TextArea
                 id={`special-message-${unit.id}`}
-                rows={3}
+                rows={2}
                 style={{ flex: 1 }}
                 value={messages[unit.id] ?? ''}
                 onChange={(event) =>
@@ -138,6 +142,6 @@ export function SpecialMessageModal({
           ))}
         </Space>
       )}
-    </Drawer>
+    </Modal>
   )
 }

@@ -1,7 +1,7 @@
 import type { CreateErrorLogPayload } from '@/entities/error-log/model/types'
 import { getAccessToken } from '@/shared/lib/token-storage'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api/v1'
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1'
 const REPORT_DEDUPE_MS = 30_000
 const recentReports = new Map<string, number>()
 

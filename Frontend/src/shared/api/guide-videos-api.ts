@@ -56,7 +56,7 @@ export async function markGuideVideoWatched(id: string): Promise<GuideVideo> {
 }
 
 export function getGuideVideoStreamUrl(id: string): string {
-  const base = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api/v1').replace(/\/$/, '')
+  const base = (import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1').replace(/\/$/, '')
   const token = getAccessToken()
   const url = new URL(`${base}/guide-videos/${id}/stream`)
   if (token) {

@@ -33,7 +33,7 @@ export function ErrorLogDetailDrawer({ open, errorLog, onClose }: ErrorLogDetail
       open={open}
       onClose={onClose}
       width={720}
-      destroyOnClose
+      destroyOnHidden
     >
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
         <Space wrap>

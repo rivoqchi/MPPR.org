@@ -6,7 +6,7 @@ import {
 } from '@/shared/lib/file-storage'
 import { getStoredFileUrl } from '@/shared/api/files-api'
 import { isStoredFileKey, resolveMediaUrl } from '@/shared/lib/resolve-media-url'
-import { isValidStorageKey } from '@/shared/lib/storage-key'
+import { isValidStorageKey, isBackendStorageKey } from '@/shared/lib/storage-key'
 
 const MIME_TYPES_BY_EXTENSION: Record<string, string> = {
   pdf: 'application/pdf',
@@ -137,6 +137,20 @@ export async function persistUploadFiles<T extends StoredFileRecord>(
         guessMimeType(file.name || originFile.name, originFile.type || file.type),
       )
       nextRecords.push(uploaded as T)
+      continue
+    }
+
+    if (
+      isBackendStorageKey(file.uid) &&
+      file.name &&
+      typeof file.size === 'number'
+    ) {
+      nextRecords.push({
+        id: file.uid,
+        name: file.name,
+        size: file.size,
+        mimeType: guessMimeType(file.name, file.type),
+      } as T)
       continue
     }
 

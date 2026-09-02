@@ -137,6 +137,42 @@ export const ErrorLogsPage = lazy(() =>
   })),
 )
 
+export const DocumentNewPage = lazy(() =>
+  import('@/features/documents/ui/DocumentNewPage').then((module) => ({
+    default: module.DocumentNewPage,
+  })),
+)
+
+export const DocumentEditorPage = lazy(() =>
+  import('@/features/documents/ui/DocumentEditorPage').then((module) => ({
+    default: module.DocumentEditorPage,
+  })),
+)
+
+export const FilesPage = lazy(() =>
+  import('@/features/files/ui/FilesPage').then((module) => ({
+    default: module.FilesPage,
+  })),
+)
+
+export const ArchivesPage = lazy(() =>
+  import('@/features/archives/ui/ArchivesPage').then((module) => ({
+    default: module.ArchivesPage,
+  })),
+)
+
+export const ArchiveNewPage = lazy(() =>
+  import('@/features/archives/ui/ArchiveNewPage').then((module) => ({
+    default: module.ArchiveNewPage,
+  })),
+)
+
+export const ArchiveEditorPage = lazy(() =>
+  import('@/features/archives/ui/ArchiveEditorPage').then((module) => ({
+    default: module.ArchiveEditorPage,
+  })),
+)
+
 export function lazyRoute(element: ReactNode, fallback: ReactNode = <RouteFallback />) {
   return <Suspense fallback={fallback}>{element}</Suspense>
 }

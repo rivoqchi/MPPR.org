@@ -16,4 +16,6 @@ export const PERMISSION_PAGES: PermissionPage[] = [
   ...collectPermissionPages(MENU_CONFIG),
   { key: '/settings', labelKey: SETTINGS_MENU_ITEM.labelKey },
   { key: '/profile', labelKey: 'menu.profile' },
+  { key: '/documents/new', labelKey: 'menu.documents.new' },
+  { key: '/archives/new', labelKey: 'menu.archives.new' },
 ]

@@ -4,6 +4,10 @@
     "tagline": "PPR rejalashtirish va tarkibiy tuzilmalararo hujjat aylanish tizimi",
     "hello": "Yagona texnik nazorat tizimiga xush kelibsiz",
     "newApplication": "Yangi ariza",
+    "newApplications": "Yangi arizalar",
+    "newDocuments": "Yangi hujjatlar",
+    "newDocument": "Yangi hujjat",
+    "newArchiveDocument": "Yangi arxiv fayl",
     "dashboard": "Bosh sahifa",
     "theme": "Mavzu",
     "language": "Til",
@@ -308,6 +312,8 @@
   },
   "menu": {
     "home": "Bosh sahifa",
+    "files": "Fayllarim",
+    "archives": "Arxivlarim",
     "guide": "Yo'riqnoma",
     "settings": "Sozlamalar",
     "chat": "Chat",
@@ -332,7 +338,92 @@
     "management.employees": "Xodimlar boshqaruvi",
     "management.programs": "Dastur boshqaruvi",
     "management.errors": "Xatolar",
-    "management.changes": "O'zgarishlar"
+    "management.changes": "O'zgarishlar",
+    "documents.new": "Yangi hujjat",
+    "documents.editor": "Hujjat editori",
+    "archives.new": "Yangi arxiv fayl",
+    "archives.editor": "Arxiv editori"
+  },
+  "documents": {
+    "editorTitle": "Hujjat tayyorlash",
+    "editorHint": "Word kabi muhitda hujjat yarating va saqlang",
+    "creating": "Yangi hujjat yaratilmoqda...",
+    "loadingEditor": "OnlyOffice editor yuklanmoqda...",
+    "loadError": "Hujjat editorini yuklab bo'lmadi. OnlyOffice ishlayotganini tekshiring.",
+    "createError": "Hujjat yaratib bo'lmadi. Backend serverni qayta ishga tushiring.",
+    "onlyOfficeUnavailable": "OnlyOffice server ishlamayapti (8080 port).",
+    "onlyOfficeHint": "1) Docker Desktop o‘rnating: https://www.docker.com/products/docker-desktop/ — ilovani oching. 2) Terminal: cd ~/Desktop/MPPR.org/Backend && docker compose up -d onlyoffice 3) 5 daqiqa kutib sahifani yangilang.",
+    "expand": "Kengaytirish",
+    "collapse": "Kichiklashtirish",
+    "enterFullscreen": "To‘liq ekran",
+    "exitFullscreen": "To‘liq ekrandan chiqish",
+    "saveFile": "Faylni saqlash",
+    "saveRequested": "Fayl saqlanmoqda..."
+  },
+  "archives": {
+    "title": "Arxivlarim",
+    "subtitle": "Arxiv shaklidagi hujjatlar va shablonlar",
+    "add": "Qo'shish",
+    "backToList": "Arxivlarim",
+    "creating": "Yangi arxiv fayl yaratilmoqda...",
+    "editorTitle": "Arxiv hujjat tayyorlash",
+    "editorHint": "Arxiv standartiga mos hujjat yarating va saqlang",
+    "loadError": "Arxivlar ro'yxatini yuklab bo'lmadi",
+    "createError": "Arxiv fayl yaratib bo'lmadi",
+    "downloadError": "Arxiv faylni yuklab olishda xatolik",
+    "deleteSuccess": "Arxiv fayl o'chirildi",
+    "deleteError": "Arxiv faylni o'chirib bo'lmadi",
+    "deleteConfirm": "Bu arxiv faylni o'chirishni xohlaysizmi?",
+    "openNotSupported": "Bu fayl turini OnlyOffice da ochib bo'lmaydi. Yuklab oling.",
+    "columns": {
+      "name": "Fayl nomi",
+      "size": "Hajmi",
+      "uploadedAt": "Yaratilgan vaqti",
+      "actions": "Amallar"
+    },
+    "actions": {
+      "open": "Ochish",
+      "download": "Yuklab olish",
+      "delete": "O'chirish",
+      "edit": "Tahrirlash"
+    }
+  },
+  "files": {
+    "title": "Fayllarim",
+    "subtitle": "Yuklangan va yaratilgan fayllaringiz",
+    "add": "Qo'shish",
+    "backToList": "Fayllarim",
+    "loadError": "Fayllar ro'yxatini yuklab bo'lmadi",
+    "downloadError": "Faylni yuklab olishda xatolik",
+    "deleteSuccess": "Fayl o'chirildi",
+    "deleteError": "Faylni o'chirib bo'lmadi",
+    "deleteConfirm": "Bu faylni o'chirishni xohlaysizmi?",
+    "openNotSupported": "Bu fayl turini OnlyOffice da ochib bo'lmaydi. Yuklab oling.",
+    "columns": {
+      "name": "Fayl nomi",
+      "size": "Hajmi",
+      "uploadedAt": "Yuklangan vaqti",
+      "actions": "Amallar"
+    },
+    "actions": {
+      "open": "Ochish",
+      "download": "Yuklab olish",
+      "delete": "O'chirish",
+      "edit": "Tahrirlash"
+    },
+    "serviceFileBadge": "Xizmat fayl",
+    "upload": {
+      "title": "Fayl qo'shish",
+      "submit": "Saqlash",
+      "nameLabel": "Fayl nomi",
+      "namePlaceholder": "Masalan: Hisobot.docx",
+      "fileLabel": "Fayl",
+      "chooseFile": "Fayl tanlash",
+      "fileRequired": "Fayl tanlang",
+      "success": "Fayl muvaffaqiyatli yuklandi",
+      "error": "Faylni yuklab bo'lmadi",
+      "serviceFileLabel": "Xizmat fayl"
+    }
   },
   "chat": {
     "title": "Chat",
@@ -934,6 +1025,37 @@
     "emptyStatusFilter": "Ushbu holat bo'yicha ariza topilmadi",
     "uploadImages": "Rasm yuklash",
     "uploadFiles": "Fayl yuklash",
+    "attachments": {
+      "sources": {
+        "myFiles": "Mening fayllarim",
+        "archives": "Arxivlarim",
+        "other": "Boshqa"
+      },
+      "selectDocument": "Faylni tanlang",
+      "configure": "Sozlash",
+      "createQr": "QR yaratish",
+      "save": "Saqlash",
+      "saveAsArchive": "Arxiv fayl sifati saqlash",
+      "finishAndAttach": "Tayyor va biriktirish",
+      "editorHint": "Hujjatni tahrirlang, QR qo'shing va saqlang",
+      "confirmSaveTitle": "Saqlashni tasdiqlash",
+      "confirmSaveMessage": "Rostdan ham saqlaysizmi?",
+      "attachedSuccess": "Fayl arizaga biriktirildi",
+      "attachError": "Faylni biriktirib bo'lmadi",
+      "archiveSaved": "Arxiv nusxasi saqlandi",
+      "archiveSaveError": "Arxiv nusxasini saqlab bo'lmadi",
+      "qrNotReady": "Editor hali tayyor emas",
+      "qrInsertedHint": "QR kod hujjat ichiga qo'shildi. Joyini sozlang va saqlang.",
+      "qrInsertError": "QR kodni hujjat ichiga qo'shib bo'lmadi",
+      "qrOverlayHint": "QR kod paneli ko'rsatildi. Uni hujjat ustida joylashtiring.",
+      "savePending": "Saqlash hali tugamagan. Biroz kutib qayta urinib ko'ring.",
+      "qrDragHint": "Sudrab joylashtiring",
+      "view": "Ko'rish",
+      "download": "Yuklab olish",
+      "empty": "Fayllar yuklanmagan",
+      "previewUnavailable": "Fayl mazmuni mavjud emas",
+      "downloadUnavailable": "Faylni yuklab bo'lmadi"
+    },
     "drawer": {
       "title": "Ariza yuborish",
       "editTitle": "Arizani tahrirlash"
@@ -1017,13 +1139,6 @@
       "inProgress": "Ko'rib chiqilmoqda",
       "pendingConfirmation": "Tasdiqlash bosqichi",
       "finalized": "Yakunlandi"
-    },
-    "attachments": {
-      "view": "Ko'rish",
-      "download": "Yuklab olish",
-      "empty": "Fayllar yuklanmagan",
-      "previewUnavailable": "Fayl mazmuni mavjud emas",
-      "downloadUnavailable": "Faylni yuklab bo'lmadi"
     },
     "specialMessage": {
       "title": "Maxsus habar",

@@ -31,7 +31,7 @@ export async function ensureValidAccessToken(): Promise<string | null> {
 
   try {
     const response = await axios.post(
-      `${import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api/v1'}/auth/refresh`,
+      `${import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1'}/auth/refresh`,
       { refreshToken },
       { headers: { 'Content-Type': 'application/json' } },
     )

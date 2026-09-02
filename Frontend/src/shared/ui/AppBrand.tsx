@@ -1,5 +1,7 @@
-import { PlusOutlined } from '@ant-design/icons'
-import { Button, theme, Typography } from 'antd'
+import { DownOutlined, FileWordOutlined, PlusOutlined, SendOutlined, SnippetsOutlined } from '@ant-design/icons'
+import { Button, Dropdown, theme, Typography } from 'antd'
+import type { MenuProps } from 'antd'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
@@ -44,7 +46,6 @@ interface AppBrandHeaderProps {
 export function AppBrandHeader({
   collapsed = false,
   compact = false,
-  showBorder = true,
   showAction = false,
   onActionClick,
 }: AppBrandHeaderProps) {
@@ -54,10 +55,53 @@ export function AppBrandHeader({
 
   const markSize = collapsed ? 36 : compact ? 56 : 48
 
-  const handleActionClick = () => {
-    navigate('/applications/submit')
+  const actionMenuItems = useMemo<MenuProps['items']>(
+    () => [
+      { key: 'application', label: t('app.newApplication'), icon: <SendOutlined /> },
+      { key: 'document', label: t('app.newDocument'), icon: <FileWordOutlined /> },
+      { key: 'archive', label: t('app.newArchiveDocument'), icon: <SnippetsOutlined /> },
+    ],
+    [t],
+  )
+
+  const handleActionMenuClick: MenuProps['onClick'] = ({ key }) => {
+    if (key === 'document') {
+      navigate('/documents/new')
+    } else if (key === 'archive') {
+      navigate('/archives/new')
+    } else {
+      navigate('/applications/submit')
+    }
+
     onActionClick?.()
   }
+
+  const actionButton = showAction ? (
+    <Dropdown
+      menu={{ items: actionMenuItems, onClick: handleActionMenuClick }}
+      trigger={['click']}
+      placement="bottom"
+    >
+      <Button
+        type="primary"
+        shape={collapsed ? 'circle' : 'round'}
+        block={!collapsed}
+        icon={<PlusOutlined />}
+        style={{
+          marginTop: collapsed ? 8 : 4,
+          height: collapsed ? 36 : 40,
+          fontWeight: 600,
+          width: collapsed ? 36 : undefined,
+        }}
+      >
+        {!collapsed && (
+          <>
+            {t('app.newDocuments')} <DownOutlined style={{ fontSize: 10 }} />
+          </>
+        )}
+      </Button>
+    </Dropdown>
+  ) : null
 
   return (
     <div
@@ -102,24 +146,10 @@ export function AppBrandHeader({
               {t('app.tagline')}
             </Typography.Text>
           </div>
-          {showAction && !compact && (
-            <Button
-              type="primary"
-              shape="round"
-              block
-              icon={<PlusOutlined />}
-              onClick={handleActionClick}
-              style={{
-                marginTop: 4,
-                height: 40,
-                fontWeight: 600,
-              }}
-            >
-              {t('app.newApplication')}
-            </Button>
-          )}
+          {!compact && actionButton}
         </>
       )}
+      {collapsed && actionButton}
     </div>
   )
 }

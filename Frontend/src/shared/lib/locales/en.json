@@ -4,6 +4,10 @@
     "tagline": "PPR planning and inter-unit document circulation system",
     "hello": "Welcome to Unified Technical Control",
     "newApplication": "New application",
+    "newApplications": "New applications",
+    "newDocuments": "New documents",
+    "newDocument": "New document",
+    "newArchiveDocument": "New archive file",
     "dashboard": "Dashboard",
     "theme": "Theme",
     "language": "Language",
@@ -300,6 +304,8 @@
   },
   "menu": {
     "home": "Home",
+    "files": "My files",
+    "archives": "My archives",
     "guide": "Guide",
     "settings": "Settings",
     "chat": "Chat",
@@ -324,7 +330,92 @@
     "management.employees": "Employee management",
     "management.programs": "Program management",
     "management.errors": "Errors",
-    "management.changes": "Changes"
+    "management.changes": "Changes",
+    "documents.new": "New document",
+    "documents.editor": "Document editor",
+    "archives.new": "New archive file",
+    "archives.editor": "Archive editor"
+  },
+  "documents": {
+    "editorTitle": "Document editor",
+    "editorHint": "Create and save documents in a Word-like environment",
+    "creating": "Creating a new document...",
+    "loadingEditor": "Loading OnlyOffice editor...",
+    "loadError": "Could not load the document editor. Check that OnlyOffice is running.",
+    "createError": "Could not create the document. Restart the backend server.",
+    "onlyOfficeUnavailable": "OnlyOffice server is not running (port 8080).",
+    "onlyOfficeHint": "1) Install Docker Desktop: https://www.docker.com/products/docker-desktop/ — open the app. 2) Terminal: cd ~/Desktop/MPPR.org/Backend && docker compose up -d onlyoffice 3) Wait ~5 minutes, then refresh.",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "enterFullscreen": "Full screen",
+    "exitFullscreen": "Exit full screen",
+    "saveFile": "Save file",
+    "saveRequested": "Saving file..."
+  },
+  "archives": {
+    "title": "My archives",
+    "subtitle": "Archive-format documents and templates",
+    "add": "Add",
+    "backToList": "My archives",
+    "creating": "Creating new archive file...",
+    "editorTitle": "Archive document editor",
+    "editorHint": "Create and save documents in archive format",
+    "loadError": "Failed to load archives list",
+    "createError": "Failed to create archive file",
+    "downloadError": "Failed to download archive file",
+    "deleteSuccess": "Archive file deleted",
+    "deleteError": "Failed to delete archive file",
+    "deleteConfirm": "Delete this archive file?",
+    "openNotSupported": "This file type cannot be opened in OnlyOffice. Download it instead.",
+    "columns": {
+      "name": "File name",
+      "size": "Size",
+      "uploadedAt": "Created at",
+      "actions": "Actions"
+    },
+    "actions": {
+      "open": "Open",
+      "download": "Download",
+      "delete": "Delete",
+      "edit": "Edit"
+    }
+  },
+  "files": {
+    "title": "My files",
+    "subtitle": "Your uploaded and created files",
+    "add": "Add",
+    "backToList": "My files",
+    "loadError": "Could not load files list",
+    "downloadError": "Could not download file",
+    "deleteSuccess": "File deleted",
+    "deleteError": "Could not delete file",
+    "deleteConfirm": "Delete this file?",
+    "openNotSupported": "This file type cannot be opened in OnlyOffice. Download it instead.",
+    "columns": {
+      "name": "File name",
+      "size": "Size",
+      "uploadedAt": "Uploaded at",
+      "actions": "Actions"
+    },
+    "actions": {
+      "open": "Open",
+      "download": "Download",
+      "delete": "Delete",
+      "edit": "Edit"
+    },
+    "serviceFileBadge": "Service file",
+    "upload": {
+      "title": "Add file",
+      "submit": "Save",
+      "nameLabel": "File name",
+      "namePlaceholder": "For example: Report.docx",
+      "fileLabel": "File",
+      "chooseFile": "Choose file",
+      "fileRequired": "Select a file",
+      "success": "File uploaded successfully",
+      "error": "Could not upload file",
+      "serviceFileLabel": "Service file"
+    }
   },
   "chat": {
     "title": "Chat",
@@ -927,6 +1018,37 @@
     "emptyStatusFilter": "No applications match this status",
     "uploadImages": "Upload images",
     "uploadFiles": "Upload files",
+    "attachments": {
+      "sources": {
+        "myFiles": "My files",
+        "archives": "My archives",
+        "other": "Other"
+      },
+      "selectDocument": "Select a file",
+      "configure": "Configure",
+      "createQr": "Create QR",
+      "save": "Save",
+      "saveAsArchive": "Save as archive format",
+      "finishAndAttach": "Finish and attach",
+      "editorHint": "Edit the document, add QR, and save",
+      "confirmSaveTitle": "Confirm save",
+      "confirmSaveMessage": "Are you sure you want to save?",
+      "attachedSuccess": "File attached to application",
+      "attachError": "Failed to attach file",
+      "archiveSaved": "Archive copy saved",
+      "archiveSaveError": "Failed to save archive copy",
+      "qrNotReady": "Editor is not ready yet",
+      "qrInsertedHint": "QR code inserted into the document. Adjust position and save.",
+      "qrInsertError": "Could not insert QR code into the document",
+      "savePending": "Save is still in progress. Wait a moment and try again.",
+      "qrOverlayHint": "QR panel displayed. Position it over the document.",
+      "qrDragHint": "Drag to position",
+      "view": "View",
+      "download": "Download",
+      "empty": "No files uploaded",
+      "previewUnavailable": "File content is missing",
+      "downloadUnavailable": "Cannot download file"
+    },
     "drawer": {
       "title": "Send application",
       "editTitle": "Edit application"
@@ -1010,13 +1132,6 @@
       "inProgress": "Under review",
       "pendingConfirmation": "Confirmation stage",
       "finalized": "Finalized"
-    },
-    "attachments": {
-      "view": "View",
-      "download": "Download",
-      "empty": "No files uploaded",
-      "previewUnavailable": "File content is missing",
-      "downloadUnavailable": "Cannot download file"
     },
     "specialMessage": {
       "title": "Special message",
