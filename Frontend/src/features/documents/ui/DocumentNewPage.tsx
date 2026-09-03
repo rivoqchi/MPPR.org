@@ -40,7 +40,7 @@ export function DocumentNewPage() {
 
     try {
       const bytes = new Uint8Array(await file.arrayBuffer())
-      setDocumentBytes(bytes)
+      setDocumentBytes(new Uint8Array(bytes.buffer.slice(0)))
       setTitle(file.name.endsWith('.docx') ? file.name : `${file.name}.docx`)
       notification.success({
         message: t('documents.openDocxSuccess'),
@@ -119,7 +119,11 @@ export function DocumentNewPage() {
       </div>
 
       <DocumentDocxEditorWorkspace
-        key={documentBytes === 'blank' ? 'blank' : documentBytes.byteLength}
+        key={
+          documentBytes === 'blank'
+            ? 'blank'
+            : `local-${documentBytes.byteLength}-${title}`
+        }
         ref={editorRef}
         documentBytes={documentBytes}
         title={title}

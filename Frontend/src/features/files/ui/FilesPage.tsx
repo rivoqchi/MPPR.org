@@ -5,12 +5,14 @@ import dayjs from 'dayjs'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+import { getDocumentFileIcon } from '@/features/documents/lib/document-file-icon'
 import { DocumentRowActions } from '@/features/documents/ui/DocumentRowActions'
 import { FilesUploadModal } from '@/features/files/ui/FilesUploadModal'
 import { useAuthStore } from '@/entities/user/model/auth-store'
 import {
   deleteDocument,
   downloadDocument,
+  isDocxDocument,
   listDocuments,
   type UserDocumentSummary,
 } from '@/shared/api/documents-api'
@@ -63,9 +65,14 @@ export function FilesPage() {
 
   const handleEdit = useCallback(
     (record: UserDocumentSummary) => {
+      if (!isDocxDocument(record)) {
+        message.warning(t('files.openNotSupported'))
+        return
+      }
+
       navigate(`/documents/${record.id}`)
     },
-    [navigate],
+    [navigate, t],
   )
 
   const handleDownload = useCallback(
@@ -104,14 +111,23 @@ export function FilesPage() {
         dataIndex: 'title',
         key: 'title',
         ellipsis: true,
-        render: (title: string, record) => (
-          <Space size={8}>
-            <span>{title}</span>
-            {record.isServiceFile ? (
-              <Tag color="blue">{t('files.serviceFileBadge')}</Tag>
-            ) : null}
-          </Space>
-        ),
+        render: (title: string, record) => {
+          const editable = isDocxDocument(record)
+
+          return (
+            <Space size={8}>
+              {getDocumentFileIcon(title, record.mimeType)}
+              {editable ? (
+                <Typography.Link onClick={() => handleEdit(record)}>{title}</Typography.Link>
+              ) : (
+                <span>{title}</span>
+              )}
+              {record.isServiceFile ? (
+                <Tag color="blue">{t('files.serviceFileBadge')}</Tag>
+              ) : null}
+            </Space>
+          )
+        },
       },
       {
         title: t('files.columns.size'),
@@ -130,8 +146,8 @@ export function FilesPage() {
       {
         title: t('files.columns.actions'),
         key: 'actions',
-        width: 72,
-        align: 'center',
+        width: 132,
+        align: 'right',
         render: (_, record) => (
           <DocumentRowActions
             record={record}
@@ -139,6 +155,7 @@ export function FilesPage() {
             downloadLabelKey="files.actions.download"
             editLabelKey="files.actions.edit"
             deleteLabelKey="files.actions.delete"
+            openNotSupportedKey="files.openNotSupported"
             onDownload={(item) => {
               void handleDownload(item)
             }}
@@ -183,6 +200,10 @@ export function FilesPage() {
             columns={columns}
             dataSource={documents}
             pagination={{ pageSize: 20, showSizeChanger: false }}
+            onRow={(record) => ({
+              onDoubleClick: () => handleEdit(record),
+              style: isDocxDocument(record) ? { cursor: 'pointer' } : undefined,
+            })}
           />
         </div>
 

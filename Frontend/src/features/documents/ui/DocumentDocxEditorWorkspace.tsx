@@ -1,7 +1,7 @@
 import { DocxEditor, type DocxEditorRef } from '@docx-editor.dev/react'
 import '@docx-editor.dev/core/styles/editor.css'
 import { Input, Spin, theme } from 'antd'
-import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react'
+import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
 export type DocumentDocxEditorHandle = {
@@ -56,7 +56,20 @@ export const DocumentDocxEditorWorkspace = forwardRef<
     void onSave?.()
   }, [onSave])
 
-  const showEditor = documentBytes !== undefined
+  // DocxEditor expects a stable ArrayBuffer/Uint8Array or 'blank'.
+  const editorDocument = useMemo(() => {
+    if (documentBytes === undefined) {
+      return undefined
+    }
+
+    if (documentBytes === 'blank') {
+      return 'blank' as const
+    }
+
+    return new Uint8Array(documentBytes)
+  }, [documentBytes])
+
+  const showEditor = editorDocument !== undefined && !isLoading
 
   return (
     <div
@@ -65,6 +78,7 @@ export const DocumentDocxEditorWorkspace = forwardRef<
         flexDirection: 'column',
         flex: 1,
         minHeight: 0,
+        height: '100%',
         background: token.colorBgContainer,
       }}
     >
@@ -88,16 +102,16 @@ export const DocumentDocxEditorWorkspace = forwardRef<
 
       <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
         {isLoading ? (
-          <div style={{ display: 'grid', placeItems: 'center', minHeight: 240 }}>
+          <div style={{ display: 'grid', placeItems: 'center', height: '100%', minHeight: 240 }}>
             <Spin tip={t('documents.loadingEditor')} />
           </div>
         ) : null}
 
         {showEditor ? (
-          <div style={{ width: '100%', height: '100%' }}>
+          <div style={{ position: 'absolute', inset: 0 }}>
             <DocxEditor
               ref={editorRef}
-              document={documentBytes}
+              document={editorDocument}
               mode={mode}
               onSave={onSave ? handleEditorSave : undefined}
             />

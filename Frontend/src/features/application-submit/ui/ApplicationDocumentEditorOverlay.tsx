@@ -15,7 +15,7 @@ import {
   copyDocumentForAttachment,
   fetchDocumentPreviewBlob,
   insertQrIntoDocument,
-  isDocxFileName,
+  isDocxDocument,
   saveDocumentAsArchive,
   saveDocumentDocxBytes,
   type DocumentAttachmentCopy,
@@ -70,7 +70,7 @@ export function ApplicationDocumentEditorOverlay({
       return
     }
 
-    if (!isDocxFileName(document.title)) {
+    if (!isDocxDocument(document)) {
       setErrorMessage(t('documents.previewUnsupported'))
       return
     }
@@ -93,7 +93,8 @@ export function ApplicationDocumentEditorOverlay({
           return
         }
 
-        setDocumentBytes(new Uint8Array(await blob.arrayBuffer()))
+        const buffer = await blob.arrayBuffer()
+        setDocumentBytes(new Uint8Array(buffer.slice(0)))
       } catch {
         if (!cancelled) {
           setErrorMessage(t('documents.loadError'))

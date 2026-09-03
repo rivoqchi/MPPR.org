@@ -18,7 +18,7 @@ import {
 import {
   fetchDocumentPreviewBlob,
   getDocumentById,
-  isDocxFileName,
+  isDocxDocument,
   saveDocumentDocxBytes,
   type UserDocumentSummary,
 } from '@/shared/api/documents-api'
@@ -100,7 +100,7 @@ export function ArchiveEditorPage() {
         setUserDocument(meta)
         setTitle(meta.title)
 
-        if (!isDocxFileName(meta.title)) {
+        if (!isDocxDocument(meta)) {
           setErrorMessage(t('documents.previewUnsupported'))
           return
         }
@@ -110,7 +110,8 @@ export function ArchiveEditorPage() {
           return
         }
 
-        setDocumentBytes(new Uint8Array(await blob.arrayBuffer()))
+        const buffer = await blob.arrayBuffer()
+        setDocumentBytes(new Uint8Array(buffer.slice(0)))
       } catch (error: unknown) {
         if (!cancelled) {
           setErrorMessage(resolveApiErrorMessage(error, t, 'documents.loadError'))
@@ -226,7 +227,13 @@ export function ArchiveEditorPage() {
                 background: token.colorBgContainer,
                 overflow: 'hidden',
               }
-            : getSplitPanelSurfaceStyle(token)),
+            : {
+                ...getSplitPanelSurfaceStyle(token),
+                flex: 1,
+                minHeight: 0,
+                display: 'flex',
+                flexDirection: 'column',
+              }),
         }}
       >
         {isImmersive ? (
@@ -249,7 +256,7 @@ export function ArchiveEditorPage() {
         ) : null}
 
         <DocumentDocxEditorWorkspace
-          key={documentBytes?.byteLength ?? 'loading'}
+          key={userDocument?.id ?? documentId ?? 'loading'}
           ref={editorRef}
           documentBytes={documentBytes}
           title={title}

@@ -24,13 +24,38 @@ export type DocumentAttachmentCopy = {
 }
 
 const DOCX_EXTENSIONS = new Set(['docx'])
+const DOCX_MIME_TYPES = new Set([
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/docx',
+])
 
 export function isDocxFileName(fileName: string): boolean {
   const extension = fileName.split('.').pop()?.toLowerCase() ?? ''
   return DOCX_EXTENSIONS.has(extension)
 }
 
-/** @deprecated Use isDocxFileName */
+export function isDocxDocument(document: {
+  title: string
+  mimeType?: string | null
+  storageKey?: string | null
+}): boolean {
+  if (isDocxFileName(document.title)) {
+    return true
+  }
+
+  if (document.storageKey && isDocxFileName(document.storageKey)) {
+    return true
+  }
+
+  const mimeType = document.mimeType?.toLowerCase().trim()
+  if (mimeType && DOCX_MIME_TYPES.has(mimeType)) {
+    return true
+  }
+
+  return false
+}
+
+/** @deprecated Use isDocxFileName / isDocxDocument */
 export function isOnlyOfficeEditableFileName(fileName: string): boolean {
   return isDocxFileName(fileName)
 }
