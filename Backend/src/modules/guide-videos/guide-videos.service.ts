@@ -4,10 +4,12 @@ import {
   NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
-import { createReadStream, existsSync, promises as fs } from 'node:fs';
+import { promises as fs } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import type { Request, Response } from 'express';
 import { ErrorCode } from '../../common/constants/error-codes';
+import { ObjectStorageService } from '../../shared/object-storage/object-storage.service';
+import { guideVideoStorageKey } from '../../shared/object-storage/storage-keys';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { RealtimeService } from '../../shared/realtime/realtime.service';
 import { InitGuideVideoUploadDto } from './dto/init-guide-video-upload.dto';
@@ -25,7 +27,6 @@ import {
   ALLOWED_GUIDE_VIDEO_MIME_TYPES,
   ensureGuideVideoDirectories,
   getGuideUploadTempPath,
-  getGuideVideoFilePath,
   MAX_GUIDE_VIDEO_BYTES,
 } from './lib/storage';
 
@@ -49,6 +50,7 @@ export class GuideVideosService implements OnModuleInit {
   constructor(
     private readonly prisma: PrismaService,
     private readonly realtimeService: RealtimeService,
+    private readonly objectStorage: ObjectStorageService,
   ) {}
 
   onModuleInit() {
@@ -212,9 +214,13 @@ export class GuideVideosService implements OnModuleInit {
       : '';
     const storageKey = `${randomUUID()}${extension}`;
     const tempPath = getGuideUploadTempPath(uploadId);
-    const finalPath = getGuideVideoFilePath(storageKey);
 
-    await fs.rename(tempPath, finalPath);
+    await this.objectStorage.putObjectFromPath(
+      guideVideoStorageKey(storageKey),
+      tempPath,
+      session.mimeType,
+    );
+    await fs.unlink(tempPath).catch(() => undefined);
 
     const video = await this.prisma.guideVideo.create({
       data: {
@@ -281,11 +287,7 @@ export class GuideVideosService implements OnModuleInit {
 
     await this.prisma.guideVideo.delete({ where: { id } });
 
-    const filePath = getGuideVideoFilePath(existing.storageKey);
-
-    if (existsSync(filePath)) {
-      await fs.unlink(filePath).catch(() => undefined);
-    }
+    await this.objectStorage.deleteObject(guideVideoStorageKey(existing.storageKey));
 
     this.realtimeService.emitEntityChange('guide-videos', 'delete', {
       id: existing.id,
@@ -335,14 +337,9 @@ export class GuideVideosService implements OnModuleInit {
       throw new NotFoundException(ErrorCode.GUIDE_VIDEO_NOT_FOUND);
     }
 
-    const filePath = getGuideVideoFilePath(video.storageKey);
-
-    if (!existsSync(filePath)) {
-      throw new NotFoundException(ErrorCode.GUIDE_VIDEO_NOT_FOUND);
-    }
-
-    const stat = await fs.stat(filePath);
-    const fileSize = stat.size;
+    const key = guideVideoStorageKey(video.storageKey);
+    const meta = await this.objectStorage.getObjectMeta(key);
+    const fileSize = meta.size;
     const range = req.headers.range;
 
     res.setHeader('Accept-Ranges', 'bytes');
@@ -355,9 +352,10 @@ export class GuideVideosService implements OnModuleInit {
     res.setHeader('Cache-Control', 'private, max-age=0, must-revalidate');
 
     if (!range) {
+      const stream = await this.objectStorage.getObjectStream(key);
       res.setHeader('Content-Length', fileSize);
       res.status(200);
-      createReadStream(filePath).pipe(res);
+      stream.pipe(res);
       return;
     }
 
@@ -385,11 +383,11 @@ export class GuideVideosService implements OnModuleInit {
     }
 
     const chunkSize = end - start + 1;
+    const stream = await this.objectStorage.getObjectStream(key, { start, end });
 
     res.status(206);
     res.setHeader('Content-Range', `bytes ${start}-${end}/${fileSize}`);
     res.setHeader('Content-Length', chunkSize);
-
-    createReadStream(filePath, { start, end }).pipe(res);
+    stream.pipe(res);
   }
 }

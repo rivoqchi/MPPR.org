@@ -1,9 +1,31 @@
 export type OnlyOfficeDocumentKind = 'word' | 'cell' | 'slide';
 
+const EXTENSION_BY_MIME: Record<string, string> = {
+  'application/msword': 'doc',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+  'application/vnd.ms-excel': 'xls',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+  'application/vnd.ms-powerpoint': 'ppt',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+  'application/vnd.oasis.opendocument.text': 'odt',
+  'application/vnd.oasis.opendocument.spreadsheet': 'ods',
+  'application/vnd.oasis.opendocument.presentation': 'odp',
+  'application/rtf': 'rtf',
+  'text/rtf': 'rtf',
+  'text/plain': 'txt',
+  'text/csv': 'csv',
+  'application/pdf': 'pdf',
+};
+
 export function resolveOnlyOfficeDocumentMeta(
   fileName: string,
+  mimeType?: string | null,
 ): { documentType: OnlyOfficeDocumentKind; fileType: string } {
-  const extension = fileName.split('.').pop()?.toLowerCase() ?? '';
+  const extensionFromName = fileName.split('.').pop()?.toLowerCase() ?? '';
+  const extensionFromMime = mimeType
+    ? EXTENSION_BY_MIME[mimeType.toLowerCase()] ?? ''
+    : '';
+  const extension = extensionFromName || extensionFromMime || 'docx';
 
   switch (extension) {
     case 'xls':
@@ -11,7 +33,10 @@ export function resolveOnlyOfficeDocumentMeta(
     case 'xlsx':
     case 'ods':
     case 'csv':
-      return { documentType: 'cell', fileType: extension === 'ods' ? 'ods' : extension === 'csv' ? 'csv' : 'xlsx' };
+      return {
+        documentType: 'cell',
+        fileType: extension === 'ods' ? 'ods' : extension === 'csv' ? 'csv' : 'xlsx',
+      };
     case 'ppt':
       return { documentType: 'slide', fileType: 'ppt' };
     case 'pptx':
@@ -25,6 +50,8 @@ export function resolveOnlyOfficeDocumentMeta(
       return { documentType: 'word', fileType: 'txt' };
     case 'pdf':
       return { documentType: 'word', fileType: 'pdf' };
+    case 'odt':
+      return { documentType: 'word', fileType: 'odt' };
     default:
       return { documentType: 'word', fileType: 'docx' };
   }

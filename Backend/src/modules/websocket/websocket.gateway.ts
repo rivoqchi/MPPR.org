@@ -237,6 +237,34 @@ export class WebsocketGateway
     this.server.to(`user:${userId}`).emit(event, data);
   }
 
+  emitToDocument(documentId: string, event: string, data: unknown) {
+    this.server.to(`document:${documentId}`).emit(event, data);
+  }
+
+  @SubscribeMessage('document:join')
+  handleDocumentJoin(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() body: { documentId?: string },
+  ) {
+    if (!client.data?.user?.id || !body?.documentId) {
+      return;
+    }
+
+    void client.join(`document:${body.documentId}`);
+  }
+
+  @SubscribeMessage('document:leave')
+  handleDocumentLeave(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() body: { documentId?: string },
+  ) {
+    if (!body?.documentId) {
+      return;
+    }
+
+    void client.leave(`document:${body.documentId}`);
+  }
+
   emitToRole(roleId: string, event: string, data: unknown) {
     this.server.to(`role:${roleId}`).emit(event, data);
   }

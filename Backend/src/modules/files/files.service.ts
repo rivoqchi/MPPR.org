@@ -4,13 +4,13 @@ import {
   NotFoundException,
   PayloadTooLargeException,
 } from '@nestjs/common';
-import { createReadStream, existsSync, unlinkSync, writeFileSync } from 'node:fs';
 import type { Response } from 'express';
 import { ErrorCode } from '../../common/constants/error-codes';
+import { ObjectStorageService } from '../../shared/object-storage/object-storage.service';
+import { objectStorageKey } from '../../shared/object-storage/storage-keys';
 import {
   buildStorageKey,
   ensureUploadsDirectory,
-  getUploadFilePath,
   isSafeStorageKey,
   MAX_UPLOAD_BYTES,
 } from './lib/storage';
@@ -24,11 +24,11 @@ export type UploadedFileMeta = {
 
 @Injectable()
 export class FilesService {
-  constructor() {
+  constructor(private readonly objectStorage: ObjectStorageService) {
     ensureUploadsDirectory();
   }
 
-  saveUploadedFile(file: Express.Multer.File): UploadedFileMeta {
+  async saveUploadedFile(file: Express.Multer.File): Promise<UploadedFileMeta> {
     if (!file || !file.buffer?.length) {
       throw new BadRequestException(ErrorCode.VALIDATION_FAILED);
     }
@@ -38,14 +38,12 @@ export class FilesService {
     }
 
     const storageKey = buildStorageKey(file.originalname || 'file');
-    const filePath = getUploadFilePath(storageKey);
-
-    writeFileSync(filePath, file.buffer);
-
     const mimeType =
       file.mimetype && file.mimetype !== 'application/octet-stream'
         ? file.mimetype
         : guessMimeTypeFromName(file.originalname || '');
+
+    await this.objectStorage.putObject(objectStorageKey(storageKey), file.buffer, mimeType);
 
     return {
       id: storageKey,
@@ -55,19 +53,30 @@ export class FilesService {
     };
   }
 
-  streamFile(storageKey: string, res: Response): void {
-    const filePath = resolveExistingFilePath(storageKey);
-    const mimeType = guessMimeTypeFromName(storageKey);
+  async streamFile(storageKey: string, res: Response): Promise<void> {
+    if (!isSafeStorageKey(storageKey)) {
+      throw new NotFoundException(ErrorCode.NOT_FOUND);
+    }
 
-    res.setHeader('Content-Type', mimeType);
+    const key = objectStorageKey(storageKey);
+    const [meta, stream] = await Promise.all([
+      this.objectStorage.getObjectMeta(key),
+      this.objectStorage.getObjectStream(key),
+    ]);
+
+    res.setHeader('Content-Type', meta.contentType || guessMimeTypeFromName(storageKey));
     res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Content-Length', String(meta.size));
 
-    createReadStream(filePath).pipe(res);
+    stream.pipe(res);
   }
 
-  deleteFile(storageKey: string): void {
-    const filePath = resolveExistingFilePath(storageKey);
-    unlinkSync(filePath);
+  async deleteFile(storageKey: string): Promise<void> {
+    if (!isSafeStorageKey(storageKey)) {
+      throw new NotFoundException(ErrorCode.NOT_FOUND);
+    }
+
+    await this.objectStorage.deleteObject(objectStorageKey(storageKey));
   }
 }
 
@@ -111,18 +120,4 @@ function guessMimeTypeFromName(fileName: string): string {
     default:
       return 'application/octet-stream';
   }
-}
-
-function resolveExistingFilePath(storageKey: string): string {
-    if (!isSafeStorageKey(storageKey)) {
-      throw new NotFoundException(ErrorCode.NOT_FOUND);
-    }
-
-    const filePath = getUploadFilePath(storageKey);
-
-    if (!existsSync(filePath)) {
-      throw new NotFoundException(ErrorCode.NOT_FOUND);
-    }
-
-    return filePath;
 }

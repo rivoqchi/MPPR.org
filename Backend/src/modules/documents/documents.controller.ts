@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Res,
@@ -25,6 +26,7 @@ import { MAX_UPLOAD_BYTES } from '../files/lib/storage';
 import { DocumentsService } from './documents.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { CreateQrImageDto } from './dto/create-qr-image.dto';
+import { UpdateDocumentServiceFileDto } from './dto/update-document-service-file.dto';
 import type { OnlyOfficeCallbackPayload } from './lib/onlyoffice.types';
 
 @ApiTags('documents')
@@ -90,6 +92,26 @@ export class DocumentsController {
     );
   }
 
+  @Get(':id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get document metadata' })
+  getById(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.documentsService.getById(user.id, id);
+  }
+
+  @Patch(':id/service-file')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Toggle service-file flag for a document' })
+  updateServiceFile(
+    @Param('id') id: string,
+    @Body() body: UpdateDocumentServiceFileDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.documentsService.updateServiceFile(user.id, id, body.isServiceFile);
+  }
+
   @Post(':id/save-as-archive')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -102,8 +124,13 @@ export class DocumentsController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Copy document file for application attachment' })
-  copyForAttachment(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.documentsService.copyForAttachment(user.id, id);
+  copyForAttachment(
+    @Param('id') id: string,
+    @Query('asPdf') asPdf: string | undefined,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const wantPdf = asPdf === '1' || asPdf === 'true';
+    return this.documentsService.copyForAttachment(user.id, id, wantPdf);
   }
 
   @Get(':id/save-state')
@@ -112,6 +139,38 @@ export class DocumentsController {
   @ApiOperation({ summary: 'Get document save state for OnlyOffice polling' })
   getSaveState(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.documentsService.getSaveState(user.id, id);
+  }
+
+  @Post(':id/qr-pdf-attachment')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Create PDF attachment with QR stamped at exact coordinates' })
+  createQrPdfAttachment(
+    @Param('id') id: string,
+    @Body() body: CreateQrImageDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const hasRatios =
+      body.pageIndex != null &&
+      body.xRatio != null &&
+      body.yRatio != null &&
+      body.sizeRatio != null;
+    const hasMm =
+      body.pageIndex != null && body.offsetXMm != null && body.offsetYMm != null;
+
+    if (!hasRatios && !hasMm) {
+      return this.documentsService.copyForAttachment(user.id, id, true);
+    }
+
+    return this.documentsService.createQrPdfAttachment(user.id, id, body.text, {
+      pageIndex: body.pageIndex ?? 0,
+      offsetXMm: body.offsetXMm ?? 0,
+      offsetYMm: body.offsetYMm ?? 0,
+      sizeMm: body.sizeMm ?? 32,
+      xRatio: body.xRatio,
+      yRatio: body.yRatio,
+      sizeRatio: body.sizeRatio,
+    });
   }
 
   @Post(':id/insert-qr')
@@ -123,7 +182,18 @@ export class DocumentsController {
     @Body() body: CreateQrImageDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.documentsService.insertQrIntoDocument(user.id, id, body.text, body.lang);
+    return this.documentsService.insertQrIntoDocument(
+      user.id,
+      id,
+      body.text,
+      body.lang,
+      {
+        pageIndex: body.pageIndex,
+        offsetXMm: body.offsetXMm,
+        offsetYMm: body.offsetYMm,
+        sizeMm: body.sizeMm,
+      },
+    );
   }
 
   @Post(':id/qr-image')
@@ -148,6 +218,30 @@ export class DocumentsController {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.documentsService.getEditorConfig(user.id, id, lang ?? 'en');
+  }
+
+  @Get(':id/preview')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Preview document file inline' })
+  preview(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Res({ passthrough: false }) res: Response,
+  ) {
+    return this.documentsService.preview(user.id, id, res);
+  }
+
+  @Get(':id/pdf-preview')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Convert document to PDF for QR placement preview' })
+  pdfPreview(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Res({ passthrough: false }) res: Response,
+  ) {
+    return this.documentsService.streamPdfPreview(user.id, id, res);
   }
 
   @Get(':id/download')
@@ -189,6 +283,25 @@ export class DocumentsController {
     } catch {
       res.status(200).json({ error: 1 });
     }
+  }
+
+  @Post(':id/replace-file')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Replace document file with a new version' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: { fileSize: MAX_UPLOAD_BYTES },
+    }),
+  )
+  replaceFile(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.documentsService.replaceFile(user.id, id, file);
   }
 
   @Delete(':id')

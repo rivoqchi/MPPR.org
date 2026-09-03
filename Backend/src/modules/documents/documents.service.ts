@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { copyFileSync, createReadStream, existsSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import type { Response } from 'express';
 import { randomUUID } from 'node:crypto';
@@ -16,15 +16,19 @@ import QRCode from 'qrcode';
 import { UserDocumentType } from '@prisma/client';
 import { ErrorCode } from '../../common/constants/error-codes';
 import { PAGE_KEYS, assertPagePermission } from '../../common/lib/assert-page-permission';
+import { ObjectStorageService } from '../../shared/object-storage/object-storage.service';
+import { objectStorageKey } from '../../shared/object-storage/storage-keys';
 import { PrismaService } from '../../shared/prisma/prisma.service';
-import { buildStorageKey, getUploadFilePath } from '../files/lib/storage';
+import { buildStorageKey } from '../files/lib/storage';
 import { FilesService } from '../files/files.service';
 import type { CreateDocumentDto } from './dto/create-document.dto';
 import {
   guessMimeTypeFromFileName,
   resolveOnlyOfficeDocumentMeta,
 } from './lib/document-format';
-import { insertPngIntoDocx } from './lib/insert-image-into-docx';
+import { insertPngIntoDocxBuffer } from './lib/insert-image-into-docx';
+import { stampQrOntoPdfBuffer } from './lib/stamp-qr-onto-pdf';
+import { buildContentDispositionHeader } from './lib/content-disposition';
 import type {
   OnlyOfficeAssetTokenPayload,
   OnlyOfficeCallbackPayload,
@@ -42,6 +46,13 @@ const DOCUMENT_LIST_SELECT = {
   type: true,
   isServiceFile: true,
   createdById: true,
+  createdBy: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+    },
+  },
   size: true,
   mimeType: true,
   createdAt: true,
@@ -57,6 +68,7 @@ export class DocumentsService {
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly filesService: FilesService,
+    private readonly objectStorage: ObjectStorageService,
   ) {}
 
   async create(userId: string, dto: CreateDocumentDto = {}) {
@@ -68,26 +80,24 @@ export class DocumentsService {
 
     const documentType = dto.type ?? UserDocumentType.FILE;
     const storageKey = buildStorageKey('document.docx');
-    const filePath = getUploadFilePath(storageKey);
-    copyFileSync(BLANK_TEMPLATE_PATH, filePath);
-    const fileSize = statSync(filePath).size;
+    const templateBuffer = readFileSync(BLANK_TEMPLATE_PATH);
     const mimeType = guessMimeTypeFromFileName(DEFAULT_TITLE);
 
-    const document = await this.prisma.userDocument.create({
+    await this.objectStorage.putObject(objectStorageKey(storageKey), templateBuffer, mimeType);
+
+    return this.prisma.userDocument.create({
       data: {
         title: dto.title?.trim() || DEFAULT_TITLE,
         storageKey,
         documentKey: randomUUID(),
         type: documentType,
         isServiceFile: dto.isServiceFile ?? false,
-        size: fileSize,
+        size: templateBuffer.length,
         mimeType,
         createdById: userId,
       },
       select: DOCUMENT_LIST_SELECT,
     });
-
-    return document;
   }
 
   async list(userId: string, type?: UserDocumentType) {
@@ -95,23 +105,18 @@ export class DocumentsService {
 
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { structuralUnitId: true },
+      select: { id: true },
     });
 
     if (!user) {
       throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
     }
 
+    // Own files + all service files (any user with page access can open/edit them).
     return this.prisma.userDocument.findMany({
       where: {
         ...(type ? { type } : {}),
-        OR: [
-          { createdById: userId },
-          {
-            isServiceFile: true,
-            createdBy: { structuralUnitId: user.structuralUnitId },
-          },
-        ],
+        OR: [{ createdById: userId }, { isServiceFile: true }],
       },
       select: DOCUMENT_LIST_SELECT,
       orderBy: { updatedAt: 'desc' },
@@ -127,8 +132,11 @@ export class DocumentsService {
   ) {
     await this.assertDocumentPermission(userId, 'canCreate', type);
 
-    const uploaded = this.filesService.saveUploadedFile(file);
-    const documentTitle = title?.trim() || uploaded.name;
+    const uploaded = await this.filesService.saveUploadedFile(file);
+    const documentTitle = this.ensureTitleExtension(
+      title?.trim() || uploaded.name,
+      uploaded.name || file.originalname || 'document.docx',
+    );
 
     return this.prisma.userDocument.create({
       data: {
@@ -145,33 +153,115 @@ export class DocumentsService {
     });
   }
 
-  async download(userId: string, documentId: string, res: Response) {
-    const document = await this.getAccessibleDocument(documentId, userId);
+  async getById(userId: string, documentId: string) {
     await this.assertDocumentPermission(userId, 'canView');
+    await this.getAccessibleDocument(documentId, userId);
 
-    const filePath = getUploadFilePath(document.storageKey);
-    if (!existsSync(filePath)) {
+    const document = await this.prisma.userDocument.findUnique({
+      where: { id: documentId },
+      select: DOCUMENT_LIST_SELECT,
+    });
+
+    if (!document) {
       throw new NotFoundException(ErrorCode.NOT_FOUND);
     }
 
-    res.setHeader('Content-Type', document.mimeType || guessMimeTypeFromFileName(document.title));
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="${encodeURIComponent(document.title)}"`,
-    );
-    res.setHeader('Cache-Control', 'no-store');
+    return document;
+  }
 
-    createReadStream(filePath).pipe(res);
+  async updateServiceFile(userId: string, documentId: string, isServiceFile: boolean) {
+    const document = await this.getAccessibleDocument(documentId, userId);
+    await this.assertDocumentPermission(userId, 'canCreate', document.type);
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { appRole: { select: { isSystem: true } } },
+    });
+
+    const isOwner = document.createdById === userId;
+    const isAdmin = user?.appRole?.isSystem === true;
+
+    if (!isOwner && !isAdmin) {
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
+    }
+
+    if (document.type !== UserDocumentType.FILE) {
+      throw new BadRequestException(ErrorCode.VALIDATION_FAILED);
+    }
+
+    return this.prisma.userDocument.update({
+      where: { id: document.id },
+      data: { isServiceFile },
+      select: DOCUMENT_LIST_SELECT,
+    });
+  }
+
+  async download(userId: string, documentId: string, res: Response) {
+    return this.streamDocument(userId, documentId, res, 'attachment');
+  }
+
+  async preview(userId: string, documentId: string, res: Response) {
+    return this.streamDocument(userId, documentId, res, 'inline');
+  }
+
+  private async streamDocument(
+    userId: string,
+    documentId: string,
+    res: Response,
+    disposition: 'attachment' | 'inline',
+  ) {
+    const document = await this.getAccessibleDocument(documentId, userId);
+    await this.assertDocumentPermission(userId, 'canView');
+
+    const key = objectStorageKey(document.storageKey);
+    const mimeType = document.mimeType || guessMimeTypeFromFileName(document.title);
+
+    const [meta, stream] = await Promise.all([
+      this.objectStorage.getObjectMeta(key),
+      this.objectStorage.getObjectStream(key),
+    ]);
+
+    res.setHeader('Content-Type', mimeType);
+    res.setHeader('Content-Disposition', buildContentDispositionHeader(document.title, disposition));
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Content-Length', String(meta.size));
+
+    stream.pipe(res);
+  }
+
+  async replaceFile(userId: string, documentId: string, file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException(ErrorCode.VALIDATION_FAILED);
+    }
+
+    const document = await this.getAccessibleDocument(documentId, userId);
+    await this.assertDocumentPermission(userId, 'canCreate', document.type);
+
+    const mimeType = file.mimetype || guessMimeTypeFromFileName(file.originalname || document.title);
+
+    await this.objectStorage.putObject(
+      objectStorageKey(document.storageKey),
+      file.buffer,
+      mimeType,
+    );
+
+    return this.prisma.userDocument.update({
+      where: { id: document.id },
+      data: {
+        documentKey: randomUUID(),
+        size: file.buffer.length,
+        mimeType,
+        updatedAt: new Date(),
+      },
+      select: DOCUMENT_LIST_SELECT,
+    });
   }
 
   async remove(userId: string, documentId: string) {
     const document = await this.getAccessibleDocument(documentId, userId, 'delete');
     await this.assertDocumentPermission(userId, 'canDelete');
 
-    const filePath = getUploadFilePath(document.storageKey);
-    if (existsSync(filePath)) {
-      unlinkSync(filePath);
-    }
+    await this.objectStorage.deleteObject(objectStorageKey(document.storageKey));
 
     await this.prisma.userDocument.delete({
       where: { id: document.id },
@@ -195,7 +285,10 @@ export class DocumentsService {
 
     const publicApiUrl = this.getPublicApiUrl();
     const fileToken = this.signFileToken(documentId);
-    const { documentType, fileType } = resolveOnlyOfficeDocumentMeta(document.title);
+    const { documentType, fileType } = resolveOnlyOfficeDocumentMeta(
+      document.title,
+      document.mimeType,
+    );
     const editorLang = ONLYOFFICE_SUPPORTED_LANGS.has(lang) ? lang : 'en';
     const config: OnlyOfficeEditorConfig = {
       document: {
@@ -231,34 +324,33 @@ export class DocumentsService {
     };
   }
 
-  streamDocumentFile(documentId: string, token: string | undefined, res: Response) {
+  async streamDocumentFile(documentId: string, token: string | undefined, res: Response) {
     const payload = this.verifyFileToken(token);
     if (payload.documentId !== documentId) {
       throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
     }
 
-    return this.prisma.userDocument
-      .findUnique({ where: { id: documentId } })
-      .then((document) => {
-        if (!document) {
-          throw new NotFoundException(ErrorCode.NOT_FOUND);
-        }
+    const document = await this.prisma.userDocument.findUnique({ where: { id: documentId } });
+    if (!document) {
+      throw new NotFoundException(ErrorCode.NOT_FOUND);
+    }
 
-        const filePath = getUploadFilePath(document.storageKey);
-        if (!existsSync(filePath)) {
-          throw new NotFoundException(ErrorCode.NOT_FOUND);
-        }
+    const key = objectStorageKey(document.storageKey);
+    const mimeType =
+      document.mimeType ||
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
-        res.setHeader(
-          'Content-Type',
-          document.mimeType ||
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        );
-        res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(document.title)}"`);
-        res.setHeader('Cache-Control', 'no-store');
+    const [meta, stream] = await Promise.all([
+      this.objectStorage.getObjectMeta(key),
+      this.objectStorage.getObjectStream(key),
+    ]);
 
-        createReadStream(filePath).pipe(res);
-      });
+    res.setHeader('Content-Type', mimeType);
+    res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(document.title)}"`);
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Content-Length', String(meta.size));
+
+    stream.pipe(res);
   }
 
   async handleCallback(documentId: string, body: OnlyOfficeCallbackPayload): Promise<{ error: 0 | 1 }> {
@@ -311,8 +403,15 @@ export class DocumentsService {
         }
 
         const buffer = Buffer.from(await response.arrayBuffer());
-        const filePath = getUploadFilePath(document.storageKey);
-        writeFileSync(filePath, buffer);
+        const mimeType =
+          document.mimeType ||
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+        await this.objectStorage.putObject(
+          objectStorageKey(document.storageKey),
+          buffer,
+          mimeType,
+        );
 
         await this.prisma.userDocument.update({
           where: { id: document.id },
@@ -338,15 +437,16 @@ export class DocumentsService {
     const document = await this.getAccessibleDocument(documentId, userId);
     await this.assertDocumentPermission(userId, 'canCreate', UserDocumentType.ARCHIVE);
 
-    const sourcePath = getUploadFilePath(document.storageKey);
-    if (!existsSync(sourcePath)) {
+    const sourceKey = objectStorageKey(document.storageKey);
+    if (!(await this.objectStorage.exists(sourceKey))) {
       throw new NotFoundException(ErrorCode.NOT_FOUND);
     }
 
     const storageKey = buildStorageKey(document.title);
-    const destPath = getUploadFilePath(storageKey);
-    copyFileSync(sourcePath, destPath);
-    const fileSize = statSync(destPath).size;
+    const destinationKey = objectStorageKey(storageKey);
+
+    await this.objectStorage.copyObject(sourceKey, destinationKey);
+    const meta = await this.objectStorage.getObjectMeta(destinationKey);
 
     return this.prisma.userDocument.create({
       data: {
@@ -354,7 +454,7 @@ export class DocumentsService {
         storageKey,
         documentKey: randomUUID(),
         type: UserDocumentType.ARCHIVE,
-        size: fileSize,
+        size: meta.size,
         mimeType: document.mimeType,
         createdById: userId,
       },
@@ -362,26 +462,214 @@ export class DocumentsService {
     });
   }
 
-  async copyForAttachment(userId: string, documentId: string) {
+  async copyForAttachment(userId: string, documentId: string, asPdf = false) {
     const document = await this.getAccessibleDocument(documentId, userId);
     await this.assertDocumentPermission(userId, 'canView', document.type);
 
-    const sourcePath = getUploadFilePath(document.storageKey);
-    if (!existsSync(sourcePath)) {
+    if (asPdf) {
+      try {
+        return await this.copyForAttachmentAsPdf(userId, document);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.warn(
+          `PDF attachment failed for ${documentId}, falling back to source file: ${message}`,
+        );
+      }
+    }
+
+    const sourceKey = objectStorageKey(document.storageKey);
+    if (!(await this.objectStorage.exists(sourceKey))) {
       throw new NotFoundException(ErrorCode.NOT_FOUND);
     }
 
     const storageKey = buildStorageKey(document.title);
-    const destPath = getUploadFilePath(storageKey);
-    copyFileSync(sourcePath, destPath);
-    const fileSize = statSync(destPath).size;
+    const destinationKey = objectStorageKey(storageKey);
+
+    await this.objectStorage.copyObject(sourceKey, destinationKey);
+    const meta = await this.objectStorage.getObjectMeta(destinationKey);
 
     return {
       id: storageKey,
       name: document.title,
-      size: fileSize,
+      size: meta.size,
       mimeType: document.mimeType || guessMimeTypeFromFileName(document.title),
     };
+  }
+
+  private async copyForAttachmentAsPdf(
+    userId: string,
+    document: { id: string; title: string; storageKey: string; mimeType: string | null },
+    qrStamp?: {
+      text: string;
+      pageIndex: number;
+      offsetXMm: number;
+      offsetYMm: number;
+      sizeMm: number;
+      xRatio?: number;
+      yRatio?: number;
+      sizeRatio?: number;
+    },
+  ) {
+    let pdfBuffer = await this.convertDocumentToPdfBuffer(userId, document.id);
+
+    if (qrStamp) {
+      const pngBuffer = await QRCode.toBuffer(qrStamp.text, {
+        type: 'png',
+        width: 512,
+        margin: 1,
+        errorCorrectionLevel: 'M',
+      });
+
+      const A4_WIDTH_MM = 210;
+      const xRatio =
+        qrStamp.xRatio ??
+        Math.min(1, Math.max(0, qrStamp.offsetXMm / A4_WIDTH_MM));
+      const yRatio =
+        qrStamp.yRatio ??
+        Math.min(1, Math.max(0, qrStamp.offsetYMm / 297));
+      const sizeRatio =
+        qrStamp.sizeRatio ??
+        Math.min(0.5, Math.max(0.04, qrStamp.sizeMm / A4_WIDTH_MM));
+
+      pdfBuffer = await stampQrOntoPdfBuffer(pdfBuffer, pngBuffer, {
+        pageIndex: qrStamp.pageIndex,
+        xRatio,
+        yRatio,
+        sizeRatio,
+      });
+    }
+
+    const pdfName = document.title.replace(/\.[^.]+$/i, '') + '.pdf';
+    const storageKey = buildStorageKey(pdfName);
+
+    await this.objectStorage.putObject(objectStorageKey(storageKey), pdfBuffer, 'application/pdf');
+
+    return {
+      id: storageKey,
+      name: pdfName,
+      size: pdfBuffer.length,
+      mimeType: 'application/pdf',
+    };
+  }
+
+  /**
+   * Convert document to PDF and stamp QR at exact page coordinates for application attach.
+   * Also bakes QR into the source DOCX (best-effort) so the library file stays updated.
+   */
+  async createQrPdfAttachment(
+    userId: string,
+    documentId: string,
+    qrText: string,
+    placement: {
+      pageIndex: number;
+      offsetXMm: number;
+      offsetYMm: number;
+      sizeMm: number;
+      xRatio?: number;
+      yRatio?: number;
+      sizeRatio?: number;
+    },
+  ) {
+    const document = await this.getAccessibleDocument(documentId, userId);
+    await this.assertDocumentPermission(userId, 'canView', document.type);
+
+    // Only stamp the PDF attachment. Do NOT mutate the library DOCX —
+    // floating Word anchors do not match the placement UI and confuse "view".
+    return this.copyForAttachmentAsPdf(userId, document, {
+      text: qrText,
+      pageIndex: placement.pageIndex,
+      offsetXMm: placement.offsetXMm,
+      offsetYMm: placement.offsetYMm,
+      sizeMm: placement.sizeMm,
+      xRatio: placement.xRatio,
+      yRatio: placement.yRatio,
+      sizeRatio: placement.sizeRatio,
+    });
+  }
+
+  async streamPdfPreview(userId: string, documentId: string, res: Response) {
+    await this.assertDocumentPermission(userId, 'canView');
+    const document = await this.getAccessibleDocument(documentId, userId);
+    const pdfBuffer = await this.convertDocumentToPdfBuffer(userId, document.id);
+    const pdfName = document.title.replace(/\.[^.]+$/i, '') + '.pdf';
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', buildContentDispositionHeader(pdfName, 'inline'));
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Content-Length', String(pdfBuffer.length));
+    res.end(pdfBuffer);
+  }
+
+  private async convertDocumentToPdfBuffer(userId: string, documentId: string): Promise<Buffer> {
+    const document = await this.getAccessibleDocument(documentId, userId);
+    const { fileType } = resolveOnlyOfficeDocumentMeta(document.title, document.mimeType);
+
+    if (fileType !== 'docx' && fileType !== 'doc' && fileType !== 'odt' && fileType !== 'rtf') {
+      throw new BadRequestException(ErrorCode.VALIDATION_FAILED);
+    }
+
+    const publicApiUrl = this.getPublicApiUrl();
+    const onlyOfficeBase = this.configService
+      .get<string>('ONLYOFFICE_SERVER_URL', 'http://localhost:8080')
+      .replace(/\/$/, '');
+    const fileToken = this.signFileToken(documentId);
+    const conversionKey = randomUUID().replace(/-/g, '');
+
+    const payload = {
+      async: false,
+      filetype: fileType,
+      key: conversionKey,
+      outputtype: 'pdf',
+      title: document.title,
+      url: `${publicApiUrl}/documents/${document.id}/file?token=${encodeURIComponent(fileToken)}`,
+    };
+
+    const token = this.signOnlyOfficePayload(payload);
+
+    let response: globalThis.Response;
+    try {
+      response = await fetch(`${onlyOfficeBase}/ConvertService.ashx`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ ...payload, token }),
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`OnlyOffice convert request failed (${documentId}): ${message}`);
+      throw new BadRequestException(ErrorCode.VALIDATION_FAILED);
+    }
+
+    if (!response.ok) {
+      this.logger.warn(`OnlyOffice convert HTTP ${response.status} (${documentId})`);
+      throw new BadRequestException(ErrorCode.VALIDATION_FAILED);
+    }
+
+    const result = (await response.json()) as {
+      endConvert?: boolean;
+      fileUrl?: string;
+      error?: number;
+      percent?: number;
+    };
+
+    if (result.error || !result.fileUrl) {
+      this.logger.warn(
+        `OnlyOffice convert failed (${documentId}): ${JSON.stringify(result)}`,
+      );
+      throw new BadRequestException(ErrorCode.VALIDATION_FAILED);
+    }
+
+    const downloadUrl = this.resolveOnlyOfficeDownloadUrl(result.fileUrl);
+    const pdfResponse = await fetch(downloadUrl);
+
+    if (!pdfResponse.ok) {
+      this.logger.warn(`OnlyOffice PDF download failed (${pdfResponse.status})`);
+      throw new BadRequestException(ErrorCode.VALIDATION_FAILED);
+    }
+
+    return Buffer.from(await pdfResponse.arrayBuffer());
   }
 
   async getSaveState(userId: string, documentId: string) {
@@ -404,7 +692,7 @@ export class DocumentsService {
     });
 
     const storageKey = buildStorageKey('qr.png');
-    writeFileSync(getUploadFilePath(storageKey), pngBuffer);
+    await this.objectStorage.putObject(objectStorageKey(storageKey), pngBuffer, 'image/png');
 
     const token = this.signAssetToken(storageKey);
     const publicApiUrl = this.getPublicApiUrl();
@@ -418,39 +706,68 @@ export class DocumentsService {
     userId: string,
     documentId: string,
     qrText: string,
-    lang = 'en',
+    _lang = 'en',
+    placement?: {
+      pageIndex?: number;
+      offsetXMm?: number;
+      offsetYMm?: number;
+      sizeMm?: number;
+    },
   ) {
     const document = await this.getAccessibleDocument(documentId, userId);
-    const { fileType } = resolveOnlyOfficeDocumentMeta(document.title);
+    const { fileType } = resolveOnlyOfficeDocumentMeta(document.title, document.mimeType);
 
     if (fileType !== 'docx') {
       throw new BadRequestException(ErrorCode.VALIDATION_FAILED);
     }
 
-    const filePath = getUploadFilePath(document.storageKey);
-    if (!existsSync(filePath)) {
-      throw new NotFoundException(ErrorCode.NOT_FOUND);
-    }
+    const key = objectStorageKey(document.storageKey);
+    const docxBuffer = await this.objectStorage.getObjectBuffer(key);
 
     const pngPromise = QRCode.toBuffer(qrText, {
       type: 'png',
-      width: 200,
-      margin: 0,
-      errorCorrectionLevel: 'L',
+      width: 512,
+      margin: 1,
+      errorCorrectionLevel: 'M',
     });
 
+    const hasPlacement =
+      placement?.pageIndex != null &&
+      placement.offsetXMm != null &&
+      placement.offsetYMm != null;
+
+    let updatedBuffer: Buffer;
+
     try {
-      await insertPngIntoDocx(filePath, pngPromise, 28);
+      updatedBuffer = await insertPngIntoDocxBuffer(
+        docxBuffer,
+        pngPromise,
+        placement?.sizeMm ?? 28,
+        hasPlacement
+          ? {
+              pageIndex: placement.pageIndex ?? 0,
+              offsetXMm: placement.offsetXMm ?? 20,
+              offsetYMm: placement.offsetYMm ?? 20,
+              sizeMm: placement.sizeMm ?? 28,
+            }
+          : undefined,
+      );
     } catch {
       throw new BadRequestException(ErrorCode.VALIDATION_FAILED);
     }
 
-    const fileSize = statSync(filePath).size;
+    await this.objectStorage.putObject(
+      key,
+      updatedBuffer,
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    );
+
     const updated = await this.prisma.userDocument.update({
       where: { id: document.id },
       data: {
         documentKey: randomUUID(),
-        size: fileSize,
+        size: updatedBuffer.length,
+        updatedAt: new Date(),
       },
       select: {
         documentKey: true,
@@ -458,31 +775,30 @@ export class DocumentsService {
       },
     });
 
-    const editorConfig = await this.getEditorConfig(userId, documentId, lang);
-
     return {
       documentKey: updated.documentKey,
       updatedAt: updated.updatedAt.toISOString(),
-      editorConfig,
     };
   }
 
-  streamAssetFile(storageKey: string, token: string | undefined, res: Response) {
+  async streamAssetFile(storageKey: string, token: string | undefined, res: Response) {
     const payload = this.verifyAssetToken(token);
 
     if (payload.storageKey !== storageKey) {
       throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
     }
 
-    const filePath = getUploadFilePath(storageKey);
-    if (!existsSync(filePath)) {
-      throw new NotFoundException(ErrorCode.NOT_FOUND);
-    }
+    const key = objectStorageKey(storageKey);
+    const [meta, stream] = await Promise.all([
+      this.objectStorage.getObjectMeta(key),
+      this.objectStorage.getObjectStream(key),
+    ]);
 
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Content-Length', String(meta.size));
 
-    createReadStream(filePath).pipe(res);
+    stream.pipe(res);
   }
 
   private async assertDocumentPermission(
@@ -543,16 +859,10 @@ export class DocumentsService {
     const [document, user] = await Promise.all([
       this.prisma.userDocument.findUnique({
         where: { id: documentId },
-        include: {
-          createdBy: {
-            select: { structuralUnitId: true },
-          },
-        },
       }),
       this.prisma.user.findUnique({
         where: { id: userId },
         select: {
-          structuralUnitId: true,
           appRole: {
             select: {
               isSystem: true,
@@ -568,15 +878,14 @@ export class DocumentsService {
 
     const isOwner = document.createdById === userId;
     const isAdmin = user?.appRole?.isSystem === true;
-    const isServiceFilePeer =
-      document.isServiceFile &&
-      user?.structuralUnitId === document.createdBy.structuralUnitId;
+    // Service files: any authenticated user with page access may open and edit.
+    const canUseServiceFile = document.isServiceFile === true;
 
     if (action === 'delete') {
       if (!isOwner && !isAdmin) {
         throw new ForbiddenException(ErrorCode.FORBIDDEN);
       }
-    } else if (!isOwner && !isAdmin && !isServiceFilePeer) {
+    } else if (!isOwner && !isAdmin && !canUseServiceFile) {
       throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
 
@@ -585,6 +894,28 @@ export class DocumentsService {
 
   private getPublicApiUrl(): string {
     return this.configService.getOrThrow<string>('PUBLIC_API_URL').replace(/\/$/, '');
+  }
+
+  private ensureTitleExtension(title: string, originalFileName: string): string {
+    const trimmed = title.trim() || originalFileName;
+    const originalExtension = originalFileName.split('.').pop()?.toLowerCase() ?? '';
+    if (!originalExtension) {
+      return trimmed;
+    }
+
+    const titleExtension = trimmed.includes('.')
+      ? trimmed.split('.').pop()?.toLowerCase() ?? ''
+      : '';
+
+    if (titleExtension === originalExtension) {
+      return trimmed;
+    }
+
+    if (titleExtension && titleExtension.length <= 5 && trimmed.includes('.')) {
+      return trimmed;
+    }
+
+    return `${trimmed}.${originalExtension}`;
   }
 
   private resolveOnlyOfficeDownloadUrl(url: string): string {

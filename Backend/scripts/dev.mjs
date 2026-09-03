@@ -46,7 +46,7 @@ async function startDockerInfra() {
     return false;
   }
 
-  log('Starting PostgreSQL, Redis, and OnlyOffice via Docker Compose...');
+  log('Starting PostgreSQL, Redis and OnlyOffice via Docker Compose...');
   if (!tryExec('docker compose up -d postgres redis onlyoffice')) {
     return false;
   }

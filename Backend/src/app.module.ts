@@ -54,6 +54,8 @@ import { WebsocketModule } from './modules/websocket/websocket.module';
 
 import { PrismaModule } from './shared/prisma/prisma.module';
 
+import { ObjectStorageModule } from './shared/object-storage/object-storage.module';
+
 import { QueueModule } from './shared/queue/queue.module';
 
 import { RedisModule } from './shared/redis/redis.module';
@@ -122,6 +124,8 @@ import { RedisModule } from './shared/redis/redis.module';
     }),
 
     PrismaModule,
+
+    ObjectStorageModule,
 
     RedisModule,
 
