@@ -1,17 +1,26 @@
-import { PlusOutlined } from '@ant-design/icons'
-import { Button, Space, Table, Tag, Typography, message, theme } from 'antd'
+import { PlusOutlined, UploadOutlined } from '@ant-design/icons'
+import { App, Button, Space, Table, Tag, Typography, theme } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs from 'dayjs'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { DocumentRowActions } from '@/features/documents/ui/DocumentRowActions'
+import { DocumentExpandedPanel } from '@/features/documents/ui/DocumentExpandedPanel'
+import {
+  DocumentsListFilters,
+  matchesDocumentSearch,
+  matchesServiceFileFilter,
+  type ServiceFileFilter,
+} from '@/features/documents/ui/DocumentsListFilters'
+import { useSmoothTableExpand } from '@/features/documents/lib/use-smooth-table-expand'
 import { FilesUploadModal } from '@/features/files/ui/FilesUploadModal'
 import { useAuthStore } from '@/entities/user/model/auth-store'
 import {
   deleteDocument,
   downloadDocument,
+  isOnlyOfficeEditableDocument,
   listDocuments,
+  updateDocumentServiceFile,
   type UserDocumentSummary,
 } from '@/shared/api/documents-api'
 import { useRolePermissions } from '@/shared/hooks/useRolePermissions'
@@ -23,12 +32,14 @@ import {
 } from '@/shared/lib/page-layout'
 import { formatStoredFileSize } from '@/shared/lib/stored-file-utils'
 import { RequirePageView } from '@/shared/ui/RequirePageView'
+import { DocumentsListPageSkeleton } from '@/shared/ui/skeleton'
 
 const PAGE_KEY = '/files'
 
 export function FilesPage() {
   const { token } = theme.useToken()
   const { t } = useTranslation()
+  const { message } = App.useApp()
   const navigate = useNavigate()
   const currentUser = useAuthStore((state) => state.currentUser)
   const { canCreate, canDelete, role } = useRolePermissions()
@@ -37,6 +48,9 @@ export function FilesPage() {
   const [documents, setDocuments] = useState<UserDocumentSummary[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [uploadOpen, setUploadOpen] = useState(false)
+  const [searchValue, setSearchValue] = useState('')
+  const [serviceFilter, setServiceFilter] = useState<ServiceFileFilter>('all')
+  const { expandedRowKeys, panelOpen, onExpandedRowsChange, collapseRow } = useSmoothTableExpand()
 
   const canDeleteRecord = useCallback(
     (record: UserDocumentSummary) =>
@@ -44,9 +58,13 @@ export function FilesPage() {
     [canRemovePage, currentUser?.id, role?.isSystem],
   )
 
-  const loadDocuments = useCallback(async () => {
-    setIsLoading(true)
+  const canManageServiceFile = useCallback(
+    (record: UserDocumentSummary) =>
+      record.createdById === currentUser?.id || role?.isSystem === true,
+    [currentUser?.id, role?.isSystem],
+  )
 
+  const loadDocuments = useCallback(async () => {
     try {
       const items = await listDocuments('FILE')
       setDocuments(items)
@@ -55,17 +73,31 @@ export function FilesPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [t])
+  }, [message, t])
 
   useEffect(() => {
     void loadDocuments()
   }, [loadDocuments])
 
-  const handleEdit = useCallback(
+  const filteredDocuments = useMemo(
+    () =>
+      documents.filter(
+        (item) =>
+          matchesDocumentSearch(item, searchValue) &&
+          matchesServiceFileFilter(item.isServiceFile, serviceFilter),
+      ),
+    [documents, searchValue, serviceFilter],
+  )
+
+  const handleOpen = useCallback(
     (record: UserDocumentSummary) => {
+      if (!isOnlyOfficeEditableDocument(record.title, record.mimeType)) {
+        message.warning(t('files.openNotSupported'))
+        return
+      }
       navigate(`/documents/${record.id}`)
     },
-    [navigate],
+    [message, navigate, t],
   )
 
   const handleDownload = useCallback(
@@ -76,7 +108,7 @@ export function FilesPage() {
         message.error(t('files.downloadError'))
       }
     },
-    [t],
+    [message, t],
   )
 
   const handleDelete = useCallback(
@@ -84,12 +116,31 @@ export function FilesPage() {
       try {
         await deleteDocument(record.id)
         message.success(t('files.deleteSuccess'))
+        collapseRow(record.id)
         await loadDocuments()
       } catch {
         message.error(t('files.deleteError'))
       }
     },
-    [loadDocuments, t],
+    [collapseRow, loadDocuments, message, t],
+  )
+
+  const handleServiceFileChange = useCallback(
+    async (record: UserDocumentSummary, isServiceFile: boolean) => {
+      try {
+        const updated = await updateDocumentServiceFile(record.id, isServiceFile)
+        setDocuments((items) => items.map((item) => (item.id === updated.id ? updated : item)))
+        message.success(
+          isServiceFile
+            ? t('documents.serviceFileEnabled')
+            : t('documents.serviceFileDisabled'),
+        )
+      } catch {
+        message.error(t('documents.serviceFileUpdateError'))
+        throw new Error('SERVICE_FILE_UPDATE_FAILED')
+      }
+    },
+    [message, t],
   )
 
   const columns = useMemo<ColumnsType<UserDocumentSummary>>(
@@ -114,6 +165,14 @@ export function FilesPage() {
         ),
       },
       {
+        title: t('files.columns.uploadedBy'),
+        key: 'uploadedBy',
+        width: 200,
+        ellipsis: true,
+        render: (_, record) =>
+          `${record.createdBy.firstName} ${record.createdBy.lastName}`.trim(),
+      },
+      {
         title: t('files.columns.size'),
         dataIndex: 'size',
         key: 'size',
@@ -127,32 +186,17 @@ export function FilesPage() {
         width: 180,
         render: (value: string) => dayjs(value).format('DD.MM.YYYY HH:mm'),
       },
-      {
-        title: t('files.columns.actions'),
-        key: 'actions',
-        width: 72,
-        align: 'center',
-        render: (_, record) => (
-          <DocumentRowActions
-            record={record}
-            deleteConfirmKey="files.deleteConfirm"
-            downloadLabelKey="files.actions.download"
-            editLabelKey="files.actions.edit"
-            deleteLabelKey="files.actions.delete"
-            onDownload={(item) => {
-              void handleDownload(item)
-            }}
-            onDelete={(item) => {
-              void handleDelete(item)
-            }}
-            onEdit={handleEdit}
-            canDelete={canDeleteRecord(record)}
-          />
-        ),
-      },
     ],
-    [canDeleteRecord, handleDelete, handleDownload, handleEdit, t],
+    [t],
   )
+
+  if (isLoading) {
+    return (
+      <RequirePageView pageKey={PAGE_KEY}>
+        <DocumentsListPageSkeleton />
+      </RequirePageView>
+    )
+  }
 
   return (
     <RequirePageView pageKey={PAGE_KEY}>
@@ -165,32 +209,65 @@ export function FilesPage() {
             <Typography.Text type="secondary">{t('files.subtitle')}</Typography.Text>
           </div>
           {canAdd ? (
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              style={pageToolbarActionStyle}
-              onClick={() => setUploadOpen(true)}
-            >
-              {t('files.add')}
-            </Button>
+            <Space style={pageToolbarActionStyle} wrap>
+              <Button icon={<UploadOutlined />} onClick={() => setUploadOpen(true)}>
+                {t('files.uploadExisting')}
+              </Button>
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/documents/new')}>
+                {t('files.createNew')}
+              </Button>
+            </Space>
           ) : null}
         </div>
+
+        <DocumentsListFilters
+          searchValue={searchValue}
+          onSearchChange={setSearchValue}
+          serviceFilter={serviceFilter}
+          onServiceFilterChange={setServiceFilter}
+          searchPlaceholderKey="files.filters.search"
+        />
 
         <div style={getSplitPanelSurfaceStyle(token)}>
           <Table<UserDocumentSummary>
             rowKey="id"
-            loading={isLoading}
             columns={columns}
-            dataSource={documents}
+            dataSource={filteredDocuments}
             pagination={{ pageSize: 20, showSizeChanger: false }}
+            expandable={{
+              expandedRowKeys,
+              expandRowByClick: true,
+              onExpandedRowsChange,
+              expandedRowRender: (record) => (
+                <DocumentExpandedPanel
+                  record={record}
+                  open={panelOpen && expandedRowKeys[0] === record.id}
+                  showServiceSwitch
+                  canManageServiceFile={canManageServiceFile(record)}
+                  canDelete={canDeleteRecord(record)}
+                  deleteConfirmKey="files.deleteConfirm"
+                  onOpen={handleOpen}
+                  onDownload={(item) => {
+                    void handleDownload(item)
+                  }}
+                  onDelete={(item) => {
+                    void handleDelete(item)
+                  }}
+                  onServiceFileChange={handleServiceFileChange}
+                />
+              ),
+            }}
           />
         </div>
 
         <FilesUploadModal
           open={uploadOpen}
           onClose={() => setUploadOpen(false)}
-          onSuccess={() => {
+          onSuccess={(document) => {
             void loadDocuments()
+            if (document && isOnlyOfficeEditableDocument(document.title, document.mimeType)) {
+              navigate(`/documents/${document.id}`)
+            }
           }}
         />
       </div>

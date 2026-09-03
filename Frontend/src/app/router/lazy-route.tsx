@@ -9,6 +9,7 @@ import { RolesPageSkeleton } from '@/features/roles/ui/RolesPageSkeleton'
 import { StructuralUnitPageSkeleton } from '@/features/structural-unit/ui/StructuralUnitPageSkeleton'
 import { ObjectPageSkeleton } from '@/features/object/ui/ObjectPageSkeleton'
 import { UsersPageSkeleton } from '@/features/users/ui/UsersPageSkeleton'
+import { DocumentsListPageSkeleton } from '@/shared/ui/skeleton'
 import { RouteFallback } from '@/shared/ui/RouteFallback'
 
 export const HomePage = lazy(() =>
@@ -187,3 +188,4 @@ export const submitApplicationRouteFallback = <SubmitApplicationPageSkeleton />
 export const applicationCalendarRouteFallback = <ApplicationCalendarPageSkeleton />
 export const pprCalendarRouteFallback = <PprCalendarPageSkeleton />
 export const errorLogsRouteFallback = <ErrorLogsPageSkeleton />
+export const documentsListRouteFallback = <DocumentsListPageSkeleton />

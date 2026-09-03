@@ -157,7 +157,9 @@ export function DocumentEditorPage() {
         icon={<SaveOutlined />}
         loading={isSaving}
         disabled={!isReady || isLoading}
-        onClick={handleSave}
+        onClick={() => {
+          void handleSave()
+        }}
       >
         {t('documents.saveFile')}
       </Button>

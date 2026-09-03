@@ -339,10 +339,12 @@
   "documents": {
     "editorTitle": "Document editor",
     "editorHint": "Create and save documents in a Word-like environment",
-    "creating": "Creating a new document...",
+    "creating": "Creating new document...",
     "loadingEditor": "Loading OnlyOffice editor...",
-    "loadError": "Could not load the document editor. Check that OnlyOffice is running.",
-    "createError": "Could not create the document. Restart the backend server.",
+    "previewLoading": "Loading document pages...",
+    "previewError": "Could not load document preview",
+    "loadError": "Failed to load document editor. Check that OnlyOffice is running.",
+    "createError": "Failed to create document. Restart the backend server.",
     "onlyOfficeUnavailable": "OnlyOffice server is not running (port 8080).",
     "onlyOfficeHint": "1) Install Docker Desktop: https://www.docker.com/products/docker-desktop/ — open the app. 2) Terminal: cd ~/Desktop/MPPR.org/Backend && docker compose up -d onlyoffice 3) Wait ~5 minutes, then refresh.",
     "expand": "Expand",
@@ -350,7 +352,35 @@
     "enterFullscreen": "Full screen",
     "exitFullscreen": "Exit full screen",
     "saveFile": "Save file",
-    "saveRequested": "Saving file..."
+    "saveRequested": "Saving file...",
+    "details": {
+      "name": "File name",
+      "uploadedBy": "Uploaded by",
+      "size": "Size",
+      "uploadedAt": "Uploaded at",
+      "updatedAt": "Updated at",
+      "serviceFile": "Service document",
+      "serviceFileOn": "Allowed",
+      "serviceFileOff": "No"
+    },
+    "actions": {
+      "openDocument": "Open document",
+      "print": "Print",
+      "download": "Download",
+      "delete": "Delete"
+    },
+    "serviceFileEnabled": "Marked as service document",
+    "serviceFileDisabled": "Service document disabled",
+    "serviceFileUpdateError": "Failed to update service document flag",
+    "printFromEditor": "Use Print in the editor toolbar",
+    "printDownloadHint": "File downloaded — open it to print",
+    "printPopupBlocked": "Popup blocked. Allow popups in the browser",
+    "printError": "Failed to prepare print",
+    "filters": {
+      "serviceAll": "All",
+      "serviceYes": "Service document",
+      "serviceNo": "Not a service document"
+    }
   },
   "archives": {
     "title": "My archives",
@@ -366,18 +396,24 @@
     "deleteSuccess": "Archive file deleted",
     "deleteError": "Failed to delete archive file",
     "deleteConfirm": "Delete this archive file?",
-    "openNotSupported": "This file type cannot be opened in OnlyOffice. Download it instead.",
+    "openNotSupported": "This file type cannot be previewed here. Download it instead.",
     "columns": {
       "name": "File name",
       "size": "Size",
       "uploadedAt": "Created at",
-      "actions": "Actions"
+      "actions": "Actions",
+      "uploadedBy": "Uploaded by"
     },
     "actions": {
       "open": "Open",
       "download": "Download",
       "delete": "Delete",
       "edit": "Edit"
+    },
+    "createNew": "New archive",
+    "uploadExisting": "Upload",
+    "filters": {
+      "search": "Search by archive or uploader"
     }
   },
   "files": {
@@ -390,12 +426,13 @@
     "deleteSuccess": "File deleted",
     "deleteError": "Could not delete file",
     "deleteConfirm": "Delete this file?",
-    "openNotSupported": "This file type cannot be opened in OnlyOffice. Download it instead.",
+    "openNotSupported": "This file type cannot be previewed here. Download it instead.",
     "columns": {
       "name": "File name",
       "size": "Size",
       "uploadedAt": "Uploaded at",
-      "actions": "Actions"
+      "actions": "Actions",
+      "uploadedBy": "Uploaded by"
     },
     "actions": {
       "open": "Open",
@@ -415,6 +452,11 @@
       "success": "File uploaded successfully",
       "error": "Could not upload file",
       "serviceFileLabel": "Service file"
+    },
+    "createNew": "New file",
+    "uploadExisting": "Upload",
+    "filters": {
+      "search": "Search by file or uploader"
     }
   },
   "chat": {
@@ -1027,21 +1069,29 @@
       "selectDocument": "Select a file",
       "configure": "Configure",
       "createQr": "Create QR",
+      "includeQr": "Add QR code?",
+      "applyQr": "Apply QR",
+      "qrPlacementTitle": "Document pages and QR placement",
+      "qrPlacementHint": "All A4 pages are shown. Create a QR and drag it to the desired place.",
+      "qrPlaceRequired": "Create and place the QR first",
+      "qrCodedFileReady": "QR-coded PDF file is ready and attached to the application",
+      "qrSize": "QR size",
       "save": "Save",
       "saveAsArchive": "Save as archive format",
       "finishAndAttach": "Finish and attach",
-      "editorHint": "Edit the document, add QR, and save",
+      "editorHint": "Edit the document, optionally add a QR, and save",
       "confirmSaveTitle": "Confirm save",
       "confirmSaveMessage": "Are you sure you want to save?",
       "attachedSuccess": "File attached to application",
       "attachError": "Failed to attach file",
       "archiveSaved": "Archive copy saved",
       "archiveSaveError": "Failed to save archive copy",
-      "qrNotReady": "Editor is not ready yet",
-      "qrInsertedHint": "QR code inserted into the document. Adjust position and save.",
+      "qrNotReady": "QR text is not ready",
+      "qrDocxOnly": "QR code can only be inserted into .docx files",
+      "qrInsertedHint": "QR code was inserted at the selected position.",
       "qrInsertError": "Could not insert QR code into the document",
       "savePending": "Save is still in progress. Wait a moment and try again.",
-      "qrOverlayHint": "QR panel displayed. Position it over the document.",
+      "qrOverlayHint": "QR code is on screen. Drag it to the desired place.",
       "qrDragHint": "Drag to position",
       "view": "View",
       "download": "Download",

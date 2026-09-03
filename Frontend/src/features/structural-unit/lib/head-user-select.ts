@@ -63,7 +63,7 @@ export function resolveHeadFullName(headUserId: string | undefined, users: User[
 }
 
 export function filterHeadUserSelectOption(input: string, option?: HeadUserSelectOption): boolean {
-  if (!option) {
+  if (!option?.searchText) {
     return false
   }
 

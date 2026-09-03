@@ -337,20 +337,50 @@
     "archives.editor": "Редактор архива"
   },
   "documents": {
-    "editorTitle": "Подготовка документа",
-    "editorHint": "Создавайте и сохраняйте документы в среде, похожей на Word",
+    "editorTitle": "Редактор документа",
+    "editorHint": "Создавайте и сохраняйте документы в среде как Word",
     "creating": "Создание нового документа...",
     "loadingEditor": "Загрузка редактора OnlyOffice...",
-    "loadError": "Не удалось загрузить редактор документов. Проверьте, что OnlyOffice запущен.",
+    "previewLoading": "Загрузка страниц документа...",
+    "previewError": "Не удалось загрузить предпросмотр документа",
+    "loadError": "Не удалось загрузить редактор. Проверьте, что OnlyOffice запущен.",
     "createError": "Не удалось создать документ. Перезапустите backend сервер.",
-    "onlyOfficeUnavailable": "OnlyOffice сервер не запущен (порт 8080).",
+    "onlyOfficeUnavailable": "Сервер OnlyOffice не работает (порт 8080).",
     "onlyOfficeHint": "1) Установите Docker Desktop: https://www.docker.com/products/docker-desktop/ — откройте приложение. 2) Терминал: cd ~/Desktop/MPPR.org/Backend && docker compose up -d onlyoffice 3) Подождите ~5 мин и обновите страницу.",
     "expand": "Развернуть",
     "collapse": "Свернуть",
     "enterFullscreen": "Полный экран",
     "exitFullscreen": "Выйти из полного экрана",
     "saveFile": "Сохранить файл",
-    "saveRequested": "Файл сохраняется..."
+    "saveRequested": "Файл сохраняется...",
+    "details": {
+      "name": "Имя файла",
+      "uploadedBy": "Загрузил",
+      "size": "Размер",
+      "uploadedAt": "Загружено",
+      "updatedAt": "Обновлено",
+      "serviceFile": "Служебный документ",
+      "serviceFileOn": "Да",
+      "serviceFileOff": "Нет"
+    },
+    "actions": {
+      "openDocument": "Открыть документ",
+      "print": "Печать",
+      "download": "Скачать",
+      "delete": "Удалить"
+    },
+    "serviceFileEnabled": "Включён как служебный документ",
+    "serviceFileDisabled": "Служебный документ отключён",
+    "serviceFileUpdateError": "Не удалось изменить статус служебного документа",
+    "printFromEditor": "Для печати нажмите Print в редакторе",
+    "printDownloadHint": "Файл скачан — откройте и распечатайте",
+    "printPopupBlocked": "Всплывающее окно заблокировано",
+    "printError": "Не удалось подготовить печать",
+    "filters": {
+      "serviceAll": "Все",
+      "serviceYes": "Служебный документ",
+      "serviceNo": "Не служебный документ"
+    }
   },
   "archives": {
     "title": "Мои архивы",
@@ -366,18 +396,24 @@
     "deleteSuccess": "Архивный файл удалён",
     "deleteError": "Не удалось удалить архивный файл",
     "deleteConfirm": "Удалить этот архивный файл?",
-    "openNotSupported": "Этот тип файла нельзя открыть в OnlyOffice. Скачайте его.",
+    "openNotSupported": "Этот тип файла нельзя просмотреть здесь. Скачайте файл.",
     "columns": {
       "name": "Имя файла",
       "size": "Размер",
       "uploadedAt": "Дата создания",
-      "actions": "Действия"
+      "actions": "Действия",
+      "uploadedBy": "Загрузил"
     },
     "actions": {
       "open": "Открыть",
       "download": "Скачать",
       "delete": "Удалить",
       "edit": "Редактировать"
+    },
+    "createNew": "Новый архив",
+    "uploadExisting": "Загрузить",
+    "filters": {
+      "search": "Поиск по архиву или загрузившему"
     }
   },
   "files": {
@@ -390,12 +426,13 @@
     "deleteSuccess": "Файл удалён",
     "deleteError": "Не удалось удалить файл",
     "deleteConfirm": "Удалить этот файл?",
-    "openNotSupported": "Этот тип файла нельзя открыть в OnlyOffice. Скачайте файл.",
+    "openNotSupported": "Этот тип файла нельзя просмотреть здесь. Скачайте файл.",
     "columns": {
       "name": "Имя файла",
       "size": "Размер",
       "uploadedAt": "Дата загрузки",
-      "actions": "Действия"
+      "actions": "Действия",
+      "uploadedBy": "Загрузил"
     },
     "actions": {
       "open": "Открыть",
@@ -415,6 +452,11 @@
       "success": "Файл успешно загружен",
       "error": "Не удалось загрузить файл",
       "serviceFileLabel": "Служебный файл"
+    },
+    "createNew": "Новый файл",
+    "uploadExisting": "Загрузить",
+    "filters": {
+      "search": "Поиск по файлу или загрузившему"
     }
   },
   "chat": {
@@ -1027,21 +1069,29 @@
       "selectDocument": "Выберите файл",
       "configure": "Настроить",
       "createQr": "Создать QR",
+      "includeQr": "Добавить QR-код?",
+      "applyQr": "Применить QR",
+      "qrPlacementTitle": "Страницы документа и размещение QR",
+      "qrPlacementHint": "Показаны все страницы A4. Создайте QR и перетащите в нужное место.",
+      "qrPlaceRequired": "Сначала создайте и разместите QR",
+      "qrCodedFileReady": "Файл PDF с QR-кодом готов и прикреплён к заявке",
+      "qrSize": "Размер QR",
       "save": "Сохранить",
       "saveAsArchive": "Сохранить как архив",
       "finishAndAttach": "Готово и прикрепить",
-      "editorHint": "Отредактируйте документ, добавьте QR и сохраните",
+      "editorHint": "Отредактируйте документ, при необходимости добавьте QR и сохраните",
       "confirmSaveTitle": "Подтверждение сохранения",
       "confirmSaveMessage": "Вы действительно хотите сохранить?",
       "attachedSuccess": "Файл прикреплён к заявке",
       "attachError": "Не удалось прикрепить файл",
       "archiveSaved": "Архивная копия сохранена",
       "archiveSaveError": "Не удалось сохранить архивную копию",
-      "qrNotReady": "Редактор ещё не готов",
-      "qrInsertedHint": "QR-код добавлен в документ. Разместите его и сохраните.",
+      "qrNotReady": "Текст QR ещё не готов",
+      "qrDocxOnly": "QR-код можно вставить только в файлы .docx",
+      "qrInsertedHint": "QR-код вставлен в выбранное место.",
       "qrInsertError": "Не удалось вставить QR-код в документ",
       "savePending": "Сохранение ещё выполняется. Подождите и повторите попытку.",
-      "qrOverlayHint": "Панель QR отображена. Разместите её над документом.",
+      "qrOverlayHint": "QR-код на экране. Перетащите его в нужное место.",
       "qrDragHint": "Перетащите для размещения",
       "view": "Просмотр",
       "download": "Скачать",

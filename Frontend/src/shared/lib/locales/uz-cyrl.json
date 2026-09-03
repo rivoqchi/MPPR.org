@@ -337,20 +337,50 @@
     "archives.editor": "Arxiv editori"
   },
   "documents": {
-    "editorTitle": "Hujjat tayyorlash",
-    "editorHint": "Word kabi muhitda hujjat yarating va saqlang",
-    "creating": "Yangi hujjat yaratilmoqda...",
-    "loadingEditor": "OnlyOffice editor yuklanmoqda...",
-    "loadError": "Hujjat editorini yuklab bo'lmadi. OnlyOffice ishlayotganini tekshiring.",
-    "createError": "Hujjat yaratib bo'lmadi. Backend serverni qayta ishga tushiring.",
-    "onlyOfficeUnavailable": "OnlyOffice server ishlamayapti (8080 port).",
+    "editorTitle": "Ҳужжат тайёрлаш",
+    "editorHint": "Word каби муҳитда ҳужжат яратинг ва сақланг",
+    "creating": "Янги ҳужжат яратилмоқда...",
+    "loadingEditor": "OnlyOffice редактор юкланмоқда...",
+    "previewLoading": "Ҳужжат саҳифалари юкланмоқда...",
+    "previewError": "Ҳужжат previewини юклаб бўлмади",
+    "loadError": "Ҳужжат редакторini юклаб бўлмади. OnlyOffice ишлаётганини текширинг.",
+    "createError": "Ҳужжат яратиб бўлмади. Backend серверни қайта ишга туширинг.",
+    "onlyOfficeUnavailable": "OnlyOffice сервер ишламаяпти (8080 порт).",
     "onlyOfficeHint": "1) Docker Desktop o‘rnating: https://www.docker.com/products/docker-desktop/ — ilovani oching. 2) Terminal: cd ~/Desktop/MPPR.org/Backend && docker compose up -d onlyoffice 3) 5 daqiqa kutib sahifani yangilang.",
-    "expand": "Kengaytirish",
-    "collapse": "Kichiklashtirish",
-    "enterFullscreen": "To‘liq ekran",
-    "exitFullscreen": "To‘liq ekrandan chiqish",
+    "expand": "Кенгайтириш",
+    "collapse": "Кичиклаштириш",
+    "enterFullscreen": "Тўлиқ экран",
+    "exitFullscreen": "Тўлиқ экрандан чиқиш",
     "saveFile": "Файлни сақлаш",
-    "saveRequested": "Файл сақланмоқда..."
+    "saveRequested": "Файл сақланмоқда...",
+    "details": {
+      "name": "Файл номи",
+      "uploadedBy": "Юклаган",
+      "size": "Ҳажми",
+      "uploadedAt": "Юкланган вақти",
+      "updatedAt": "Янгиланган вақти",
+      "serviceFile": "Хизмат ҳужжати",
+      "serviceFileOn": "Рухсат",
+      "serviceFileOff": "Йўқ"
+    },
+    "actions": {
+      "openDocument": "Ҳужжатни очиш",
+      "print": "Печатга бериш",
+      "download": "Юклаб олиш",
+      "delete": "Ўчириш"
+    },
+    "serviceFileEnabled": "Хизмат ҳужжати ёқилди",
+    "serviceFileDisabled": "Хизмат ҳужжати ўчирилди",
+    "serviceFileUpdateError": "Хизмат ҳужжати ҳолатини ўзгартириб бўлмади",
+    "printFromEditor": "Печат учун редактордан Print ни босинг",
+    "printDownloadHint": "Файл юклаб олинди — очиб печат қилинг",
+    "printPopupBlocked": "Popup блокланган. Браузер рухсатини ёқинг",
+    "printError": "Печатга тайёрлаб бўлмади",
+    "filters": {
+      "serviceAll": "Ҳаммаси",
+      "serviceYes": "Хизмат ҳужжати",
+      "serviceNo": "Хизмат ҳужжати эмас"
+    }
   },
   "archives": {
     "title": "Архивларим",
@@ -366,18 +396,24 @@
     "deleteSuccess": "Arxiv fayl o'chirildi",
     "deleteError": "Arxiv faylni o'chirib bo'lmadi",
     "deleteConfirm": "Bu arxiv faylni o'chirishni xohlaysizmi?",
-    "openNotSupported": "Bu fayl turini OnlyOffice da ochib bo'lmaydi. Yuklab oling.",
+    "openNotSupported": "Bu fayl turini shu yerda ko'rib bo'lmaydi. Yuklab oling.",
     "columns": {
       "name": "Fayl nomi",
       "size": "Hajmi",
       "uploadedAt": "Yaratilgan vaqti",
-      "actions": "Amallar"
+      "actions": "Amallar",
+      "uploadedBy": "Юклаган"
     },
     "actions": {
       "open": "Ochish",
       "download": "Yuklab olish",
       "delete": "O'chirish",
       "edit": "Tahrirlash"
+    },
+    "createNew": "Янги архив",
+    "uploadExisting": "Юклаш",
+    "filters": {
+      "search": "Архив ёки юклаган бўйича қидириш"
     }
   },
   "files": {
@@ -390,12 +426,13 @@
     "deleteSuccess": "Файл ўчирилди",
     "deleteError": "Файлни ўчиrib бўлмади",
     "deleteConfirm": "Бу файлни ўчirishni xohlaysizmi?",
-    "openNotSupported": "Бу файл турини OnlyOffice да очib бўлмайди. Юкlab oling.",
+    "openNotSupported": "Bu fayl turini shu yerda ko'rib bo'lmaydi. Yuklab oling.",
     "columns": {
       "name": "Файл номи",
       "size": "Ҳажми",
       "uploadedAt": "Юкланган вақти",
-      "actions": "Амаллар"
+      "actions": "Амаллар",
+      "uploadedBy": "Юклаган"
     },
     "actions": {
       "open": "Очish",
@@ -415,6 +452,11 @@
       "success": "Файл muvaffaqiyatli yuklandi",
       "error": "Файлni yuklab bo'lmadi",
       "serviceFileLabel": "Хизмат файл"
+    },
+    "createNew": "Янги файл",
+    "uploadExisting": "Юклаш",
+    "filters": {
+      "search": "Файл ёки юклаган бўйича қидириш"
     }
   },
   "chat": {
@@ -1026,21 +1068,29 @@
       "selectDocument": "Faylni tanlang",
       "configure": "Sozlash",
       "createQr": "QR yaratish",
+      "includeQr": "QR qo'yasizmi?",
+      "applyQr": "QR ni qo'llash",
+      "qrPlacementTitle": "Hujjat sahifalari va QR joylashuvi",
+      "qrPlacementHint": "Barcha A4 sahifalar ko'rsatiladi. QR yaratib, kerakli joyga sudrab qo'ying.",
+      "qrPlaceRequired": "Avval QR yarating va joylashtiring",
+      "qrCodedFileReady": "QR kodlangan PDF fayl tayyorlandi va arizaga biriktirildi",
+      "qrSize": "QR o'lchami",
       "save": "Saqlash",
       "saveAsArchive": "Arxiv fayl sifati saqlash",
       "finishAndAttach": "Tayyor va biriktirish",
-      "editorHint": "Hujjatni tahrirlang, QR qo'shing va saqlang",
+      "editorHint": "Hujjatni tahrirlang, kerak bo'lsa QR qo'shing va saqlang",
       "confirmSaveTitle": "Saqlashni tasdiqlash",
       "confirmSaveMessage": "Rostdan ham saqlaysizmi?",
       "attachedSuccess": "Fayl arizaga biriktirildi",
       "attachError": "Faylni biriktirib bo'lmadi",
       "archiveSaved": "Arxiv nusxasi saqlandi",
       "archiveSaveError": "Arxiv nusxasini saqlab bo'lmadi",
-      "qrNotReady": "Editor hali tayyor emas",
-      "qrInsertedHint": "QR kod hujjat ichiga qo'shildi. Joyini sozlang va saqlang.",
+      "qrNotReady": "QR matni tayyor emas",
+      "qrDocxOnly": "QR kod faqat .docx fayllarga qo'shiladi",
+      "qrInsertedHint": "QR kod belgilangan joyga qo'shildi.",
       "qrInsertError": "QR kodni hujjat ichiga qo'shib bo'lmadi",
       "savePending": "Saqlash hali tugamagan. Biroz kutib qayta urinib ko'ring.",
-      "qrOverlayHint": "QR kod paneli ko'rsatildi. Uni hujjat ustida joylashtiring.",
+      "qrOverlayHint": "QR kod ekranga tushdi. Kerakli joyga sudrab qo'ying.",
       "qrDragHint": "Sudrab joylashtiring",
       "view": "Кўриш",
       "download": "Йуклаб олиш",

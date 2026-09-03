@@ -22,6 +22,7 @@ import {
   ArchiveNewPage,
   ArchiveEditorPage,
   applicationCalendarRouteFallback,
+  documentsListRouteFallback,
   errorLogsRouteFallback,
   homeRouteFallback,
   lazyRoute,
@@ -101,7 +102,7 @@ export const appRoutes: RouteObject[] = [
   },
   {
     path: 'files',
-    element: lazyRoute(<FilesPage />),
+    element: lazyRoute(<FilesPage />, documentsListRouteFallback),
     handle: { titleKey: 'menu.files' },
   },
   {
@@ -116,7 +117,7 @@ export const appRoutes: RouteObject[] = [
   },
   {
     path: 'archives',
-    element: lazyRoute(<ArchivesPage />),
+    element: lazyRoute(<ArchivesPage />, documentsListRouteFallback),
     handle: { titleKey: 'menu.archives' },
   },
   {

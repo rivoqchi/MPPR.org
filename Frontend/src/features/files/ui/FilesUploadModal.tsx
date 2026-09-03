@@ -3,12 +3,12 @@ import { App, Button, Checkbox, Input, Modal, Space, Upload } from 'antd'
 import type { UploadFile } from 'antd/es/upload'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { uploadDocument, type UserDocumentType } from '@/shared/api/documents-api'
+import { uploadDocument, type UserDocumentSummary, type UserDocumentType } from '@/shared/api/documents-api'
 
 interface FilesUploadModalProps {
   open: boolean
   onClose: () => void
-  onSuccess: () => void
+  onSuccess: (document?: UserDocumentSummary) => void
   documentType?: UserDocumentType
 }
 
@@ -45,14 +45,14 @@ export function FilesUploadModal({
     setIsSubmitting(true)
 
     try {
-      await uploadDocument(
+      const document = await uploadDocument(
         selectedFile,
         title || selectedFile.name,
         documentType,
         documentType === 'FILE' && isServiceFile,
       )
       message.success(t('files.upload.success'))
-      onSuccess()
+      onSuccess(document)
       onClose()
     } catch {
       message.error(t('files.upload.error'))

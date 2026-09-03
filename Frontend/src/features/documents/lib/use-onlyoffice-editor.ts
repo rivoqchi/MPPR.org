@@ -103,9 +103,11 @@ export function useOnlyOfficeEditor({
   const editorRef = useRef<OnlyOfficeEditorInstance | null>(null)
   const connectorRef = useRef<OnlyOfficeConnector | null>(null)
   const onDocumentReadyRef = useRef(onDocumentReady)
+  const hasUnsavedChangesRef = useRef(false)
   const [isReady, setIsReady] = useState(false)
   const [isDocumentReady, setIsDocumentReady] = useState(false)
   const [hasConnector, setHasConnector] = useState(false)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 
   useEffect(() => {
     onDocumentReadyRef.current = onDocumentReady
@@ -122,6 +124,15 @@ export function useOnlyOfficeEditor({
       ...config,
       events: {
         ...existingEvents,
+        onDocumentStateChange: (event: { data?: boolean }) => {
+          if (typeof existingEvents.onDocumentStateChange === 'function') {
+            ;(existingEvents.onDocumentStateChange as (event: { data?: boolean }) => void)(event)
+          }
+
+          const dirty = Boolean(event?.data)
+          hasUnsavedChangesRef.current = dirty
+          setHasUnsavedChanges(dirty)
+        },
         onDocumentReady: () => {
           if (typeof existingEvents.onDocumentReady === 'function') {
             ;(existingEvents.onDocumentReady as () => void)()
@@ -138,6 +149,13 @@ export function useOnlyOfficeEditor({
 
   const triggerSave = useCallback(() => {
     editorRef.current?.serviceCommand?.('forcesave', '')
+  }, [])
+
+  const getHasUnsavedChanges = useCallback(() => hasUnsavedChangesRef.current, [])
+
+  const markClean = useCallback(() => {
+    hasUnsavedChangesRef.current = false
+    setHasUnsavedChanges(false)
   }, [])
 
   const insertImageInDocument = useCallback((url: string, sizeMm = 28): Promise<boolean> => {
@@ -209,6 +227,8 @@ export function useOnlyOfficeEditor({
       setIsReady(false)
       setIsDocumentReady(false)
       setHasConnector(false)
+      setHasUnsavedChanges(false)
+      hasUnsavedChangesRef.current = false
       connectorRef.current = null
       return
     }
@@ -237,6 +257,8 @@ export function useOnlyOfficeEditor({
       setIsReady(false)
       setIsDocumentReady(false)
       setHasConnector(false)
+      setHasUnsavedChanges(false)
+      hasUnsavedChangesRef.current = false
       connectorRef.current = null
       editorRef.current?.destroyEditor?.()
       editorRef.current = null
@@ -246,8 +268,11 @@ export function useOnlyOfficeEditor({
   return {
     triggerSave,
     insertImageInDocument,
+    getHasUnsavedChanges,
+    markClean,
     isReady,
     isDocumentReady,
     hasConnector,
+    hasUnsavedChanges,
   }
 }

@@ -455,7 +455,9 @@ export function ApplicationSendDrawer({
             applicationNumberPreview={
               numberMode === 'auto' ? autoNumberPreview : undefined
             }
-            onFilesChange={(nextFiles) => setValue('files', nextFiles)}
+            onFilesChange={(nextFiles) =>
+              setValue('files', nextFiles, { shouldDirty: true, shouldValidate: true })
+            }
           />
 
           <Form.Item

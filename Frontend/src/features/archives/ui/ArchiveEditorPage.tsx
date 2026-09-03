@@ -7,13 +7,18 @@ import {
   SaveOutlined,
 } from '@ant-design/icons'
 import { Alert, Button, Space, Spin, message, theme, Tooltip, Typography } from 'antd'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { resolveOnlyOfficeLang } from '@/features/documents/lib/onlyoffice-lang'
 import { useElementFullscreen } from '@/features/documents/lib/use-element-fullscreen'
 import { useOnlyOfficeEditor } from '@/features/documents/lib/use-onlyoffice-editor'
-import { getDocumentEditorConfig, getOnlyOfficeServerUrl } from '@/shared/api/documents-api'
+import {
+  getDocumentEditorConfig,
+  getDocumentSaveState,
+  getOnlyOfficeServerUrl,
+  waitForDocumentSave,
+} from '@/shared/api/documents-api'
 import {
   fullHeightPageStyle,
   getSplitPanelSurfaceStyle,
@@ -33,6 +38,7 @@ export function ArchiveEditorPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
+  const documentKeyRef = useRef('')
   const { ref: fullscreenRef, isFullscreen, toggleFullscreen } = useElementFullscreen<HTMLDivElement>()
 
   const onlyOfficeLang = useMemo(
@@ -52,19 +58,26 @@ export function ArchiveEditorPage() {
     onScriptError: handleOnlyOfficeScriptError,
   })
 
-  const handleSave = useCallback(() => {
-    if (!isReady) {
+  const handleSave = useCallback(async () => {
+    if (!isReady || !documentId) {
       return
     }
 
     setIsSaving(true)
-    triggerSave()
-    message.success(t('documents.saveRequested'))
 
-    window.setTimeout(() => {
+    try {
+      const previousKey = documentKeyRef.current
+      triggerSave()
+      const saved = await waitForDocumentSave(documentId, previousKey)
+      if (saved) {
+        const state = await getDocumentSaveState(documentId)
+        documentKeyRef.current = state.documentKey
+      }
+      message.success(saved ? t('documents.saveRequested') : t('applicationSubmit.attachments.savePending'))
+    } finally {
       setIsSaving(false)
-    }, 1500)
-  }, [isReady, t, triggerSave])
+    }
+  }, [documentId, isReady, t, triggerSave])
 
   useEffect(() => {
     if (!documentId) {
@@ -84,6 +97,8 @@ export function ArchiveEditorPage() {
         const config = await getDocumentEditorConfig(documentId, onlyOfficeLang)
 
         if (!cancelled) {
+          const documentKey = (config as { document?: { key?: string } }).document?.key ?? ''
+          documentKeyRef.current = documentKey
           setEditorConfig(config as Record<string, unknown>)
         }
       } catch {
@@ -125,7 +140,9 @@ export function ArchiveEditorPage() {
         icon={<SaveOutlined />}
         loading={isSaving}
         disabled={!isReady || isLoading}
-        onClick={handleSave}
+        onClick={() => {
+          void handleSave()
+        }}
       >
         {t('documents.saveFile')}
       </Button>

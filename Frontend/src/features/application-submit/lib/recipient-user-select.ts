@@ -75,7 +75,7 @@ export function filterRecipientUserSelectOption(
   input: string,
   option?: RecipientUserSelectOption,
 ): boolean {
-  if (!option) {
+  if (!option?.searchText) {
     return false
   }
 

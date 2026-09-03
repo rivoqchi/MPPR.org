@@ -1,4 +1,5 @@
 export { CardSkeleton } from './CardSkeleton'
+export { DocumentsListPageSkeleton } from './DocumentsListPageSkeleton'
 export { FormSkeleton } from './FormSkeleton'
 export { PageSkeleton } from './PageSkeleton'
 export { TableSkeleton } from './TableSkeleton'

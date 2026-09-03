@@ -143,7 +143,8 @@ export async function persistUploadFiles<T extends StoredFileRecord>(
     if (
       isBackendStorageKey(file.uid) &&
       file.name &&
-      typeof file.size === 'number'
+      typeof file.size === 'number' &&
+      file.size >= 0
     ) {
       nextRecords.push({
         id: file.uid,

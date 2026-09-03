@@ -36,7 +36,6 @@ export function useDailyWelcomeGreeting() {
       notification.open({
         message: title,
         description: message,
-        placement: 'topRight',
         duration: 6,
       })
 
