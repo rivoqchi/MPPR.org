@@ -106,6 +106,46 @@ export class DocumentsController {
     return this.documentsService.copyForAttachment(user.id, id);
   }
 
+  @Get(':id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get document metadata' })
+  getById(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.documentsService.getById(user.id, id);
+  }
+
+  @Get(':id/preview')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Preview document file inline' })
+  preview(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Res({ passthrough: false }) res: Response,
+  ) {
+    return this.documentsService.preview(user.id, id, res);
+  }
+
+  @Post(':id/replace-file')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Replace document file with uploaded binary' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: { fileSize: MAX_UPLOAD_BYTES },
+    }),
+  )
+  replaceFile(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body('title') title: string | undefined,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.documentsService.replaceFile(user.id, id, file, title);
+  }
+
   @Get(':id/save-state')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)

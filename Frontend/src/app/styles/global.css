@@ -33,3 +33,7 @@ body {
 .ant-layout.ant-layout-has-sider {
   min-height: 0;
 }
+
+.document-docx-preview .docx-wrapper {
+  background: transparent;
+}

@@ -5,7 +5,7 @@ interface ImportMetaEnv {
   readonly VITE_WS_URL: string
   readonly VITE_APP_NAME: string
   readonly VITE_APP_ENV: string
-  readonly VITE_ONLYOFFICE_SERVER_URL?: string
+  readonly VITE_YANDEX_MAPS_API_KEY?: string
 }
 
 interface ImportMeta {

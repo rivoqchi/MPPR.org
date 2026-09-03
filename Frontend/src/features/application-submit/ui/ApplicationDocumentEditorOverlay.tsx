@@ -4,24 +4,23 @@ import {
   SaveOutlined,
   SnippetsOutlined,
 } from '@ant-design/icons'
-import { App, Button, Space, Spin, Typography, theme } from 'antd'
+import { App, Button, Space, Typography, theme } from 'antd'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { resolveOnlyOfficeLang } from '@/features/documents/lib/onlyoffice-lang'
-import { useOnlyOfficeEditor } from '@/features/documents/lib/use-onlyoffice-editor'
+import {
+  DocumentDocxEditorWorkspace,
+  type DocumentDocxEditorHandle,
+} from '@/features/documents/ui/DocumentDocxEditorWorkspace'
 import {
   copyDocumentForAttachment,
-  getDocumentEditorConfig,
-  getDocumentSaveState,
-  getOnlyOfficeServerUrl,
+  fetchDocumentPreviewBlob,
   insertQrIntoDocument,
+  isDocxDocument,
   saveDocumentAsArchive,
-  waitForDocumentSave,
+  saveDocumentDocxBytes,
   type DocumentAttachmentCopy,
   type UserDocumentSummary,
 } from '@/shared/api/documents-api'
-
-const EDITOR_PLACEHOLDER_ID = 'mppr-application-onlyoffice-editor'
 
 interface ApplicationDocumentEditorOverlayProps {
   open: boolean
@@ -39,20 +38,16 @@ export function ApplicationDocumentEditorOverlay({
   onAttached,
 }: ApplicationDocumentEditorOverlayProps) {
   const { token } = theme.useToken()
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const { modal, message } = App.useApp()
-  const [editorConfig, setEditorConfig] = useState<Record<string, unknown> | null>(null)
+  const editorRef = useRef<DocumentDocxEditorHandle>(null)
+  const [documentBytes, setDocumentBytes] = useState<Uint8Array | undefined>()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isAttaching, setIsAttaching] = useState(false)
   const [isCreatingQr, setIsCreatingQr] = useState(false)
-  const documentKeyRef = useRef<string>('')
-
-  const onlyOfficeLang = useMemo(
-    () => resolveOnlyOfficeLang(i18n.resolvedLanguage ?? i18n.language),
-    [i18n.language, i18n.resolvedLanguage],
-  )
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const qrValue = useMemo(() => {
     if (!document) {
@@ -68,41 +63,38 @@ export function ApplicationDocumentEditorOverlay({
     return parts.join('|')
   }, [applicationNumberPreview, document])
 
-  const handleOnlyOfficeScriptError = useCallback(() => {
-    setErrorMessage(t('documents.onlyOfficeUnavailable'))
-  }, [t])
-
-  const { triggerSave, isReady, isDocumentReady } = useOnlyOfficeEditor({
-    placeholderId: EDITOR_PLACEHOLDER_ID,
-    documentServerUrl: getOnlyOfficeServerUrl(),
-    config: editorConfig,
-    enabled: open && Boolean(editorConfig),
-    onScriptError: handleOnlyOfficeScriptError,
-  })
-
   useEffect(() => {
     if (!open || !document) {
-      setEditorConfig(null)
+      setDocumentBytes(undefined)
       setErrorMessage(null)
-      documentKeyRef.current = ''
+      return
+    }
+
+    if (!isDocxDocument(document)) {
+      setErrorMessage(t('documents.previewUnsupported'))
       return
     }
 
     let cancelled = false
 
-    async function loadEditor() {
+    async function loadDocument() {
+      const activeDocument = document
+      if (!activeDocument) {
+        return
+      }
+
       setIsLoading(true)
       setErrorMessage(null)
-      setEditorConfig(null)
+      setDocumentBytes(undefined)
 
       try {
-        const config = await getDocumentEditorConfig(document.id, onlyOfficeLang)
-
-        if (!cancelled) {
-          const documentKey = (config as { document?: { key?: string } }).document?.key ?? ''
-          documentKeyRef.current = documentKey
-          setEditorConfig(config as Record<string, unknown>)
+        const blob = await fetchDocumentPreviewBlob(activeDocument.id)
+        if (cancelled) {
+          return
         }
+
+        const buffer = await blob.arrayBuffer()
+        setDocumentBytes(new Uint8Array(buffer.slice(0)))
       } catch {
         if (!cancelled) {
           setErrorMessage(t('documents.loadError'))
@@ -114,47 +106,29 @@ export function ApplicationDocumentEditorOverlay({
       }
     }
 
-    void loadEditor()
+    void loadDocument()
 
     return () => {
       cancelled = true
     }
-  }, [document, onlyOfficeLang, open, t])
-
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-
-    const timer = window.setTimeout(() => {
-      window.dispatchEvent(new Event('resize'))
-    }, 150)
-
-    return () => {
-      window.clearTimeout(timer)
-    }
-  }, [open])
+  }, [document, open, refreshKey, t])
 
   const persistDocument = useCallback(async (): Promise<boolean> => {
     if (!document) {
       return false
     }
 
-    const previousKey = documentKeyRef.current
-    triggerSave()
-
-    const saved = await waitForDocumentSave(document.id, previousKey)
-
-    if (saved) {
-      const state = await getDocumentSaveState(document.id)
-      documentKeyRef.current = state.documentKey
+    const bytes = await editorRef.current?.save()
+    if (!bytes?.length) {
+      return false
     }
 
-    return saved
-  }, [document, triggerSave])
+    await saveDocumentDocxBytes(document.id, bytes, document.title)
+    return true
+  }, [document])
 
   const handleSave = useCallback(async () => {
-    if (!isReady || !document) {
+    if (!document || !documentBytes) {
       return
     }
 
@@ -163,14 +137,14 @@ export function ApplicationDocumentEditorOverlay({
     try {
       const saved = await persistDocument()
       if (saved) {
-        message.success(t('documents.saveRequested'))
+        message.success(t('documents.docxEditorSaveSuccess'))
       } else {
         message.warning(t('applicationSubmit.attachments.savePending'))
       }
     } finally {
       setIsSaving(false)
     }
-  }, [document, isReady, message, persistDocument, t])
+  }, [document, documentBytes, message, persistDocument, t])
 
   const attachDocumentCopy = useCallback(async () => {
     if (!document) {
@@ -180,10 +154,7 @@ export function ApplicationDocumentEditorOverlay({
     setIsAttaching(true)
 
     try {
-      const previousKey = documentKeyRef.current
-      triggerSave()
-      await waitForDocumentSave(document.id, previousKey, 3_000, 200)
-
+      await persistDocument()
       const attachment = await copyDocumentForAttachment(document.id)
       onAttached(attachment)
       message.success(t('applicationSubmit.attachments.attachedSuccess'))
@@ -193,7 +164,7 @@ export function ApplicationDocumentEditorOverlay({
     } finally {
       setIsAttaching(false)
     }
-  }, [document, message, onAttached, onClose, t, triggerSave])
+  }, [document, message, onAttached, onClose, persistDocument, t])
 
   const confirmSaveAndAttach = useCallback(() => {
     modal.confirm({
@@ -229,7 +200,7 @@ export function ApplicationDocumentEditorOverlay({
   }, [document, message, persistDocument, t])
 
   const handleCreateQr = useCallback(async () => {
-    if (!document || !isDocumentReady || !qrValue) {
+    if (!document || !qrValue) {
       message.warning(t('applicationSubmit.attachments.qrNotReady'))
       return
     }
@@ -237,22 +208,16 @@ export function ApplicationDocumentEditorOverlay({
     setIsCreatingQr(true)
 
     try {
-      const previousKey = documentKeyRef.current
-      triggerSave()
-      await waitForDocumentSave(document.id, previousKey, 1_500, 200)
-
-      setEditorConfig(null)
-
-      const result = await insertQrIntoDocument(document.id, qrValue, onlyOfficeLang)
-      documentKeyRef.current = result.documentKey
-      setEditorConfig(result.editorConfig as Record<string, unknown>)
+      await persistDocument()
+      await insertQrIntoDocument(document.id, qrValue)
+      setRefreshKey((value) => value + 1)
       message.success(t('applicationSubmit.attachments.qrInsertedHint'))
     } catch {
       message.error(t('applicationSubmit.attachments.qrInsertError'))
     } finally {
       setIsCreatingQr(false)
     }
-  }, [document, isDocumentReady, message, onlyOfficeLang, qrValue, t, triggerSave])
+  }, [document, message, persistDocument, qrValue, t])
 
   if (!open) {
     return null
@@ -295,7 +260,7 @@ export function ApplicationDocumentEditorOverlay({
           <Button
             icon={<QrcodeOutlined />}
             loading={isCreatingQr}
-            disabled={!isDocumentReady}
+            disabled={!documentBytes || isLoading}
             onClick={() => void handleCreateQr()}
           >
             {t('applicationSubmit.attachments.createQr')}
@@ -303,7 +268,7 @@ export function ApplicationDocumentEditorOverlay({
           <Button
             icon={<SaveOutlined />}
             loading={isSaving}
-            disabled={!isReady || isLoading}
+            disabled={!documentBytes || isLoading}
             onClick={() => void handleSave()}
           >
             {t('applicationSubmit.attachments.save')}
@@ -314,7 +279,7 @@ export function ApplicationDocumentEditorOverlay({
           <Button
             type="primary"
             loading={isAttaching}
-            disabled={!isReady || isLoading}
+            disabled={!documentBytes || isLoading}
             onClick={confirmSaveAndAttach}
           >
             {t('applicationSubmit.attachments.finishAndAttach')}
@@ -330,10 +295,14 @@ export function ApplicationDocumentEditorOverlay({
           <Typography.Text type="danger">{errorMessage}</Typography.Text>
         </div>
       ) : (
-        <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
-          {isLoading ? <Spin fullscreen tip={t('documents.loadingEditor')} /> : null}
-          <div id={EDITOR_PLACEHOLDER_ID} style={{ width: '100%', height: '100%' }} />
-        </div>
+        <DocumentDocxEditorWorkspace
+          key={`${document?.id ?? 'none'}-${refreshKey}`}
+          ref={editorRef}
+          documentBytes={documentBytes}
+          title={document?.title ?? ''}
+          isLoading={isLoading}
+          onSave={handleSave}
+        />
       )}
     </div>
   )

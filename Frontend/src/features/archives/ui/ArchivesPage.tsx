@@ -12,6 +12,7 @@ import { useAuthStore } from '@/entities/user/model/auth-store'
 import {
   deleteDocument,
   downloadDocument,
+  isDocxDocument,
   listDocuments,
   type UserDocumentSummary,
 } from '@/shared/api/documents-api'
@@ -64,9 +65,14 @@ export function ArchivesPage() {
 
   const handleEdit = useCallback(
     (record: UserDocumentSummary) => {
+      if (!isDocxDocument(record)) {
+        message.warning(t('archives.openNotSupported'))
+        return
+      }
+
       navigate(`/archives/${record.id}`)
     },
-    [navigate],
+    [navigate, t],
   )
 
   const handleDownload = useCallback(
@@ -105,12 +111,20 @@ export function ArchivesPage() {
         dataIndex: 'title',
         key: 'title',
         ellipsis: true,
-        render: (title: string, record) => (
-          <Space size={8}>
-            {getDocumentFileIcon(title, record.mimeType)}
-            <span>{title}</span>
-          </Space>
-        ),
+        render: (title: string, record) => {
+          const editable = isDocxDocument(record)
+
+          return (
+            <Space size={8}>
+              {getDocumentFileIcon(title, record.mimeType)}
+              {editable ? (
+                <Typography.Link onClick={() => handleEdit(record)}>{title}</Typography.Link>
+              ) : (
+                <span>{title}</span>
+              )}
+            </Space>
+          )
+        },
       },
       {
         title: t('archives.columns.size'),
@@ -129,8 +143,8 @@ export function ArchivesPage() {
       {
         title: t('archives.columns.actions'),
         key: 'actions',
-        width: 72,
-        align: 'center',
+        width: 132,
+        align: 'right',
         render: (_, record) => (
           <DocumentRowActions
             record={record}
@@ -138,6 +152,7 @@ export function ArchivesPage() {
             downloadLabelKey="archives.actions.download"
             editLabelKey="archives.actions.edit"
             deleteLabelKey="archives.actions.delete"
+            openNotSupportedKey="archives.openNotSupported"
             onDownload={(item) => {
               void handleDownload(item)
             }}
@@ -182,6 +197,10 @@ export function ArchivesPage() {
             columns={columns}
             dataSource={documents}
             pagination={{ pageSize: 20, showSizeChanger: false }}
+            onRow={(record) => ({
+              onDoubleClick: () => handleEdit(record),
+              style: isDocxDocument(record) ? { cursor: 'pointer' } : undefined,
+            })}
           />
         </div>
 

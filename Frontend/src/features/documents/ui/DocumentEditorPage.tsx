@@ -6,73 +6,72 @@ import {
   FullscreenOutlined,
   SaveOutlined,
 } from '@ant-design/icons'
-import { Alert, Button, Space, Spin, message, theme, Tooltip, Typography } from 'antd'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Alert, Button, Space, message, theme, Tooltip, Typography } from 'antd'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
-import { resolveOnlyOfficeLang } from '@/features/documents/lib/onlyoffice-lang'
-import { useElementFullscreen } from '@/features/documents/lib/use-element-fullscreen'
-import { useOnlyOfficeEditor } from '@/features/documents/lib/use-onlyoffice-editor'
-import { getDocumentEditorConfig, getDocumentSaveState, getOnlyOfficeServerUrl, waitForDocumentSave } from '@/shared/api/documents-api'
+import {
+  DocumentDocxEditorWorkspace,
+  type DocumentDocxEditorHandle,
+} from '@/features/documents/ui/DocumentDocxEditorWorkspace'
+import {
+  fetchDocumentPreviewBlob,
+  getDocumentById,
+  isDocxDocument,
+  saveDocumentDocxBytes,
+  type UserDocumentSummary,
+} from '@/shared/api/documents-api'
+import { resolveApiErrorMessage } from '@/shared/lib/api-error'
 import {
   fullHeightPageStyle,
   getSplitPanelSurfaceStyle,
   pageToolbarActionStyle,
   pageToolbarStyle,
 } from '@/shared/lib/page-layout'
-
-const EDITOR_PLACEHOLDER_ID = 'mppr-onlyoffice-editor'
+import { useElementFullscreen } from '@/features/documents/lib/use-element-fullscreen'
 
 export function DocumentEditorPage() {
   const { token } = theme.useToken()
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { documentId } = useParams<{ documentId: string }>()
-  const [editorConfig, setEditorConfig] = useState<Record<string, unknown> | null>(null)
+  const editorRef = useRef<DocumentDocxEditorHandle>(null)
+  const [userDocument, setUserDocument] = useState<UserDocumentSummary | null>(null)
+  const [title, setTitle] = useState('')
+  const [documentBytes, setDocumentBytes] = useState<Uint8Array | undefined>()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
-  const documentKeyRef = useRef('')
   const { ref: fullscreenRef, isFullscreen, toggleFullscreen } = useElementFullscreen<HTMLDivElement>()
 
-  const onlyOfficeLang = useMemo(
-    () => resolveOnlyOfficeLang(i18n.resolvedLanguage ?? i18n.language),
-    [i18n.language, i18n.resolvedLanguage],
-  )
-
-  const handleOnlyOfficeScriptError = useCallback(() => {
-    setErrorMessage(t('documents.onlyOfficeUnavailable'))
-  }, [t])
-
-  const { triggerSave, isReady } = useOnlyOfficeEditor({
-    placeholderId: EDITOR_PLACEHOLDER_ID,
-    documentServerUrl: getOnlyOfficeServerUrl(),
-    config: editorConfig,
-    enabled: Boolean(editorConfig),
-    onScriptError: handleOnlyOfficeScriptError,
-  })
-
   const handleSave = useCallback(async () => {
-    if (!isReady || !documentId) {
+    if (!documentId || !userDocument) {
+      return
+    }
+
+    const bytes = await editorRef.current?.save()
+    if (!bytes?.length) {
+      message.warning(t('documents.emptyDocumentWarning'))
       return
     }
 
     setIsSaving(true)
 
     try {
-      const previousKey = documentKeyRef.current
-      triggerSave()
-      const saved = await waitForDocumentSave(documentId, previousKey)
-      if (saved) {
-        const state = await getDocumentSaveState(documentId)
-        documentKeyRef.current = state.documentKey
-      }
-      message.success(saved ? t('documents.saveRequested') : t('applicationSubmit.attachments.savePending'))
+      const updated = await saveDocumentDocxBytes(
+        userDocument.id,
+        bytes,
+        title.trim() || userDocument.title,
+      )
+      setUserDocument(updated)
+      message.success(t('documents.docxEditorSaveSuccess'))
+    } catch (error: unknown) {
+      message.error(resolveApiErrorMessage(error, t, 'documents.saveError'))
     } finally {
       setIsSaving(false)
     }
-  }, [documentId, isReady, message, t, triggerSave])
+  }, [documentId, message, t, title, userDocument])
 
   useEffect(() => {
     if (!documentId) {
@@ -83,22 +82,39 @@ export function DocumentEditorPage() {
 
     let cancelled = false
 
-    async function loadEditor() {
+    async function loadDocument() {
+      if (!documentId) {
+        return
+      }
+
       setIsLoading(true)
       setErrorMessage(null)
-      setEditorConfig(null)
+      setDocumentBytes(undefined)
 
       try {
-        const config = await getDocumentEditorConfig(documentId, onlyOfficeLang)
-
-        if (!cancelled) {
-          const documentKey = (config as { document?: { key?: string } }).document?.key ?? ''
-          documentKeyRef.current = documentKey
-          setEditorConfig(config as Record<string, unknown>)
+        const meta = await getDocumentById(documentId)
+        if (cancelled) {
+          return
         }
-      } catch {
+
+        setUserDocument(meta)
+        setTitle(meta.title)
+
+        if (!isDocxDocument(meta)) {
+          setErrorMessage(t('documents.previewUnsupported'))
+          return
+        }
+
+        const blob = await fetchDocumentPreviewBlob(documentId)
+        if (cancelled) {
+          return
+        }
+
+        const buffer = await blob.arrayBuffer()
+        setDocumentBytes(new Uint8Array(buffer.slice(0)))
+      } catch (error: unknown) {
         if (!cancelled) {
-          setErrorMessage(t('documents.loadError'))
+          setErrorMessage(resolveApiErrorMessage(error, t, 'documents.loadError'))
         }
       } finally {
         if (!cancelled) {
@@ -107,12 +123,12 @@ export function DocumentEditorPage() {
       }
     }
 
-    void loadEditor()
+    void loadDocument()
 
     return () => {
       cancelled = true
     }
-  }, [documentId, onlyOfficeLang, t])
+  }, [documentId, t])
 
   const isImmersive = isExpanded || isFullscreen
 
@@ -132,8 +148,8 @@ export function DocumentEditorPage() {
 
   useEffect(() => {
     return () => {
-      if (document.fullscreenElement) {
-        void document.exitFullscreen().catch(() => undefined)
+      if (window.document.fullscreenElement) {
+        void window.document.exitFullscreen().catch(() => undefined)
       }
     }
   }, [])
@@ -141,7 +157,7 @@ export function DocumentEditorPage() {
   if (errorMessage) {
     return (
       <div style={fullHeightPageStyle}>
-        <Alert type="error" message={errorMessage} showIcon description={t('documents.onlyOfficeHint')} />
+        <Alert type="error" message={errorMessage} showIcon />
       </div>
     )
   }
@@ -156,8 +172,8 @@ export function DocumentEditorPage() {
         type="default"
         icon={<SaveOutlined />}
         loading={isSaving}
-        disabled={!isReady || isLoading}
-        onClick={handleSave}
+        disabled={isLoading || !documentBytes}
+        onClick={() => void handleSave()}
       >
         {t('documents.saveFile')}
       </Button>
@@ -176,8 +192,8 @@ export function DocumentEditorPage() {
             icon={<CompressOutlined />}
             onClick={() => {
               setIsExpanded(false)
-              if (document.fullscreenElement) {
-                void document.exitFullscreen().catch(() => undefined)
+              if (window.document.fullscreenElement) {
+                void window.document.exitFullscreen().catch(() => undefined)
               }
             }}
             aria-label={t('documents.collapse')}
@@ -233,7 +249,13 @@ export function DocumentEditorPage() {
                 background: token.colorBgContainer,
                 overflow: 'hidden',
               }
-            : getSplitPanelSurfaceStyle(token)),
+            : {
+                ...getSplitPanelSurfaceStyle(token),
+                flex: 1,
+                minHeight: 0,
+                display: 'flex',
+                flexDirection: 'column',
+              }),
         }}
       >
         {isImmersive ? (
@@ -255,10 +277,15 @@ export function DocumentEditorPage() {
           </div>
         ) : null}
 
-        <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
-          {isLoading ? <Spin fullscreen tip={t('documents.loadingEditor')} /> : null}
-          <div id={EDITOR_PLACEHOLDER_ID} style={{ width: '100%', height: '100%' }} />
-        </div>
+        <DocumentDocxEditorWorkspace
+          key={userDocument?.id ?? documentId ?? 'loading'}
+          ref={editorRef}
+          documentBytes={documentBytes}
+          title={title}
+          onTitleChange={setTitle}
+          isLoading={isLoading}
+          onSave={handleSave}
+        />
       </div>
     </div>
   )
